@@ -1,0 +1,15 @@
+{{- if .Values.nfsServer.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "chart.name" }}-nfs-vol-pvc
+  namespace: {{ include "chart.namespace" }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.nfsServer.storage.size | quote }}
+{{- end }}

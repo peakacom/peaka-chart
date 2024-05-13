@@ -1,0 +1,13 @@
+{{- if .Values.nfsServer.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: nfs-server
+  namespace: ns
+spec:
+  ports:
+    - name: nfs
+      port: 2049
+  selector:
+    role: nfs-server
+{{- end -}}
