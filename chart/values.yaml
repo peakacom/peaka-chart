@@ -122,5 +122,21 @@ nfsServer:
   enabled: true
   # set this if you are using an external nfs server
   nfsServerAddress: ""
-  storage:
+  persistentVolume:
+    # pv size of the nfs server
     size: 8Gi
+    # keeps the nfs pvc on helm uninstalls
+    volumeDeletionProtection: true
+    # define additional labels
+    labels: {}
+    # define additional annotations
+    annotations: {}
+    # path to be used as the nfs share
+    mountPath: /nfsshare
+  deployment:
+    # it is our recommendation that you run nfs server as root, otherwise is not tested
+    containerSecurityContext:
+      enabled: true
+      privileged: true
+    containerPort: 2049
+  servicePort: 2049
