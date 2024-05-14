@@ -2,35 +2,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "chart.name" }}-nfs-server
-  namespace: {{ include "chart.namespace" }}
+  name: {{ include "peaka.name" . }}-nfs-server
+  namespace: {{ include "peaka.namespace" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      role: nfs-server
+      role: {{ include "peaka.name" . }}-nfs-server
   template:
     metadata:
       labels:
-        role: nfs-server
+        role: {{ include "peaka.name" . }}-nfs-server
     spec:
-      volumes:
-        - name: nfs-vol
-          persistentVolumeClaim:
-            claimName: nfs-vol-pvc
       restartPolicy: Always
       containers:
         - name: nfs-server
           image: itsthenetwork/nfs-server-alpine
           env:
             - name: SHARED_DIRECTORY
-              value: /nfsshare
+              value: {{ .Values.nfsServer.persistentVolume.mountPath }}
           ports:
             - name: nfs
-              containerPort: 2049
+              containerPort: {{ .Values.nfsServer.deployment.containerPort }}
+          {{- if .Values.nfsServer.deployment.containerSecurityContext.enabled }}
+          {{- with .Values.nfsServer.deployment.containerSecurityContext }}
           securityContext:
-            privileged: true
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
           volumeMounts:
-            - mountPath: /nfsshare
-              name: nfs-vol
+            - mountPath: {{ .Values.nfsServer.persistentVolume.mountPath }}
+              name: nfs-volume
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: {{ include "peaka.name" . }}-nfs-server
 {{- end -}}

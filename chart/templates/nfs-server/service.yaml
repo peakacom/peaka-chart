@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nfs-server
-  namespace: ns
+  name: {{ include "peaka.name" . }}-nfs-server
+  namespace: {{ include "peaka.namespace" . }}
 spec:
   ports:
     - name: nfs
-      port: 2049
+      port: {{ .Values.nfsServer.servicePort }}
   selector:
-    role: nfs-server
+    role: {{ include "peaka.name" . }}-nfs-server
 {{- end -}}

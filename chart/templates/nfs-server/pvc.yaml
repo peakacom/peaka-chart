@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "chart.name" }}-nfs-vol-pvc
-  namespace: {{ include "chart.namespace" }}
+  name: {{ include "peaka.name" . }}-nfs-server
+  namespace: {{ include "peaka.namespace" . }}
   annotations:
     helm.sh/resource-policy: "keep"
 spec:
@@ -11,5 +11,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.nfsServer.storage.size | quote }}
+      storage: {{ .Values.nfsServer.persistentVolume.size | quote }}
 {{- end }}
