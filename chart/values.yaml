@@ -125,7 +125,7 @@ nfsServer:
   persistentVolume:
     # pv size of the nfs server
     size: 8Gi
-    # keeps the nfs pvc on helm uninstalls
+    # keep the nfs pvc on helm uninstalls
     volumeDeletionProtection: true
     # path to be used as the nfs share
     mountPath: /nfsshare
@@ -136,3 +136,14 @@ nfsServer:
       privileged: true
     containerPort: 2049
   servicePort: 2049
+
+# nfs share to be used across some Peaka pods
+nfsShare:
+  # keep the nfs pvc on helm uninstalls
+  volumeDeletionProtection: true
+  # size of the nfs share
+  size: 8Gi
+  # what happens to a persistent volume when released from its claim (Retain/Delete)
+  persistentVolumeReclaimPolicy: Retain
+  # path that is exported by the NFS server
+  path: "/"
