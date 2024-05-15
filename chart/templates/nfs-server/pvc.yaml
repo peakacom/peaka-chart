@@ -4,8 +4,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "peaka.name" . }}-nfs-server
   namespace: {{ include "peaka.namespace" . }}
+  {{- if  .Values.nfsServer.persistentVolume.volumeDeletionProtection }}
   annotations:
     helm.sh/resource-policy: "keep"
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
