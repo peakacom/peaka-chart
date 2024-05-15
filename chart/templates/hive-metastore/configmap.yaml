@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+data:
+  metastore-site.xml: |
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+          <name>metastore.thrift.uris</name>
+          <value>thrift://{{ .Release.Name }}-service:9083</value>
+          <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+      </property>
+      <property>
+          <name>metastore.task.threads.always</name>
+          <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+      </property>
+      <property>
+          <name>metastore.expression.proxy</name>
+          <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+      </property>
+      <property>
+          <name>javax.jdo.option.ConnectionDriverName</name>
+          <value>com.mysql.cj.jdbc.Driver</value>
+      </property>
+
+      <property>
+          <name>javax.jdo.option.ConnectionURL</name>
+          <value>jdbc:mysql://{{ .Values.mariadb.serviceName }}:3306/metastore_db</value>
+      </property>
+
+      <property>
+          <name>javax.jdo.option.ConnectionUserName</name>
+          <value>{{ .Values.mariadb.username }}</value>
+      </property>
+
+      <property>
+          <name>javax.jdo.option.ConnectionPassword</name>
+          <value>{{ .Values.mariadb.password }}</value>
+      </property>
+
+      <property>
+          <name>fs.s3a.access.key</name>
+          <value>{{ .Values.minio.accessKey }} </value>
+      </property>
+      <property>
+          <name>fs.s3a.secret.key</name>
+          <value> {{ .Values.minio.secretKey }} </value>
+      </property>
+      <property>
+          <name>fs.s3a.endpoint</name>
+          <value>http://minio:9000</value>
+      </property>
+      <property>
+          <name>fs.s3a.path.style.access</name>
+          <value>true</value>
+      </property>
+    </configuration>
