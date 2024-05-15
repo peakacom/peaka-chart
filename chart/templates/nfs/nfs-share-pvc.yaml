@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "peaka.name" . }}-nfs-share
+  namespace: {{ include "peaka.namespace" . }}
+  {{- if  .Values.nfsShare.volumeDeletionProtection }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ include "peaka.name" . }}-nfs-share
+  resources:
+    requests:
+      storage: {{ .Values.nfsShare.size }}
