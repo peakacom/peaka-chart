@@ -127,10 +127,6 @@ nfsServer:
     size: 8Gi
     # keeps the nfs pvc on helm uninstalls
     volumeDeletionProtection: true
-    # define additional labels
-    labels: {}
-    # define additional annotations
-    annotations: {}
     # path to be used as the nfs share
     mountPath: /nfsshare
   deployment:
