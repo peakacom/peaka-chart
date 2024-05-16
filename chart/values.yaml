@@ -151,7 +151,6 @@ nfsShare:
 # thrift store
 hiveMetastore:
   enabled: true
-  nameOverride: ""
   image:
     repository: bitsondatadev/hive-metastore
     tag: latest
