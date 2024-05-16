@@ -55,3 +55,9 @@ hiveMetastore:
   # db type to be used as metastore. One of mysql or postgres
   metastoreType: mysql
   servicePort: 9083
+
+# s3 compatible object storage configuration. By default, Peaka uses MinIO.
+# for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
+minio:
+  # do not disable as Peaka is not yet tested with other S3 storage options other than MinIO.
+  enabled: true

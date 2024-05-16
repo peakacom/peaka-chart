@@ -67,3 +67,17 @@ Define the peaka.namespace template if set with global.namespace or .Release.Nam
 {{- define "peaka.namespace" -}}
   {{- default .Release.Namespace .Values.global.namespace -}}
 {{- end }}
+
+{{/*
+Define the peaka.minio.fullname template with .Release.Name and "minio"
+*/}}
+{{- define "peaka.minio.fullname" -}}
+{{- printf "%s-%s" .Release.Name "minio" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Set minio port
+*/}}
+{{- define "peaka.minio.port" }}
+{{- default 9000 .Values.minio.service.port }}
+{{- end }}

@@ -53,7 +53,7 @@ data:
       </property>
       <property>
           <name>fs.s3a.endpoint</name>
-          <value>http://minio:9000</value>
+          <value>http://{{ include "peaka.minio.fullname" . }}:{{- include "peaka.minio.port" }}</value>
       </property>
       <property>
           <name>fs.s3a.path.style.access</name>
