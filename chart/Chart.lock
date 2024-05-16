@@ -2,8 +2,8 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 15.3.2
-- name: prometheus
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 25.21.0
-digest: sha256:fd3d7da70720ca4e50ac75327e24caca15f99ad35fd3b83239606479beab40e4
-generated: "2024-05-14T18:45:36.248698+03:00"
+- name: minio
+  repository: https://charts.min.io/
+  version: 5.1.0
+digest: sha256:90008f0850e5d1b3f7b225f177dd36b112cf28124397d530256eeec89cc919b6
+generated: "2024-05-16T18:39:25.446596+03:00"
