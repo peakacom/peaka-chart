@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "peaka.name" . }}-nfs-server
+  name: {{ include "peaka.fullname" . }}-nfs-server
   namespace: {{ include "peaka.namespace" . }}
   {{- if  .Values.nfsServer.persistentVolume.volumeDeletionProtection }}
   annotations:

@@ -2,17 +2,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "peaka.name" . }}-nfs-server
+  name: {{ include "peaka.fullname" . }}-nfs-server
   namespace: {{ include "peaka.namespace" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      role: {{ include "peaka.name" . }}-nfs-server
+      role: {{ include "peaka.fullname" . }}-nfs-server
   template:
     metadata:
       labels:
-        role: {{ include "peaka.name" . }}-nfs-server
+        role: {{ include "peaka.fullname" . }}-nfs-server
     spec:
       restartPolicy: Always
       containers:
@@ -36,5 +36,5 @@ spec:
       volumes:
         - name: nfs-volume
           persistentVolumeClaim:
-            claimName: {{ include "peaka.name" . }}-nfs-server
+            claimName: {{ include "peaka.fullname" . }}-nfs-server
 {{- end -}}
