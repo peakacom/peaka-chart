@@ -147,3 +147,16 @@ nfsShare:
   persistentVolumeReclaimPolicy: Retain
   # path that is exported by the NFS server
   path: "/"
+
+# thrift store
+hiveMetastore:
+  enabled: true
+  nameOverride: ""
+  image:
+    repository: bitsondatadev/hive-metastore
+    tag: latest
+    pullPolicy: IfNotPresent
+  hadoopHeapSize: "10240"
+  # db type to be used as metastore. One of mysql or postgres
+  metastoreType: mysql
+  servicePort: 9083

@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-config
+  name: {{ include "peaka.name" . }}-hive-metastore
   labels:
-    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/name: {{ include "peaka.name" . }}-hive-metastore
+    app.kubernetes.io/component: {{ include "peaka.name" . }}-hive-metastore
 data:
   metastore-site.xml: |
     <?xml version="1.0"?>
@@ -11,7 +12,7 @@ data:
     <configuration>
       <property>
           <name>metastore.thrift.uris</name>
-          <value>thrift://{{ .Release.Name }}-service:9083</value>
+          <value>thrift://{{ include "peaka.name" . }}-hive-metastore:{{ .Values.hiveMetastore.servicePort }}</value>
           <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
       </property>
       <property>
