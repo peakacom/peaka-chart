@@ -5,8 +5,6 @@ metadata:
   namespace: {{ include "peaka.namespace" . }}
   labels:
     app.kubernetes.io/name: {{ include "peaka.name" . }}-hive-metastore
-    app.kubernetes.io/component: {{ include "peaka.name" . }}-hive-metastore
-    app.kubernetes.io/instance: {{ include "peaka.name" . }}-hive-metastore
 spec:
   ports:
     - name: thrift
@@ -14,5 +12,3 @@ spec:
       protocol: TCP
   selector:
     app.kubernetes.io/name: {{ include "peaka.name" . }}-hive-metastore
-    app.kubernetes.io/component: {{ include "peaka.name" . }}-hive-metastore
-    app.kubernetes.io/instance: {{ include "peaka.name" . }}-hive-metastore

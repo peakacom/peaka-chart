@@ -5,7 +5,6 @@ metadata:
   namespace: {{ include "peaka.namespace" . }}
   labels:
     app.kubernetes.io/name: {{ include "peaka.name" . }}-hive-metastore
-    app.kubernetes.io/component: {{ include "peaka.name" . }}-hive-metastore
 data:
   metastore-site.xml: |
     <?xml version="1.0"?>
