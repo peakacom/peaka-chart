@@ -5,10 +5,6 @@ fullnameOverride: ""
 global:
   namespace: ""
 
-# prometheus monitoring
-metrics:
-  enabled: false
-
 # disable this if you want to use an external postgresql server
 postgresql:
   enabled: false
