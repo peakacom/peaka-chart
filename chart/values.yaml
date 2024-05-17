@@ -51,6 +51,10 @@ hiveMetastore:
   # db type to be used as metastore. One of mysql or postgres
   metastoreType: mysql
   servicePort: 9083
+  # by default, hive metastore connects to minio using default minio user. If you want to change this,
+  # create a user by entering accessKey, secretKey and policy in minio.users, then change below two values accordingly.
+  minioAccessKey: ""
+  minioSecretKey: ""
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio

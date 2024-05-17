@@ -81,3 +81,17 @@ Set minio port
 {{- define "peaka.minio.port" }}
 {{- default 9000 .Values.minio.service.port }}
 {{- end }}
+
+{{/*
+Set minio accessKey
+*/}}
+{{- define "peaka.minio.accessKey" }}
+{{- default "console" (quote .Values.hiveMetastore.minioAccessKey) }}
+{{- end }}
+
+{{/*
+Set minio secretKey
+*/}}
+{{- define "peaka.minio.secretKey" }}
+{{- default "console123" (quote .Values.hiveMetastore.minioSecretKey) }}
+{{- end }}

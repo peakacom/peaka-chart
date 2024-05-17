@@ -45,15 +45,15 @@ data:
 
       <property>
           <name>fs.s3a.access.key</name>
-          <value>{{ .Values.minio.accessKey }} </value>
+          <value>{{ include "peaka.minio.accessKey" . }} </value>
       </property>
       <property>
           <name>fs.s3a.secret.key</name>
-          <value> {{ .Values.minio.secretKey }} </value>
+          <value> {{ include "peaka.minio.secretKey" . }} </value>
       </property>
       <property>
           <name>fs.s3a.endpoint</name>
-          <value>http://{{ include "peaka.minio.fullname" . }}:{{- include "peaka.minio.port" }}</value>
+          <value>http://{{ include "peaka.minio.fullname" . }}:{{- include "peaka.minio.port" . }}</value>
       </property>
       <property>
           <name>fs.s3a.path.style.access</name>
