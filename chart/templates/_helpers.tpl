@@ -95,3 +95,38 @@ Set minio secretKey
 {{- define "peaka.minio.secretKey" }}
 {{- default "console123" (quote .Values.hiveMetastore.minioSecretKey) }}
 {{- end }}
+
+{{/*
+Define the peaka.mariadb.fullname template with .Release.Name and "minio"
+*/}}
+{{- define "peaka.mariadb.fullname" -}}
+{{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Set mariadb user
+*/}}
+{{- define "peaka.mariadb.user" }}
+{{- default "peaka" (quote .Values.mariadb.db.user) }}
+{{- end }}
+
+{{/*
+Set mariadb password
+*/}}
+{{- define "peaka.mariadb.password" }}
+{{- default "peaka" (quote .Values.mariadb.db.password) }}
+{{- end }}
+
+{{/*
+Set mariadb db name
+*/}}
+{{- define "peaka.mariadb.dbName" }}
+{{- default "metastore_db" (quote .Values.mariadb.db.name) }}
+{{- end }}
+
+{{/*
+Set mariadb port
+*/}}
+{{- define "peaka.mariadb.port" }}
+{{- default 3306 (quote .Values.mariadb.service.ports.mysql) }}
+{{- end }}
