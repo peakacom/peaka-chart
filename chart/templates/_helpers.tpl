@@ -62,13 +62,6 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Define the peaka.namespace template if set with global.namespace or .Release.Namespace is set
-*/}}
-{{- define "peaka.namespace" -}}
-  {{- default .Release.Namespace .Values.global.namespace -}}
-{{- end }}
-
-{{/*
 Define the peaka.minio.fullname template with .Release.Name and "minio"
 */}}
 {{- define "peaka.minio.fullname" -}}

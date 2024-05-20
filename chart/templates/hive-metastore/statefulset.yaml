@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "peaka.fullname" . }}-hive-metastore
-  namespace: {{ include "peaka.namespace" . }}
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-hive-metastore
 spec:
