@@ -95,3 +95,8 @@ mongodb:
   architecture: standalone
   useStatefulSet: true
 
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  architecture: standalone
