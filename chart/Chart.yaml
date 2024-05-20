@@ -24,7 +24,7 @@ version: 0.1.0
 appVersion: "0.1.0"
 dependencies:
   - name: postgresql
-    version: ~12.11.1
+    version: ~15.3.0
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
   - name: minio
