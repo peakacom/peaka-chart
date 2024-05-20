@@ -57,7 +57,6 @@ hiveMetastore:
 minio:
   # do not disable as Peaka is not yet tested with other S3 storage options other than MinIO.
   enabled: true
-  nameOverride: "peaka-minio"
   mode: standalone
   replicas: 1
 
