@@ -3,7 +3,18 @@ fullnameOverride: ""
 
 # disable this if you want to use an external postgresql server
 postgresql:
-  enabled: false
+  enabled: true
+  volumePermissions:
+    enabled: true
+  auth:
+    postgresPassword: postgres
+    username: "code2db"
+    password: "code2db"
+    database: "code2db"
+  primary:
+    extendedConfiguration: |-
+      idle_session_timeout = 600000
+      max_connections = 1000
 
 # disable this if you want to use an external nfs server
 nfsServer:
@@ -83,3 +94,4 @@ mongodb:
   enabled: true
   architecture: standalone
   useStatefulSet: true
+
