@@ -13,5 +13,5 @@ spec:
     - ReadWriteMany
   nfs:
     path: {{ .Values.nfsShare.path | quote }}
-    server: {{ .Values.nfsServer.nfsServerAddress | default (printf "%s-nfs-server.%s.svc.cluster.local" (include "peaka.fullname" . ) (include "peaka.namespace" . )) }}
+    server: {{ .Values.nfsServer.nfsServerAddress | default (printf "%s-nfs-server.%s.svc.cluster.local" (include "peaka.fullname" . ) .Release.Namespace ) }}
   persistentVolumeReclaimPolicy: {{ .Values.nfsShare.persistentVolumeReclaimPolicy }}
