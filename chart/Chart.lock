@@ -1,12 +1,15 @@
 dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 15.3.2
+  version: 15.3.3
 - name: minio
   repository: https://charts.min.io/
   version: 5.1.0
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 8.2.9
-digest: sha256:0daf7ce9b46a3d7dd5c60a8fbcdb801fe31d72638399af1d12a52efc6248c7e2
-generated: "2024-05-17T16:39:01.301053+03:00"
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 22.0.3
+digest: sha256:a13caf553a3fc538d1f079af89e12d682a35713df1da5aea5e5b296ed8574ccf
+generated: "2024-05-20T11:53:55.823682+03:00"

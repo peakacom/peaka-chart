@@ -55,7 +55,7 @@ hiveMetastore:
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
 minio:
-  # do not disable as Peaka is not yet tested with other S3 storage options other than MinIO.
+  # do not disable as Peaka is not yet tested with other S3 storage options.
   enabled: true
   mode: standalone
   replicas: 1
@@ -67,3 +67,13 @@ mariadb:
     user: peaka
     password: peaka
     name: metastore_db
+
+kafka:
+  # do not disable as Peaka is not yet tested with other MQ options.
+  enabled: true
+  numPartitions: 20
+  deleteTopicEnable: true
+  maxMessageBytes: "50000000"
+  logRetentionHours: 12
+  volumePermissions:
+    enabled: true
