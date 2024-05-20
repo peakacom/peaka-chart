@@ -77,3 +77,9 @@ kafka:
   logRetentionHours: 12
   volumePermissions:
     enabled: true
+
+mongodb:
+  # do not disable as Peaka requires a MongoDB server to be present in order to operate correctly.
+  enabled: true
+  architecture: standalone
+  useStatefulSet: true
