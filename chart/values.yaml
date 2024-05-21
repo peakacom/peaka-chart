@@ -7,7 +7,6 @@ postgresql:
   volumePermissions:
     enabled: true
   auth:
-    postgresPassword: postgres
     username: "code2db"
     password: "code2db"
     database: "code2db"
@@ -100,3 +99,16 @@ redis:
   auth:
     enabled: false
   architecture: standalone
+
+postgresqlBigtable:
+  enabled: true
+  volumePermissions:
+    enabled: true
+  auth:
+    username: "code2db"
+    password: "code2db"
+    database: "code2db"
+  primary:
+    extendedConfiguration: |-
+      idle_session_timeout = 600000
+      max_connections = 1000

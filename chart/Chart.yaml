@@ -48,3 +48,8 @@ dependencies:
     version: ~17.0.2
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
+  - name: postgresql
+    alias: postgresqlBigtable
+    version: ~12.9.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresqlBigtable.enabled

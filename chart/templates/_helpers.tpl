@@ -90,7 +90,7 @@ Set minio secretKey
 {{- end }}
 
 {{/*
-Define the peaka.mariadb.fullname template with .Release.Name and "minio"
+Define the peaka.mariadb.fullname template with .Release.Name and "mariadb"
 */}}
 {{- define "peaka.mariadb.fullname" -}}
 {{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
@@ -123,3 +123,31 @@ Set mariadb port
 {{- define "peaka.mariadb.port" }}
 {{- default 3306 (quote .Values.mariadb.service.ports.mysql) }}
 {{- end }}
+
+{{/*
+Define the peaka.kafka.fullname template with .Release.Name and "kafka"
+*/}}
+{{- define "peaka.kafka.fullname" -}}
+{{- printf "%s-%s" .Release.Name "kafka" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Define the peaka.mongodb.fullname template with .Release.Name and "mongodb"
+*/}}
+{{- define "peaka.mongodb.fullname" -}}
+{{- printf "%s-%s" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Define the peaka.redis.fullname template with .Release.Name and "redis"
+*/}}
+{{- define "peaka.redis.fullname" -}}
+{{- printf "%s-%s" .Release.Name "redis" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
+*/}}
+{{- define "peaka.bigtable.fullname" -}}
+{{- printf "%s-%s" .Release.Name "bigtable" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
