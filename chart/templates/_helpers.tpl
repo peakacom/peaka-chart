@@ -132,6 +132,13 @@ Define the peaka.kafka.fullname template with .Release.Name and "kafka"
 {{- end -}}
 
 {{/*
+Set kafka port
+*/}}
+{{- define "peaka.kafka.port" }}
+{{- default 9092 (quote .Values.kafka.service.ports.client) }}
+{{- end }}
+
+{{/*
 Define the peaka.mongodb.fullname template with .Release.Name and "mongodb"
 */}}
 {{- define "peaka.mongodb.fullname" -}}
@@ -150,4 +157,41 @@ Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
 */}}
 {{- define "peaka.bigtable.fullname" -}}
 {{- printf "%s-%s" .Release.Name "bigtable" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Define the peaka.kafka-connect.fullname template with .Release.Name and "kafka-connect"
+*/}}
+{{- define "peaka.kafka-connect.fullname" -}}
+{{- printf "%s-%s" .Release.Name "kafka-connect" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified kafka headless name.
+*/}}
+{{- define "peaka.kafka-connect.kafka-headless.fullname" -}}
+{{- $name := "kafka-headless" -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Set peaka.kafka-connect.groupId to Release Name
+*/}}
+{{- define "peaka.kafka-connect.groupId" -}}
+{{- .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified schema registry name for kafka connect.
+*/}}
+{{- define "peaka.kafka-connect.cp-schema-registry.fullname" -}}
+{{- printf "%s-%s" .Release.Name "kafka-connect-schema-registry" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "peaka.kafka-connect.cp-schema-registry.service-name" -}}
+{{- if (index .Values "kafkaConnect.cp-schema-registry" "url") -}}
+{{- printf "%s" (index .Values "kafkaConnect.cp-schema-registry" "url") -}}
+{{- else -}}
+{{- printf "http://%s:8081" (include "peaka.kafka-connect.cp-schema-registry.fullname" .) -}}
+{{- end -}}
 {{- end -}}
