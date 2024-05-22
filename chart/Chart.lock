@@ -1,24 +1,24 @@
 dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 12.11.2
+  version: 13.4.4
 - name: minio
   repository: https://charts.min.io/
   version: 5.1.0
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 8.2.9
+  version: 11.2.3
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
-  version: 22.0.3
+  version: 26.8.5
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
-  version: 13.16.4
+  version: 14.8.0
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 17.0.11
+  version: 18.11.1
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 12.9.0
-digest: sha256:c488a055f721a458a23f6e9fe47b945673e0d558ce2140035ca4b3a4d6969de7
-generated: "2024-05-21T17:27:13.942095+03:00"
+  version: 13.4.4
+digest: sha256:a7b50a86eb8c2bc6b6676612b53d2158b8280d7f344cc17e63c27e191b7433eb
+generated: "2024-05-22T17:44:17.437202+03:00"

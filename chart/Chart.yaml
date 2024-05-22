@@ -24,7 +24,7 @@ version: 0.1.0
 appVersion: "0.1.0"
 dependencies:
   - name: postgresql
-    version: ~12.11.1
+    version: 13.4.4
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
   - name: minio
@@ -33,23 +33,23 @@ dependencies:
     condition: minio.enabled
   - name: mariadb-galera
     alias: mariadb
-    version: ~8.2.6
+    version: 11.2.3
     repository: https://charts.bitnami.com/bitnami
     condition: mariadb.enabled
   - name: kafka
-    version: ~22.0.0
+    version: 26.8.5
     repository: https://charts.bitnami.com/bitnami
     condition: kafka.enabled
   - name: mongodb
-    version: ~13.16.0
+    version: 14.8.0
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
   - name: redis
-    version: ~17.0.2
+    version: 18.11.1
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: postgresql
     alias: postgresqlBigtable
-    version: ~12.9.0
+    version: 13.4.4
     repository: https://charts.bitnami.com/bitnami
     condition: postgresqlBigtable.enabled
