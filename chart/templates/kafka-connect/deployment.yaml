@@ -36,7 +36,7 @@ spec:
           imagePullPolicy: {{ .Values.kafkaConnect.imagePullPolicy | quote }}
           ports:
             - name: kafka-connect
-              containerPort: {{ .Values.kafkaConnect.servicePort}}
+              containerPort: {{ .Values.kafkaConnect.servicePort }}
               protocol: TCP
           resources:
 {{ toYaml .Values.kafkaConnect.resources | indent 12 }}
@@ -46,7 +46,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: CONNECT_BOOTSTRAP_SERVERS
-              value: "{{ include "peaka.kafka.fullname" . }}:{{ include "peaka.kafka.port" . }}"
+              value: {{ printf "%s:%s" (include "peaka.kafka.fullname" . ) (include "peaka.kafka.port" . ) }}
             - name: CONNECT_GROUP_ID
               value: {{ template "peaka.kafka-connect.groupId" . }}
             - name: CONNECT_CONFIG_STORAGE_TOPIC
