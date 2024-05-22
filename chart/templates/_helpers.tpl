@@ -189,8 +189,8 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- end -}}
 
 {{- define "peaka.kafka-connect.cp-schema-registry.service-name" -}}
-{{- if (index .Values "kafkaConnect.cp-schema-registry" "url") -}}
-{{- printf "%s" (index .Values "kafkaConnect.cp-schema-registry" "url") -}}
+{{- if (index .Values "kafkaConnect" "cp-schema-registry" "url") -}}
+{{- printf "%s" (index .Values "kafkaConnect" "cp-schema-registry" "url") -}}
 {{- else -}}
 {{- printf "http://%s:8081" (include "peaka.kafka-connect.cp-schema-registry.fullname" .) -}}
 {{- end -}}
