@@ -243,3 +243,84 @@ pgvector:
   port: 5432
   replicaCount: 1
   extraEnvVars: []
+
+# peaka uses trino for sql engine
+trino:
+  enabled: true
+  fullnameOverride: ""
+  nameOverride: ""
+  workerNameOverride: ""
+  additionalConfigProperties:
+    #    - retry-policy=QUERY
+    - catalog.management=DYNAMIC
+  tcpRouteEnabled: true
+  coordinator:
+    config:
+      query:
+        maxMemoryPerNode: "9GB"
+        maxLength: "1000000000"     # a billion
+    jvm:
+      maxHeapSize: "25G"
+    additionalJVMConfig:
+      - -Dfile.encoding=UTF-8
+      - --add-opens=java.base/java.nio=ALL-UNNAMED
+    resources:
+      requests:
+        cpu: 1
+        memory: 8Gi
+      limits:
+        cpu: 4
+        memory: 32Gi
+    nodeSelector:
+      app: "trino"
+    tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "trino"
+        effect: "NoSchedule"
+  worker:
+    config:
+      query:
+        maxMemoryPerNode: "15GB"
+        maxLength: "1000000000"     # a billion
+    jvm:
+      maxHeapSize: "50G"
+    additionalJVMConfig:
+      - -Dfile.encoding=UTF-8
+      - --add-opens=java.base/java.nio=ALL-UNNAMED
+    resources:
+      requests:
+        cpu: 1
+        memory: 8Gi
+      limits:
+        cpu: 4
+        memory: 64Gi
+    nodeSelector:
+      app : "trino"
+    tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "trino"
+        effect: "NoSchedule"
+  db:
+    address: "jdbc:postgresql://postgresql.prod-env.svc.cluster.local:5432/code2db"
+    username: "code2db"
+    password: "code2db"
+  bigtableBuffer:
+    address: "jdbc:postgresql://postgresql-bigtable.prod-env.svc.cluster.local:5432/code2db"
+    username: "code2db"
+    password: "code2db"
+  server:
+    autoscaling:
+      enabled: false
+      targetCPUUtilizationPercentage: 80
+      maxReplicas: 3
+    config:
+      query:
+        maxMemory: "20GB"
+    workers: 1
+  nodePort: 32181
+  catalog:
+    iceberg:
+      s3accessKey: "minio"
+      s3secretKey: "minio1453"

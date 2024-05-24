@@ -1,0 +1,14 @@
+{{- if .Values.trino.server.autoscaling.enabled -}}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ template "peaka.trino.worker" . }}
+spec:
+  maxReplicas: {{ .Values.trino.server.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.trino.server.workers }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "peaka.trino.worker" . }}
+  targetCPUUtilizationPercentage: {{ .Values.trino.server.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
