@@ -1,0 +1,12 @@
+{{- if .Values.pgvector.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "peaka.fullname" . }}-pgvector
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+data:
+  POSTGRES_DB: "{{ .Values.pgvector.db.name }}"
+  POSTGRES_USER: "{{ .Values.pgvector.db.user }}"
+  POSTGRES_PASSWORD: "{{ .Values.pgvector.db.password }}"
+{{- end }}

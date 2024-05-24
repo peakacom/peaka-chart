@@ -223,3 +223,23 @@ kafkaConnect:
   # initialDelaySeconds: 30
   # periodSeconds: 5
   # failureThreshold: 10
+
+# vector db for postgresql
+pgvector:
+  enabled: true
+  db:
+    name: vectordb
+    schema: studio
+    user: vectordb
+    password: vectordb
+  persistence:
+    size: 8Gi
+  image:
+    repository: "ankane/pgvector"
+    version: v0.5.1
+  options:
+    maxConnections: 1000
+    sharedBuffers: 1024MB
+  port: 5432
+  replicaCount: 1
+  extraEnvVars: []

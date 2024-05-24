@@ -1,0 +1,17 @@
+{{- if .Values.pgvector.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.fullname" . }}-pgvector
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+spec:
+  ports:
+    - port: {{ .Values.pgvector.port }}
+      protocol: TCP
+      targetPort: pgvector
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+  sessionAffinity: None
+  type: ClusterIP
+{{- end }}

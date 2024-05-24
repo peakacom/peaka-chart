@@ -1,0 +1,79 @@
+{{- if .Values.pgvector.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "peaka.fullname" . }}-pgvector
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+spec:
+  replicas: {{ .Values.pgvector.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+  serviceName: {{ include "peaka.fullname" . }}-pgvector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+    spec:
+      containers:
+        - name: pgvector
+          image: "{{ .Values.pgvector.image.repository }}:{{ .Values.pgvector.image.version }}"
+          args:
+          - -c
+          - max_connections={{ .Values.pgvector.options.maxConnections }}
+          - -c
+          - shared_buffers={{ .Values.pgvector.options.sharedBuffers }}
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/postgres
+            {{- if .Values.pgvector.extraEnvVars }}
+              {{- toYaml .Values.pgvector.extraEnvVars | nindent 12 }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-pgvector
+          ports:
+            - containerPort: {{ .Values.pgvector.port }}
+              name: pgvector
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    sleep 30
+                    psql -U {{ .Values.pgvector.db.user }} -c "CREATE SCHEMA IF NOT EXISTS {{ .Values.pgvector.db.schema }} \
+                        AUTHORIZATION {{ .Values.pgvector.db.user }};"
+          readinessProbe:
+            exec:
+              command:
+                - psql
+                - -w
+                - -U
+                - {{ .Values.pgvector.db.user }}
+                - -d
+                - {{ .Values.pgvector.db.name }}
+                - -c
+                - 'SELECT 1'
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pgvector
+              subPath: postgres
+              readOnly: false
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ include "peaka.fullname" . }}-pgvector
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage:  {{ .Values.pgvector.persistence.size }}
+{{- end }}
