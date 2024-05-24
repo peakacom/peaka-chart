@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "peaka.fullname" . }}-hive-metastore
+  name: {{ template "peaka.hive.name" . }}
   labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-hive-metastore
+    app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-hive-metastore
-  serviceName: {{ include "peaka.fullname" . }}-hive-metastore
+      app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
+  serviceName: {{ template "peaka.hive.name" . }}
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-hive-metastore
+        app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
     spec:
       containers:
         - name: metastore
@@ -32,4 +32,4 @@ spec:
       volumes:
         - name: hive-config
           configMap:
-            name: {{ include "peaka.fullname" . }}-hive-metastore
+            name: {{ template "peaka.hive.name" . }}

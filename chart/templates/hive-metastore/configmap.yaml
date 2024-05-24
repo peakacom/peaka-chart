@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "peaka.fullname" . }}-hive-metastore
+  name: {{ template "peaka.hive.name" . }}
   labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-hive-metastore
+    app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
 data:
   metastore-site.xml: |
     <?xml version="1.0"?>
