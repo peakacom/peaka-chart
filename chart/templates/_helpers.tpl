@@ -61,6 +61,30 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{- define "peaka.postgresql.fullname" -}}
+{{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.port" -}}
+{{- default 5432 .Values.postgresql.primary.service.ports.postgresql -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.user" -}}
+{{- .Values.postgresql.auth.username -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.database" -}}
+{{- .Values.postgresql.auth.database -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.password" -}}
+{{- .Values.postgresql.auth.password -}}
+{{- end -}}
+
+{{- define "peaka.hive.name" -}}
+{{ include "peaka.fullname" . }}-hive-metastore
+{{- end -}}
+
 {{/*
 Define the peaka.minio.fullname template with .Release.Name and "minio"
 */}}
@@ -159,6 +183,22 @@ Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
 {{- printf "%s-%s" .Release.Name "bigtable" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "peaka.bigtable.port" -}}
+{{- default 5432 .Values.postgresqlBigtable.primary.service.ports.postgresql -}}
+{{- end -}}
+
+{{- define "peaka.bigtable.user" -}}
+{{- .Values.postgresqlBigtable.auth.username -}}
+{{- end -}}
+
+{{- define "peaka.bigtable.database" -}}
+{{- .Values.postgresqlBigtable.auth.database -}}
+{{- end -}}
+
+{{- define "peaka.bigtable.password" -}}
+{{- .Values.postgresqlBigtable.auth.password -}}
+{{- end -}}
+
 {{/*
 Define the peaka.kafka-connect.fullname template with .Release.Name and "kafka-connect"
 */}}
@@ -194,4 +234,38 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- else -}}
 {{- printf "http://%s:8081" (include "peaka.kafka-connect.cp-schema-registry.fullname" .) -}}
 {{- end -}}
+{{- end -}}
+
+{{- define "peaka.trino.name" -}}
+{{- default .Chart.Name .Values.trino.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "peaka.trino.fullname" -}}
+{{- if .Values.trino.fullnameOverride }}
+{{- .Values.trino.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.trino.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "peaka.trino.catalog" -}}
+{{ template "peaka.trino.fullname" . }}-catalog
+{{- end -}}
+
+{{- define "peaka.trino.worker" -}}
+{{- if .Values.trino.workerNameOverride }}
+{{- .Values.trino.workerNameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}-trino-worker
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}-trino-worker
+{{- end }}
+{{- end }}
 {{- end -}}
