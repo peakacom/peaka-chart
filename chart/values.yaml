@@ -1,6 +1,8 @@
 nameOverride: ""
 fullnameOverride: ""
 
+imagePullSecrets: ""
+
 # disable this if you want to use an external postgresql server
 postgresql:
   enabled: true
@@ -261,6 +263,11 @@ trino:
   additionalCatalogs: {}
   tcpRouteEnabled: true
   accessControl: {}
+  image:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
+    pullPolicy: Always
+    tag: prod
+  initContainers: {}
   coordinator:
     config:
       query:
@@ -294,6 +301,23 @@ trino:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
     additionalConfigFiles: {}
+    additionalExposedPorts: {}
+    resources: {}
+    livenessProbe: {}
+      # initialDelaySeconds: 20
+      # periodSeconds: 10
+      # timeoutSeconds: 5
+      # failureThreshold: 6
+      # successThreshold: 1
+    readinessProbe: {}
+      # initialDelaySeconds: 20
+      # periodSeconds: 10
+      # timeoutSeconds: 5
+      # failureThreshold: 6
+      # successThreshold: 1
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
   server:
     exchangeManager:
       name: "filesystem"
@@ -326,3 +350,11 @@ trino:
   service:
     type: ClusterIP
     port: 8080
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+    # Annotations to add to the service account
+    annotations: {}

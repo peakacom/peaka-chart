@@ -1,0 +1,124 @@
+{{- if gt (int .Values.trino.server.workers) 0 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "peaka.trino.worker" . }}
+  labels:
+    app: {{ template "peaka.trino.name" . }}
+    chart: {{ template "peaka.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: worker
+spec:
+  strategy:
+    type: "Recreate"
+  replicas: {{ .Values.trino.server.workers }}
+  selector:
+    matchLabels:
+      app: {{ template "peaka.trino.name" . }}
+      release: {{ .Release.Name }}
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: {{ template "peaka.trino.name" . }}
+        release: {{ .Release.Name }}
+        component: worker
+    spec:
+      securityContext:
+        fsGroup: 1001
+      serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ template "peaka.trino.worker" . }}
+        - name: catalog-volume
+          configMap:
+            name: {{ template "peaka.trino.catalog" . }}
+        - name: workdir
+          emptyDir: {}
+      {{- if .Values.trino.initContainers.worker }}
+      initContainers:
+      {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
+      {{- end }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          image: "{{ .Values.trino.image.repository }}:{{ .Values.trino.image.tag}}"
+          imagePullPolicy: {{ .Values.trino.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: {{ .Values.trino.server.config.path }}/node.properties
+              name: config-volume
+              subPath: node.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/jvm.config
+              name: config-volume
+              subPath: jvm.config
+            - mountPath: {{ .Values.trino.server.config.path }}/config.properties
+              name: config-volume
+              subPath: config.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/exchange-manager.properties
+              name: config-volume
+              subPath: exchange-manager.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/log.properties
+              name: config-volume
+              subPath: log.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/catalog/cat_00000000_0000_0000_0000_000000000000.properties
+              name: catalog-volume
+              subPath: cat_00000000_0000_0000_0000_000000000000.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/catalog/cat_00000000_0000_0000_0000_000000000003.properties
+              name: catalog-volume
+              subPath: cat_00000000_0000_0000_0000_000000000003.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/catalog/iceberg.properties
+              name: catalog-volume
+              subPath: iceberg.properties
+            - mountPath: /home/trino/.CData
+              name: workdir
+          ports:
+            - name: http
+              containerPort: {{ .Values.trino.service.port }}
+              protocol: TCP
+          {{- range $key, $value := .Values.trino.worker.additionalExposedPorts }}
+            - name: {{ $value.name }}
+              containerPort: {{ $value.port }}
+              protocol: {{ $value.protocol }}
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - >
+                  curl -s localhost:8080/v1/info | grep "\"starting\":false"
+            initialDelaySeconds: {{ .Values.trino.worker.livenessProbe.initialDelaySeconds | default 20 }}
+            periodSeconds: {{ .Values.trino.worker.livenessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.trino.worker.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.trino.worker.livenessProbe.failureThreshold | default 6 }}
+            successThreshold: {{ .Values.trino.worker.livenessProbe.successThreshold | default 1 }}
+          readinessProbe:
+            exec:
+              command:
+              - "sh"
+              - "-c"
+              - >
+                curl -s localhost:8080/v1/info | grep "\"starting\":false"
+            initialDelaySeconds: {{ .Values.trino.worker.readinessProbe.initialDelaySeconds | default 20 }}
+            periodSeconds: {{ .Values.trino.worker.readinessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.trino.worker.readinessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.trino.worker.readinessProbe.failureThreshold | default 12 }}
+            successThreshold: {{ .Values.trino.worker.readinessProbe.successThreshold | default 1 }}
+          resources:
+            {{- toYaml .Values.trino.worker.resources | nindent 12 }}
+      {{- with .Values.trino.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.trino.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.trino.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

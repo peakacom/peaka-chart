@@ -286,3 +286,14 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the trino service account to use
+*/}}
+{{- define "peaka.trino.serviceAccountName" -}}
+{{- if .Values.trino.serviceAccount.create }}
+{{- default (include "peaka.trino.fullname" .) .Values.trino.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.trino.serviceAccount.name }}
+{{- end }}
+{{- end }}
