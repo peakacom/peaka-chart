@@ -240,21 +240,8 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- end -}}
 {{- end -}}
 
-{{- define "peaka.trino.name" -}}
-{{- default .Chart.Name .Values.trino.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
 {{- define "peaka.trino.fullname" -}}
-{{- if .Values.trino.fullnameOverride }}
-{{- .Values.trino.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.trino.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+{{- printf "%s-%s" .Release.Name "trino" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{- define "peaka.trino.catalog" -}}
@@ -262,29 +249,11 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- end -}}
 
 {{- define "peaka.trino.worker" -}}
-{{- if .Values.trino.workerNameOverride }}
-{{- .Values.trino.workerNameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}-trino-worker
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}-trino-worker
-{{- end }}
-{{- end }}
+{{- printf "%s-%s" .Release.Name "trino-worker" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "peaka.trino.coordinator" -}}
-{{- if .Values.trino.coordinatorNameOverride }}
-{{- .Values.trino.coordinatorNameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.trino.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}-trino-coordinator
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}-trino-coordinator
-{{- end }}
-{{- end }}
+{{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{/*
@@ -314,6 +283,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels for trino
 */}}
 {{- define "peaka.trino.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "peaka.trino.name" . }}
+app.kubernetes.io/name: {{ include "peaka.trino.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

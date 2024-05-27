@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ template "peaka.trino.coordinator" . }}
   labels:
-    app: {{ template "peaka.trino.name" . }}
+    app: {{ template "peaka.trino.fullname" . }}
     chart: {{ template "peaka.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -11,13 +11,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ template "peaka.trino.name" . }}
+      app: {{ template "peaka.trino.fullname" . }}
       release: {{ .Release.Name }}
       component: coordinator
   template:
     metadata:
       labels:
-        app: {{ template "peaka.trino.name" . }}
+        app: {{ template "peaka.trino.fullname" . }}
         release: {{ .Release.Name }}
         component: coordinator
     spec:

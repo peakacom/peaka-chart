@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ template "peaka.trino.catalog" . }}
   labels:
-    app: {{ template "peaka.trino.name" . }}
+    app: {{ template "peaka.trino.fullname" . }}
     chart: {{ template "peaka.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
