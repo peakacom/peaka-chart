@@ -107,14 +107,14 @@ Set minio port
 Set minio accessKey
 */}}
 {{- define "peaka.minio.accessKey" }}
-{{- default "console" (quote .Values.hiveMetastore.minioAccessKey) }}
+{{- default "console" .Values.hiveMetastore.minioAccessKey }}
 {{- end }}
 
 {{/*
 Set minio secretKey
 */}}
 {{- define "peaka.minio.secretKey" }}
-{{- default "console123" (quote .Values.hiveMetastore.minioSecretKey) }}
+{{- default "console123" .Values.hiveMetastore.minioSecretKey }}
 {{- end }}
 
 {{/*
