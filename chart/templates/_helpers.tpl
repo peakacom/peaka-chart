@@ -85,6 +85,10 @@ Create the name of the service account to use
 {{ include "peaka.fullname" . }}-hive-metastore
 {{- end -}}
 
+{{- define "peaka.hive.port" -}}
+{{ default 9083 .Values.hiveMetastore.servicePort }}
+{{- end -}}
+
 {{/*
 Define the peaka.minio.fullname template with .Release.Name and "minio"
 */}}
