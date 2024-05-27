@@ -297,3 +297,23 @@ Create the name of the trino service account to use
 {{- default "default" .Values.trino.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Common labels of trino
+*/}}
+{{- define "peaka.trino.labels" -}}
+helm.sh/chart: {{ include "peaka.chart" . }}
+{{ include "peaka.trino.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels for trino
+*/}}
+{{- define "peaka.trino.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "peaka.trino.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
