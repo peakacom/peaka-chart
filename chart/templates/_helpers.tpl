@@ -273,3 +273,16 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{- define "peaka.trino.coordinator" -}}
+{{- if .Values.trino.coordinatorNameOverride }}
+{{- .Values.trino.coordinatorNameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.trino.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}-trino-coordinator
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}-trino-coordinator
+{{- end }}
+{{- end }}
+{{- end }}

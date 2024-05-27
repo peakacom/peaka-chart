@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "peaka.trino.coordinator" . }}
+  labels:
+    app: {{ template "peaka.trino.name" . }}
+    chart: {{ template "peaka.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: coordinator
+data:
+  node.properties: |
+    node.environment={{ .Values.trino.server.node.environment }}
+    node.data-dir={{ .Values.trino.server.node.dataDir }}
+    plugin.dir={{ .Values.trino.server.node.pluginDir }}
+  {{- range $configValue := .Values.trino.additionalNodeProperties }}
+    {{ $configValue }}
+  {{- end }}
+
+  jvm.config: |
+    -server
+    -Xmx{{ .Values.trino.coordinator.jvm.maxHeapSize }}
+    -XX:+{{ .Values.trino.coordinator.jvm.gcMethod.type }}
+    -XX:G1HeapRegionSize={{ .Values.trino.coordinator.jvm.gcMethod.g1.heapRegionSize }}
+    -XX:+UseGCOverheadLimit
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+ExitOnOutOfMemoryError
+    -Djdk.attach.allowAttachSelf=true
+    -XX:ReservedCodeCacheSize=512M
+    -XX:PerMethodRecompilationCutoff=10000
+    -XX:PerBytecodeRecompilationCutoff=10000
+    -Djdk.nio.maxCachedBufferSize=2000000
+    -Dfile.encoding=UTF-8
+    -XX:+UnlockDiagnosticVMOptions
+    -XX:GCLockerRetryAllocationCount=32
+  {{- range $configValue := .Values.trino.coordinator.additionalJVMConfig }}
+    {{ $configValue }}
+  {{- end }}
+
+  config.properties: |
+    coordinator=true
+{{- if gt (int .Values.trino.server.workers) 0 }}
+    node-scheduler.include-coordinator=false
+{{- else }}
+    node-scheduler.include-coordinator=true
+{{- end }}
+    http-server.http.port={{ .Values.trino.service.port }}
+    query.max-memory={{ .Values.trino.server.config.query.maxMemory }}
+    query.max-memory-per-node={{ .Values.trino.coordinator.config.query.maxMemoryPerNode }}
+    query.max-length={{ .Values.trino.coordinator.config.query.maxLength }}
+{{- if .Values.trino.coordinator.config.memory.heapHeadroomPerNode }}
+    memory.heap-headroom-per-node={{ .Values.trino.coordinator.config.memory.heapHeadroomPerNode }}
+{{- end }}
+    discovery-server.enabled=true
+    discovery.uri=http://localhost:{{ .Values.trino.service.port }}
+{{- if .Values.trino.server.config.authenticationType }}
+    http-server.authentication.type={{ .Values.trino.server.config.authenticationType }}
+{{- end }}
+  {{- range $configValue := .Values.trino.additionalConfigProperties }}
+    {{ $configValue }}
+  {{- end }}
+  {{- if .Values.trino.server.config.https.enabled }}
+    http-server.https.enabled=true
+    http-server.https.port={{ .Values.trino.server.config.https.port }}
+    http-server.https.keystore.path={{ .Values.trino.server.config.https.keystore.path }}
+  {{- end }}
+  {{ .Values.trino.server.coordinatorExtraConfig | indent 4 }}
+
+{{- if .Values.trino.accessControl }}{{- if eq .Values.trino.accessControl.type "configmap" }}
+  access-control.properties: |
+    access-control.name=file
+    {{- if .Values.trino.accessControl.refreshPeriod }}
+    security.refresh-period={{ .Values.trino.accessControl.refreshPeriod }}
+    {{- end }}
+    security.config-file={{ .Values.trino.server.config.path }}/access-control/{{ .Values.trino.accessControl.configFile | default "rules.json" }}
+{{- end }}{{- end }}
+
+  exchange-manager.properties: |
+    exchange-manager.name={{ .Values.trino.server.exchangeManager.name }}
+  {{ if eq .Values.trino.server.exchangeManager.name "filesystem" }}
+    exchange.base-directory={{ .Values.trino.server.exchangeManager.baseDir }}
+  {{- end }}  
+  {{- range $configValue := .Values.trino.additionalExchangeManagerProperties }}
+    {{ $configValue }}
+  {{- end }}
+
+  log.properties: |
+    io.trino={{ .Values.trino.server.log.trino.level }}
+  {{- range $configValue := .Values.trino.additionalLogProperties }}
+    {{ $configValue }}
+  {{- end }}

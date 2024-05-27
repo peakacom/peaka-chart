@@ -250,34 +250,33 @@ trino:
   fullnameOverride: ""
   nameOverride: ""
   workerNameOverride: ""
+  coordinatorNameOverride: ""
   additionalConfigProperties:
     #    - retry-policy=QUERY
     - catalog.management=DYNAMIC
+  additionalNodeProperties: {}
+  additionalLogProperties: {}
+  additionalExchangeManagerProperties: {}
+  eventListenerProperties: {}
+  additionalCatalogs: {}
   tcpRouteEnabled: true
+  accessControl: {}
   coordinator:
     config:
       query:
         maxMemoryPerNode: "9GB"
         maxLength: "1000000000"     # a billion
+      memory:
+        heapHeadroomPerNode: ""
     jvm:
       maxHeapSize: "25G"
+      gcMethod:
+        type: "UseG1GC"
+        g1:
+          heapRegionSize: "32M"
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
-    resources:
-      requests:
-        cpu: 1
-        memory: 8Gi
-      limits:
-        cpu: 4
-        memory: 32Gi
-    nodeSelector:
-      app: "trino"
-    tolerations:
-      - key: "app"
-        operator: "Equal"
-        value: "trino"
-        effect: "NoSchedule"
   worker:
     config:
       query:
@@ -288,39 +287,34 @@ trino:
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
-    resources:
-      requests:
-        cpu: 1
-        memory: 8Gi
-      limits:
-        cpu: 4
-        memory: 64Gi
-    nodeSelector:
-      app : "trino"
-    tolerations:
-      - key: "app"
-        operator: "Equal"
-        value: "trino"
-        effect: "NoSchedule"
-  db:
-    address: "jdbc:postgresql://postgresql.prod-env.svc.cluster.local:5432/code2db"
-    username: "code2db"
-    password: "code2db"
-  bigtableBuffer:
-    address: "jdbc:postgresql://postgresql-bigtable.prod-env.svc.cluster.local:5432/code2db"
-    username: "code2db"
-    password: "code2db"
   server:
+    exchangeManager:
+      name: "filesystem"
+      baseDir: "/tmp/trino-local-file-system-exchange-manager"
     autoscaling:
       enabled: false
       targetCPUUtilizationPercentage: 80
       maxReplicas: 3
+    log:
+      trino:
+        level: INFO
     config:
+      path: /etc/trino
       query:
         maxMemory: "20GB"
+      authenticationType: ""
+      https:
+        enabled: false
+        port: 8443
+        keystore:
+          path: ""
     workers: 1
+    node:
+      environment: production
+      dataDir: /data/trino
+      pluginDir: /usr/lib/trino/plugin
+    coordinatorExtraConfig: ""
   nodePort: 32181
-  catalog:
-    iceberg:
-      s3accessKey: "minio"
-      s3secretKey: "minio1453"
+  service:
+    type: ClusterIP
+    port: 8080
