@@ -21,6 +21,6 @@ spec:
       protocol: {{ $value.protocol }}
     {{- end }}
   selector:
-    app: {{ template "peaka.trino.name" . }}
+    app: {{ template "peaka.trino.fullname" . }}
     release: {{ .Release.Name }}
     component: coordinator
