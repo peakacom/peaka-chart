@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.fullname" }}-be-ai-rest
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" }}-be-ai-rest
+    {{ include "peaka.labels" . }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.fullname" }}-be-ai-rest
+    {{ include "peaka.selectorLabels" . }}

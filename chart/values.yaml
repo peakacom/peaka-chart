@@ -393,3 +393,20 @@ trino:
     name: ""
     # Annotations to add to the service account
     annotations: {}
+
+aiRest:
+  enabled: true
+  replicaCount: 1
+  liquibase:
+    image:
+      repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-data-migrator"
+      tag: "prod"
+      imagePullPolicy: "IfNotPresent"
+  image:
+    repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-ai-rest"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  tolerations: {}
