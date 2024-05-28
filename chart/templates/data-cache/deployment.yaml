@@ -28,6 +28,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.dataCache.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         - name: common-flow-utilities-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataCache.sidecar.imageName }}:{{ .Values.dataCache.sidecar.imageTag }}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.sidecar.imagePullPolicy }}

@@ -425,6 +425,16 @@ authService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
 
 cloudGateway:
   enabled: true
@@ -463,6 +473,16 @@ dataCache:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 45
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
 
 dataRest:
   enabled: true
