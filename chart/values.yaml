@@ -410,3 +410,15 @@ aiRest:
   nodeSelector: {}
   affinity: {}
   tolerations: {}
+
+authService:
+  enabled: true
+  replicaCount: 1
+  terminationGracePeriodSeconds: 45
+  image:
+    repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-auth-service"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
