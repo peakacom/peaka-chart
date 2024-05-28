@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-collab-sharedb
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-collab-sharedb
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.collabSharedb.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-collab-sharedb
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-collab-sharedb
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: mongodb-readiness-check
+          image: debian:bullseye-slim
+          command:
+            - bash
+            - -c
+            - |
+              # install mongosh
+              apt update && apt install -y curl
+              curl https://downloads.mongodb.com/compass/mongosh-2.0.0-linux-x64.tgz --output /mongosh.tgz
+              tar -xvzf /mongosh.tgz
+              chmod +x /mongosh-2.0.0-linux-x64/bin/mongosh
+              ln -s /mongosh-2.0.0-linux-x64/bin/* /usr/local/bin/
+
+              CONN_STRING="{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+              echo "connecting to ${CONN_STRING} ..."
+
+              while ! mongosh --host "${CONN_STRING}" --quiet --eval "db.hello().isWritablePrimary || db.hello().secondary" | grep true ; do
+                  echo "mongodb is not yet ready"
+                  sleep 10s
+              done
+              echo "mongodb is ready to accept connections, starting sharedb..."
+      containers:
+        - name: collab-sharedb
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.collabSharedb.image.imagePullPolicy }}
+          ports:
+            - name: websocket
+              containerPort: 8080
+            - name: http
+              containerPort: 7070
+          {{- with .Values.collabSharedb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.collabSharedb.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.collabSharedb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.collabSharedb.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

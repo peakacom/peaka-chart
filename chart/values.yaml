@@ -436,3 +436,14 @@ cloudGateway:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+collabSharedb:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-collab-sharedb"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
