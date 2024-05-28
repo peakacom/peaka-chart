@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cloudGateway.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: cloud-gateway
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.cloudGateway.image.name }}:{{ .Values.cloudGateway.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.cloudGateway.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - mountPath: "/secrets/jwt/rsa"
+              name: jwt-rsa-keys
+              readOnly: true
+          {{- with .Values.cloudGateway.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.cloudGateway.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.cloudGateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cloudGateway.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: jwt-rsa-keys
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret

@@ -421,3 +421,14 @@ authService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+cloudGateway:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-cloud-gateway"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
