@@ -463,3 +463,19 @@ dataCache:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+dataRest:
+  enabled: true
+  replicaCount: 1
+  initContainer:
+    image:
+      name: "be-data-migrator"
+      tag: "prod"
+      imagePullPolicy: "IfNotPresent"
+  image:
+    name: "be-data-rest"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-data-rest
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-rest
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dataRest.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-rest
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-rest
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: liquibase
+        image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataRest.initContainer.image.name }}:{{ .Values.dataRest.initContainer.image.tag }}"
+        imagePullPolicy: {{ default "IfNotPresent" .Values.dataRest.initContainer.image.imagePullPolicy }}
+      containers:
+        - name: data-rest
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataRest.image.name }}:{{ .Values.dataRest.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.dataRest.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.dataRest.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dataRest.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.dataRest.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.dataRest.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dataRest.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
