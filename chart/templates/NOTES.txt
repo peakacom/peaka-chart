@@ -1,2 +1,4 @@
+Create a public-private key pair and set them to .Values.jwtRsaPublicKey and .Values.jwtRsaPrivateKey
+
 1. Access Peaka dashboard using these commands:
 2. Or, you can use Peaka API as such:

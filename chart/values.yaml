@@ -3,6 +3,10 @@ fullnameOverride: ""
 
 imagePullSecrets: ""
 
+# Create a public & private key pair and feed them to here
+jwtRsaPublicKey: ""
+jwtRsaPrivateKey: ""
+
 # disable this if you want to use an external postgresql server
 postgresql:
   enabled: true
