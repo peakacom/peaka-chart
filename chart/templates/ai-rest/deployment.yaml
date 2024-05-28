@@ -20,14 +20,14 @@ spec:
       initContainers:
         - name: liquibase
           image: "{{ .Values.aiRest.liquibase.image.repository }}:{{ .Values.aiRest.liquibase.image.tag }}"
-          imagePullPolicy: {{ .Values.aiRest.liquibase.image.imagePullPolicy }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.aiRest.liquibase.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
               value: "be-ai-rest"
       containers:
         - name: ai-rest
           image: "{{ .Values.aiRest.image.repository }}:{{ .Values.aiRest.image.tag}}"
-          imagePullPolicy: {{ .Values.aiRest.image.imagePullPolicy }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.aiRest.image.imagePullPolicy }}
           ports:
             - name: http
               containerPort: 3000
