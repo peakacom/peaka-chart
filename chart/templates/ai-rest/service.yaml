@@ -4,7 +4,7 @@ metadata:
   name: {{ include "peaka.fullname" . }}-be-ai-rest
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-ai-rest
-    {{ include "peaka.labels" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -14,4 +14,4 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-ai-rest
-    {{ include "peaka.selectorLabels" . }}
+    {{- include "peaka.selectorLabels" . | nindent 4 }}
