@@ -447,3 +447,19 @@ collabSharedb:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+dataCache:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-data-cache"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  sidecar:
+    imageName: "be-common-flow-utilities-service"
+    imageTag: "prod"
+    imagePullPolicy: "IfNotPresent"
+    resources: {}
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
