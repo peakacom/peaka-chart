@@ -26,7 +26,7 @@ spec:
               value: "be-ai-rest"
       containers:
         - name: ai-rest
-          image: "{{ .Values.aiRest.image.repository }}:{{ .Values.aiRest.image.tag}}"
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.aiRest.image.name }}:{{ .Values.aiRest.image.tag}}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.aiRest.image.imagePullPolicy }}
           ports:
             - name: http

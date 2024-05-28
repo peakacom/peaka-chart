@@ -61,6 +61,13 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{/*
+Set image registry for peaka images
+*/}}
+{{- define "peaka.image.registry" -}}
+europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
+{{- end -}}
+
 {{- define "peaka.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

@@ -264,8 +264,8 @@ trino:
   tcpRouteEnabled: true
   accessControl: {}
   image:
-    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
-    pullPolicy: Always
+    name: trino
+    pullPolicy: IfNotPresent
     tag: prod
   initContainers: {}
   auth: {}
@@ -399,11 +399,11 @@ aiRest:
   replicaCount: 1
   liquibase:
     image:
-      repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-data-migrator"
+      name: "be-data-migrator"
       tag: "prod"
       imagePullPolicy: "IfNotPresent"
   image:
-    repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-ai-rest"
+    name: "be-ai-rest"
     tag: "prod"
     imagePullPolicy: "IfNotPresent"
   resources: {}
@@ -415,7 +415,7 @@ authService:
   enabled: true
   replicaCount: 1
   image:
-    repository: "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-auth-service"
+    name: "be-auth-service"
     tag: "prod"
     imagePullPolicy: "IfNotPresent"
   resources: {}
