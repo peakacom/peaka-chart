@@ -401,7 +401,7 @@ trino:
 aiRest:
   enabled: true
   replicaCount: 1
-  liquibase:
+  initContainer:
     image:
       name: "be-data-migrator"
       tag: "prod"
