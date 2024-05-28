@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-cache
-        {{- include "peaka.labels" . | nindent 4 }}
+        {{- include "peaka.labels" . | nindent 8 }}
     spec:
       containers:
         - name: data-cache
