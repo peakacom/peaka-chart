@@ -18,9 +18,12 @@ spec:
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
       initContainers:
-      - name: liquibase
-        image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataRest.initContainer.image.name }}:{{ .Values.dataRest.initContainer.image.tag }}"
-        imagePullPolicy: {{ default "IfNotPresent" .Values.dataRest.initContainer.image.imagePullPolicy }}
+        - name: liquibase
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataRest.initContainer.image.name }}:{{ .Values.dataRest.initContainer.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.dataRest.initContainer.image.imagePullPolicy }}
+          env:
+            - name: SERVICE_NAME
+              value: "be-data-rest"
       containers:
         - name: data-rest
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataRest.image.name }}:{{ .Values.dataRest.image.tag }}"
