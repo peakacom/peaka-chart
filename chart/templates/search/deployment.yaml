@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: search-service
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.searchService.image.name }}:{{ .Values.searchService.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.searchService.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+          {{- with .Values.searchService.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.searchService.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.searchService.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.searchService.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.searchService.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.searchService.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
