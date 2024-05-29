@@ -32,6 +32,9 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- if .Values.monitoringService.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.monitoringService.terminationGracePeriodSeconds }}
+      {{- end }}
       {{- with .Values.monitoringService.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
