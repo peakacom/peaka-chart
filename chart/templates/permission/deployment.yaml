@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-permission-service
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-permission-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.permissionService.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-permission-service
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-permission-service
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: permission-service
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.permissionService.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - mountPath: "/secrets/jwt/rsa"
+              name: jwt-rsa-secret
+              readOnly: true
+            - mountPath: "/metadata-nfs"
+              name: metadata-nfs
+              readOnly: false
+              subPath: "metadata"
+          {{- with .Values.permissionService.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.permissionService.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: jwt-rsa-secret
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
+        - name: metadata-nfs
+          persistentVolumeClaim:
+            claimName: {{ include "peaka.fullname" . }}-nfs-share
+      {{- if .Values.permissionService.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.permissionService.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.permissionService.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.permissionService.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -585,3 +585,24 @@ monitoringService:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+
+permissionService:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-permission-service"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
