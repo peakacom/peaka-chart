@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-metadata-service
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-metadata-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.metadataService.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-metadata-service
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-metadata-service
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: metadata-service
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.metadataService.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - mountPath: "/metadata-nfs"
+              name: metadata-nfs
+              readOnly: false
+              subPath: "metadata"
+          {{- with .Values.metadataService.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.metadataService.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: metadata-nfs
+          persistentVolumeClaim:
+            claimName: {{ include "peaka.fullname" . }}-nfs-share
+      {{- if .Values.metadataService.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.metadataService.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.metadataService.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.metadataService.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
