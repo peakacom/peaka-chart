@@ -627,3 +627,29 @@ runtimeApi:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+
+scheduledFlowRunner:
+  enabled: true
+  replicaCount: 1
+  initContainer:
+    image:
+      name: "be-data-migrator"
+      tag: "prod"
+      imagePullPolicy: "IfNotPresent"
+  image:
+    name: "be-scheduled-flow-runner"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5

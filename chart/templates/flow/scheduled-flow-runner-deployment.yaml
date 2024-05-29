@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-scheduled-flow-runner
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-scheduled-flow-runner
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.scheduledFlowRunner.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-scheduled-flow-runner
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-scheduled-flow-runner
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: liquibase
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.scheduledFlowRunner.initContainer.image.name }}:{{ .Values.scheduledFlowRunner.initContainer.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.scheduledFlowRunner.initContainer.image.imagePullPolicy }}
+          env:
+            - name: SERVICE_NAME
+              value: "be-scheduled-flow-runner"
+      containers:
+        - name: scheduled-flow-runner
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.scheduledFlowRunner.image.name }}:{{ .Values.scheduledFlowRunner.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.scheduledFlowRunner.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.scheduledFlowRunner.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.scheduledFlowRunner.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.scheduledFlowRunner.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduledFlowRunner.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
