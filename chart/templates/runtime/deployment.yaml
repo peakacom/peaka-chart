@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-runtime-api
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-runtime-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.runtimeApi.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-runtime-api
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-runtime-api
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: runtime-api
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.runtimeApi.image.name }}:{{ .Values.runtimeApi.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.runtimeApi.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.runtimeApi.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.runtimeApi.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.runtimeApi.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.runtimeApi.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.runtimeApi.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.runtimeApi.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

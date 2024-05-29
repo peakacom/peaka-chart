@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-runtime-api
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-runtime-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-runtime-api
+    {{- include "peaka.selectorLabels" . | nindent 4 }}
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
