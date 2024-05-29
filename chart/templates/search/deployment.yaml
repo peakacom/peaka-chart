@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "peaka.fullname" . }}-be-search-service
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.searchService.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
