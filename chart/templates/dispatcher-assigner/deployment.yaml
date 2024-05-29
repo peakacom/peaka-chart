@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-dispatcher-assigner
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-dispatcher-assigner
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dispatcherAssigner.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-dispatcher-assigner
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-dispatcher-assigner
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: dispatcher-assigner
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dispatcherAssigner.image.name }}:{{ .Values.dispatcherAssigner.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.dispatcherAssigner.image.imagePullPolicy }}
+          {{- with .Values.dispatcherAssigner.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dispatcherAssigner.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.dispatcherAssigner.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.dispatcherAssigner.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dispatcherAssigner.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

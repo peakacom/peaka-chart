@@ -510,3 +510,14 @@ dispatcher:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+dispatcherAssigner:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-dispatcher-assigner"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
