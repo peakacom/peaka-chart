@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-monitoring-service
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-monitoring-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.monitoringService.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-monitoring-service
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-monitoring-service
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: monitoring-service
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.monitoringService.image.name }}:{{ .Values.monitoringService.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.monitoringService.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.monitoringService.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.monitoringService.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.monitoringService.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.monitoringService.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
