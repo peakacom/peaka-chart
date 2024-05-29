@@ -7,6 +7,13 @@ imagePullSecrets: ""
 jwtRsaPublicKey: ""
 jwtRsaPrivateKey: ""
 
+liquibase:
+  image:
+    name: "be-data-migrator"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+
+
 # disable this if you want to use an external postgresql server
 postgresql:
   enabled: true
@@ -401,11 +408,6 @@ trino:
 aiRest:
   enabled: true
   replicaCount: 1
-  initContainer:
-    image:
-      name: "be-data-migrator"
-      tag: "prod"
-      imagePullPolicy: "IfNotPresent"
   image:
     name: "be-ai-rest"
     tag: "prod"
@@ -487,11 +489,6 @@ dataCache:
 dataRest:
   enabled: true
   replicaCount: 1
-  initContainer:
-    image:
-      name: "be-data-migrator"
-      tag: "prod"
-      imagePullPolicy: "IfNotPresent"
   image:
     name: "be-data-rest"
     tag: "prod"
@@ -631,11 +628,6 @@ runtimeApi:
 scheduledFlowRunner:
   enabled: true
   replicaCount: 1
-  initContainer:
-    image:
-      name: "be-data-migrator"
-      tag: "prod"
-      imagePullPolicy: "IfNotPresent"
   image:
     name: "be-scheduled-flow-runner"
     tag: "prod"

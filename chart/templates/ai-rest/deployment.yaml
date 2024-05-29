@@ -19,8 +19,8 @@ spec:
     spec:
       initContainers:
         - name: liquibase
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.aiRest.initContainer.image.name }}:{{ .Values.aiRest.initContainer.image.tag}}"
-          imagePullPolicy: {{ default "IfNotPresent" .Values.aiRest.initContainer.image.imagePullPolicy }}
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.liquibase.image.name }}:{{ .Values.liquibase.image.tag}}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.liquibase.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
               value: "be-ai-rest"
