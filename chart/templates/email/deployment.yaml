@@ -18,7 +18,7 @@ spec:
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
       containers:
-        - name: emailService
+        - name: email-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.emailService.image.name }}:{{ .Values.emailService.image.tag }}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.emailService.image.imagePullPolicy }}
           ports:
