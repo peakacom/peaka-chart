@@ -499,3 +499,14 @@ dataRest:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+dispatcher:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-dispatcher"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
