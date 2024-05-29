@@ -532,3 +532,14 @@ dispatcherDlq:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+emailService:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-email-service"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}

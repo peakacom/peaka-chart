@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-email-service
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-email-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.emailService.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-email-service
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-email-service
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: emailService
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.emailService.image.name }}:{{ .Values.emailService.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.emailService.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.emailService.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.emailService.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.emailService.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.emailService.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.emailService.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
