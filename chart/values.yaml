@@ -521,3 +521,14 @@ dispatcherAssigner:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+dispatcherDlq:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-dispatcher-dlq"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
