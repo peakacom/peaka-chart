@@ -789,3 +789,15 @@ workflowWorkerExpress:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+
+flowMonitoringWeb:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "fe-flow-monitoring"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe: {}

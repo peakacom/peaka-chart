@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.flowMonitoringWeb.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: flow-monitoring-web
+          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.flowMonitoringWeb.image.name .Values.flowMonitoringWeb.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.flowMonitoringWeb.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-config
+          {{- with .Values.flowMonitoringWeb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.flowMonitoringWeb.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
+      {{- if .Values.flowMonitoringWeb.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.flowMonitoringWeb.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.flowMonitoringWeb.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.flowMonitoringWeb.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
