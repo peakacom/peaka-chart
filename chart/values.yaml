@@ -762,3 +762,30 @@ workflowStarter:
   resources: {}
   nodeSelector: {}
   affinity: {}
+
+workflowWorkerExpress:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-workflow-worker-express"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  sidecar:
+    imageName: "be-common-flow-utilities-service"
+    imageTag: "prod"
+    imagePullPolicy: "IfNotPresent"
+    resources: {}
+    readinessProbe: {}
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-workflow-worker-express
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-worker-express
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.workflowWorkerExpress.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-worker-express
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-worker-express
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: workflow-worker-express
+          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.workflowWorkerExpress.image.name .Values.workflowWorkerExpress.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.image.imagePullPolicy }}
+          command: ["/bin/sh", "-c", "export WORKER_ORDINAL_INDEX=${HOSTNAME##*-} && java -jar run/application.jar "]
+          ports:
+            - name: http
+              containerPort: 80
+          {{- with .Values.workflowWorkerExpress.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.workflowWorkerExpress.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: common-flow-utilities-service
+          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.workflowWorkerExpress.sidecar.imageName .Values.workflowWorkerExpress.sidecar.imageTag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.sidecar.imagePullPolicy }}
+          env:
+            - name: "PAYLOAD_SIZE_LIMIT"
+              value: "50mb"
+          {{- with .Values.workflowWorkerExpress.sidecar.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.workflowWorkerExpress.sidecar.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.workflowWorkerExpress.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowWorkerExpress.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
