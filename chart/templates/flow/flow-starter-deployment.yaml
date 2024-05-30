@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-workflow-starter
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-starter
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.workflowStarter.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-starter
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-starter
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: workflow-starter
+          image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.workflowStarter.image.name .Values.workflowStarter.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.workflowStarter.image.imagePullPolicy }}
+          {{- with .Values.workflowStarter.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.workflowStarter.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.workflowStarter.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.workflowStarter.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.workflowStarter.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowStarter.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

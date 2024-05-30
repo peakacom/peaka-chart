@@ -751,3 +751,14 @@ workflowHistory:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+
+workflowStarter:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-workflow-starter"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
