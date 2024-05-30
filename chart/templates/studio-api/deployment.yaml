@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-studio-api
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.studioApi.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: liquibase
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.liquibase.image.name }}:{{ .Values.liquibase.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.liquibase.image.imagePullPolicy }}
+          env:
+            - name: SERVICE_NAME
+              value: "be-studio-api"
+      containers:
+        - name: studio-api
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.studioApi.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - mountPath: "/secrets/jwt/rsa"
+              name: jwt-rsa-secret
+              readOnly: true
+            - mountPath: "/metadata-nfs"
+              name: metadata-nfs
+              readOnly: false
+              subPath: "metadata"
+          {{- with .Values.studioApi.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.studioApi.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: jwt-rsa-secret
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
+        - name: metadata-nfs
+          persistentVolumeClaim:
+            claimName: {{ include "peaka.fullname" . }}-nfs-share
+      {{- if .Values.studioApi.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.studioApi.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.studioApi.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.studioApi.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
