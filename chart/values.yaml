@@ -719,3 +719,14 @@ tokenService:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+
+webhookResolver:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "be-webhook-resolver"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
