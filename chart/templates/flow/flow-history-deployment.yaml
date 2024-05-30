@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-workflow-history
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-history
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.workflowHistory.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-history
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-history
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: liquibase
+        image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.liquibase.image.name .Values.liquibase.image.tag }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.liquibase.image.imagePullPolicy }}
+        env:
+          - name: SERVICE_NAME
+            value: "be-workflow-history"
+      containers:
+        - name: workflow-history
+          image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.workflowHistory.image.name .Values.workflowHistory.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.workflowHistory.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.workflowHistory.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.workflowHistory.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.workflowHistory.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.workflowHistory.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.workflowHistory.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workflowHistory.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
