@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-fe-studio-app
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.studioWeb.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: studio-web
+          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag}}"
+          imagePullPolicy: "Always"
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-config
+          {{- with .Values.studioWeb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.studioWeb.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ include "peaka.fullname" . }}-fe-studio-app
+      {{- if .Values.studioWeb.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.studioWeb.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- with .Values.studioWeb.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.studioWeb.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

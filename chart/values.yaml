@@ -801,3 +801,15 @@ flowMonitoringWeb:
   nodeSelector: {}
   affinity: {}
   readinessProbe: {}
+
+studioWeb:
+  enabled: true
+  replicaCount: 1
+  image:
+    name: "fe-studio-app"
+    tag: "prod"
+    imagePullPolicy: "IfNotPresent"
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe: {}
