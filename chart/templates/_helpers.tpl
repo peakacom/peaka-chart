@@ -87,6 +87,10 @@ europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 {{- .Values.postgresql.auth.password -}}
 {{- end -}}
 
+{{- define "peaka.postgresql.passwordSecretKey" -}}
+{{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+{{- end -}}
+
 {{- define "peaka.hive.name" -}}
 {{ include "peaka.fullname" . }}-hive-metastore
 {{- end -}}
