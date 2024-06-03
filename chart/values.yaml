@@ -257,6 +257,34 @@ pgvector:
   replicaCount: 1
   extraEnvVars: []
 
+# peaka relies on temporal for its workflow executions
+temporal:
+  enabled: true
+  manager:
+    resources:
+      limits:
+        memory: 256Mi
+  temporalCluster:
+    version: 1.23.0
+    numHistoryShards: 1
+    ## by default, peaka uses the dependency postgresql for default store and visibility store of temporal.
+    ## Fill below values if you want to use another database.
+    persistence:
+      defaultStore:
+        dbPlugin: ""
+        dbUser: ""
+        dbHostName: ""
+        dbPort: ""
+        passwordSecretName: ""
+        passwordSecretKey: ""
+      visibilityStore:
+        dbPlugin: ""
+        dbUser: ""
+        dbHostName: ""
+        dbPort: ""
+        passwordSecretName: ""
+        passwordSecretKey: ""
+
 # peaka uses trino for sql engine
 trino:
   enabled: true

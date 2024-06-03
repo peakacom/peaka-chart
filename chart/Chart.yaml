@@ -53,3 +53,8 @@ dependencies:
     version: 13.4.4
     repository: https://charts.bitnami.com/bitnami
     condition: postgresqlBigtable.enabled
+  - name: temporal-operator
+    alias: temporal
+    version: 0.3.0
+    repository: https://alexandrevilain.github.io/temporal-operator
+    condition: temporal.enabled
