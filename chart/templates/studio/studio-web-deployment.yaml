@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: studio-web
-          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag}}"
-          imagePullPolicy: "Always"
+          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.studioWeb.image.name .Values.studioWeb.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.studioWeb.image.imagePullPolicy }}
           ports:
             - name: http
               containerPort: 80
