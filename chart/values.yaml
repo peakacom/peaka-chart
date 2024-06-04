@@ -267,8 +267,9 @@ temporal:
   temporalCluster:
     version: 1.23.0
     numHistoryShards: 1
-    ## by default, peaka uses the dependency postgresql for default store and visibility store of temporal.
-    ## Fill below values if you want to use another database.
+    ## by default, peaka uses the default installed postgresql (dependency chart) for default store and visibility
+    ## store of temporal. Fill below values if you want to use another database.
+    ## See https://github.com/alexandrevilain/temporal-operator/tree/main for details.
     persistence:
       defaultStore:
         dbPlugin: ""
