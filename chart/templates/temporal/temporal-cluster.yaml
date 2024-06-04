@@ -8,21 +8,21 @@ spec:
   persistence:
     defaultStore:
       sql:
-        user: {{ default (include "peaka.postgresql.user" .) .Values.temporal.temporalCluster.persistence.defaultStore.dbUser }}
+        user: {{ default (include "peaka.postgresql.user" . ) .Values.temporal.temporalCluster.persistence.defaultStore.dbUser }}
         pluginName: {{ default "postgres" .Values.temporal.temporalCluster.persistence.defaultStore.dbPlugin }}
         databaseName: temporal
-        connectAddr: {{ default (include "peaka.postgresql.fullname" .) .Values.temporal.temporalCluster.persistence.defaultStore.dbHostName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ default (include "peaka.postgresql.port" .) .Values.temporal.temporalCluster.persistence.defaultStore.dbPort }}
+        connectAddr: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.defaultStore.dbHostName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ default (include "peaka.postgresql.port" . ) .Values.temporal.temporalCluster.persistence.defaultStore.dbPort }}
         connectProtocol: tcp
       passwordSecretRef:
-        name: {{ default (include "peaka.postgresql.fullname" .) .Values.temporal.temporalCluster.persistence.defaultStore.passwordSecretName }}
+        name: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.defaultStore.passwordSecretName }}
         key: {{ default (include "peaka.postgresql.passwordSecretKey" . ) .Values.temporal.temporalCluster.persistence.defaultStore.passwordSecretKey }}
     visibilityStore:
       sql:
-        user: {{ default (include "peaka.postgresql.user" .) .Values.temporal.temporalCluster.persistence.visibilityStore.dbUser }}
+        user: {{ default (include "peaka.postgresql.user" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.dbUser }}
         pluginName: {{ default "postgres" .Values.temporal.temporalCluster.persistence.visibilityStore.dbPlugin }}
         databaseName: temporal_visibility
-        connectAddr: {{ default (include "peaka.postgresql.fullname" .) .Values.temporal.temporalCluster.persistence.visibilityStore.dbHostName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ default (include "peaka.postgresql.port" .) .Values.temporal.temporalCluster.persistence.visibilityStore.dbPort }}
+        connectAddr: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.dbHostName }}.{{ .Release.Namespace }}.svc.cluster.local:{{ default (include "peaka.postgresql.port" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.dbPort }}
         connectProtocol: tcp
       passwordSecretRef:
-        name: {{ default (include "peaka.postgresql.fullname" .) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretName }}
+        name: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretName }}
         key: {{ default (include "peaka.postgresql.passwordSecretKey" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretKey }}
