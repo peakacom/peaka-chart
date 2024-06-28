@@ -21,6 +21,9 @@ spec:
         - name: dispatcher-dlq
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dispatcherDlq.image.name }}:{{ .Values.dispatcherDlq.image.tag }}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.dispatcherDlq.image.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           {{- with .Values.dispatcherDlq.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

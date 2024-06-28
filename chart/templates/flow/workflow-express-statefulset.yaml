@@ -25,6 +25,9 @@ spec:
           ports:
             - name: http
               containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           {{- with .Values.workflowWorkerExpress.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -39,6 +42,9 @@ spec:
           env:
             - name: "PAYLOAD_SIZE_LIMIT"
               value: "50mb"
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           {{- with .Values.workflowWorkerExpress.sidecar.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

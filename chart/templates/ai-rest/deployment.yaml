@@ -34,6 +34,9 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.aiRest.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
       {{- with .Values.aiRest.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

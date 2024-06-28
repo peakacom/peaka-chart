@@ -21,6 +21,9 @@ spec:
         - name: webhook-resolver
           image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.webhookResolver.image.name .Values.webhookResolver.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.webhookResolver.image.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           {{- with .Values.webhookResolver.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

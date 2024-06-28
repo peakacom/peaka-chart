@@ -25,6 +25,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/
               name: nginx-config

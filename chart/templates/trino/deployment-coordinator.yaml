@@ -93,6 +93,9 @@ spec:
               containerPort: {{ $value.port }}
               protocol: {{ $value.protocol }}
           {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           livenessProbe:
             exec:
               command:

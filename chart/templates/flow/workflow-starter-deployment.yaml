@@ -21,6 +21,9 @@ spec:
         - name: workflow-starter
           image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.workflowStarter.image.name .Values.workflowStarter.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowStarter.image.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-config
           {{- with .Values.workflowStarter.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
