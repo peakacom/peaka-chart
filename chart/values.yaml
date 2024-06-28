@@ -7,6 +7,12 @@ imagePullSecrets: ""
 jwtRsaPublicKey: ""
 jwtRsaPrivateKey: ""
 
+# TLS settings
+tls:
+  enabled: false
+  cert: ""
+  key: ""
+
 liquibase:
   image:
     name: "be-data-migrator"
