@@ -9,6 +9,8 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: worker
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
 spec:
   strategy:
     type: "Recreate"

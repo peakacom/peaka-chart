@@ -5,6 +5,8 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
     {{- include "peaka.labels" . | nindent 4 }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
 spec:
   replicas: {{ .Values.flowMonitoringWeb.replicaCount }}
   selector:

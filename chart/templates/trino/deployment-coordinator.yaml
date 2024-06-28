@@ -8,6 +8,8 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: coordinator
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
 spec:
   selector:
     matchLabels:
