@@ -67,6 +67,28 @@ Set image registry for peaka images
 europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 {{- end -}}
 
+{{/*
+Set http scheme for Peaka
+*/}}
+{{- define "peaka.httpScheme" -}}
+{{- if .Values.tls.enabled }}
+https
+{{- else }}
+http
+{{- end }}
+{{- end }}
+
+{{/*
+Set ws scheme for Peaka
+*/}}
+{{- define "peaka.websocketScheme" -}}
+{{- if .Values.tls.enabled }}
+wss
+{{- else }}
+ws
+{{- end }}
+{{- end }}
+
 {{- define "peaka.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
