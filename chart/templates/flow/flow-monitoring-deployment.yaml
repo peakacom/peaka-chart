@@ -7,6 +7,7 @@ metadata:
     {{- include "peaka.labels" . | nindent 4 }}
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+    checksum/nginx-config: {{ include (print $.Template.BasePath "/flow/flow-monitoring-web-configmap.yaml") . | sha256sum }}
 spec:
   replicas: {{ .Values.monitoringService.replicaCount }}
   selector:
