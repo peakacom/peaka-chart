@@ -96,7 +96,11 @@ mariadb:
     user: peaka
     password: peaka
     name: metastore_db
-
+  rootUser:
+    password: peaka
+  galera:
+    mariabackup:
+      password: peaka
 kafka:
   # do not disable as Peaka is not yet tested with other MQ options.
   enabled: true
@@ -121,7 +125,7 @@ redis:
     enabled: false
   architecture: standalone
 
-postgresqlBigtable:
+postgresqlbigtable:
   enabled: true
   volumePermissions:
     enabled: true
@@ -266,6 +270,11 @@ pgvector:
 # peaka relies on temporal for its workflow executions
 temporal:
   enabled: true
+  webhook:
+    certManager:
+      certificate:
+        useCustomIssuer: true
+        enabled: false
   manager:
     resources:
       limits:

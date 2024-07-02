@@ -198,19 +198,19 @@ Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
 {{- end -}}
 
 {{- define "peaka.bigtable.port" -}}
-{{- default 5432 .Values.postgresqlBigtable.primary.service.ports.postgresql -}}
+{{- default 5432 .Values.postgresqlbigtable.primary.service.ports.postgresql -}}
 {{- end -}}
 
 {{- define "peaka.bigtable.user" -}}
-{{- .Values.postgresqlBigtable.auth.username -}}
+{{- .Values.postgresqlbigtable.auth.username -}}
 {{- end -}}
 
 {{- define "peaka.bigtable.database" -}}
-{{- .Values.postgresqlBigtable.auth.database -}}
+{{- .Values.postgresqlbigtable.auth.database -}}
 {{- end -}}
 
 {{- define "peaka.bigtable.password" -}}
-{{- .Values.postgresqlBigtable.auth.password -}}
+{{- .Values.postgresqlbigtable.auth.password -}}
 {{- end -}}
 
 {{/*
