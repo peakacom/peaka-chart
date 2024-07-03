@@ -46,7 +46,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-coordinator
-          image: "{{ .Values.trino.image.repository }}:{{ .Values.trino.image.tag}}"
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.trino.image.name }}:{{ .Values.trino.image.tag}}"
           imagePullPolicy: {{ .Values.trino.image.pullPolicy }}
           volumeMounts:
             - mountPath: {{ .Values.trino.server.config.path }}/node.properties
