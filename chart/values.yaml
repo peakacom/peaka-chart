@@ -270,11 +270,6 @@ pgvector:
 # peaka relies on temporal for its workflow executions
 temporal:
   enabled: true
-  webhook:
-    certManager:
-      certificate:
-        useCustomIssuer: true
-        enabled: false
   manager:
     resources:
       limits:
