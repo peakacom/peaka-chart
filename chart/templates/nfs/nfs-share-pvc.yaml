@@ -10,6 +10,7 @@ spec:
   accessModes:
     - ReadWriteMany
   volumeName: {{ include "peaka.fullname" . }}-nfs-share
+  storageClassName: ""
   resources:
     requests:
       storage: {{ .Values.nfsShare.size }}
