@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: pv-manager
-  namespace: nfs-test
+  name: {{ include "peaka.fullname" . }}-nfs-share
 
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: pv-manager-role
+  name: {{ include "peaka.fullname" . }}-nfs-share-role
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes", "persistentvolumeclaims"]
@@ -23,12 +22,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: pv-manager-binding
+  name: {{ include "peaka.fullname" . }}-nfs-share-binding
 subjects:
   - kind: ServiceAccount
-    name: pv-manager
-    namespace: nfs-test
+    name: {{ include "peaka.fullname" . }}-nfs-share
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: pv-manager-role
+  name: {{ include "peaka.fullname" . }}-nfs-share-role
   apiGroup: rbac.authorization.k8s.io

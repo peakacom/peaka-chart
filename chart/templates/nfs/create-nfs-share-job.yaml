@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: create-nfs-share
+  name: {{ include "peaka.fullname" . }}-create-nfs-share
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     spec:
-      serviceAccountName: pv-manager
+      serviceAccountName: {{ include "peaka.fullname" . }}-nfs-share
       containers:
         - name: create-nfs-share
           image: bash:alpine3.20
@@ -22,38 +22,49 @@ spec:
               mv ./kubectl /usr/local/bin
               kubectl version
 
-              until nslookup nfs-test-nfs-server.nfs-test.svc.cluster.local; do echo waiting for nfs-service; sleep 2; done;
-              CLUSTER_IP=$(kubectl get svc nfs-test-nfs-server -o jsonpath='{.spec.clusterIP}')
+              until nslookup {{ include "peaka.fullname" . }}-nfs-server.{{ .Release.Namespace }}.svc.cluster.local ; do
+                echo waiting for nfs-server; sleep 2 ;
+              done
+              CLUSTER_IP=$(kubectl get svc {{ include "peaka.fullname" . }}-nfs-server -o jsonpath='{.spec.clusterIP}')
               echo "IP of the nfs-server is ${CLUSTER_IP}"
 
               cat <<EOF | kubectl apply -f -
               apiVersion: v1
               kind: PersistentVolume
               metadata:
-                name: nfs-test-nfs-share
+                name: {{ include "peaka.fullname" . }}-nfs-share
+                {{- if  .Values.nfsShare.volumeDeletionProtection }}
+                annotations:
+                  helm.sh/resource-policy: "keep"
+                {{- end }}
               spec:
                 capacity:
-                  storage: 1Gi
+                  storage: {{ .Values.nfsShare.size }}
                 accessModes:
                   - ReadWriteMany
                 nfs:
-                  path: /path/to/share
+                  path: {{ .Values.nfsShare.path | quote }}
                   server: $CLUSTER_IP
+                persistentVolumeReclaimPolicy: {{ .Values.nfsShare.persistentVolumeReclaimPolicy }}
 
               ---
 
               apiVersion: v1
               kind: PersistentVolumeClaim
               metadata:
-                name: nfs-test-nfs-share
+                name: {{ include "peaka.fullname" . }}-nfs-share
+                {{- if  .Values.nfsShare.volumeDeletionProtection }}
+                annotations:
+                  helm.sh/resource-policy: "keep"
+                {{- end }}
               spec:
                 accessModes:
                   - ReadWriteMany
-                volumeName: nfs-test-nfs-share
+                volumeName: {{ include "peaka.fullname" . }}-nfs-share
                 storageClassName: ""
                 resources:
                   requests:
-                    storage: 1Gi
+                    storage: {{ .Values.nfsShare.size }}
               EOF
 
       restartPolicy: OnFailure
