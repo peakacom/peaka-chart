@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pv-manager
+  namespace: nfs-test
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pv-manager-role
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes", "persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "update"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pv-manager-binding
+subjects:
+  - kind: ServiceAccount
+    name: pv-manager
+    namespace: nfs-test
+roleRef:
+  kind: ClusterRole
+  name: pv-manager-role
+  apiGroup: rbac.authorization.k8s.io

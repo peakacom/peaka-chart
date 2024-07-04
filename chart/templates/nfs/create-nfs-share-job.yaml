@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-nfs-share
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: pv-manager
+      containers:
+        - name: create-nfs-share
+          image: bash:alpine3.20
+          command:
+            - /usr/local/bin/bash
+            - -c
+            - |
+              apk add curl
+              curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+              chmod +x ./kubectl
+              mv ./kubectl /usr/local/bin
+              kubectl version
+
+              until nslookup nfs-test-nfs-server.nfs-test.svc.cluster.local; do echo waiting for nfs-service; sleep 2; done;
+              CLUSTER_IP=$(kubectl get svc nfs-test-nfs-server -o jsonpath='{.spec.clusterIP}')
+              echo "IP of the nfs-server is ${CLUSTER_IP}"
+
+              cat <<EOF | kubectl apply -f -
+              apiVersion: v1
+              kind: PersistentVolume
+              metadata:
+                name: nfs-test-nfs-share
+              spec:
+                capacity:
+                  storage: 1Gi
+                accessModes:
+                  - ReadWriteMany
+                nfs:
+                  path: /path/to/share
+                  server: $CLUSTER_IP
+
+              ---
+
+              apiVersion: v1
+              kind: PersistentVolumeClaim
+              metadata:
+                name: nfs-test-nfs-share
+              spec:
+                accessModes:
+                  - ReadWriteMany
+                volumeName: nfs-test-nfs-share
+                storageClassName: ""
+                resources:
+                  requests:
+                    storage: 1Gi
+              EOF
+
+      restartPolicy: OnFailure
