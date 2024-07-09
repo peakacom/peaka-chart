@@ -4,8 +4,8 @@ fullnameOverride: ""
 imagePullSecrets: ""
 
 # Create a public & private key pair and feed them to here
-jwtRsaPublicKey: ""
-jwtRsaPrivateKey: ""
+jwtRsaPublicKey: "1"
+jwtRsaPrivateKey: "1"
 
 # TLS settings
 tls:
@@ -516,6 +516,16 @@ collabSharedb:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
 
 dataCache:
   enabled: true
