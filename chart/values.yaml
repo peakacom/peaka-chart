@@ -4,8 +4,8 @@ fullnameOverride: ""
 imagePullSecrets: ""
 
 # Create a public & private key pair and feed them to here
-jwtRsaPublicKey: "1"
-jwtRsaPrivateKey: "1"
+jwtRsaPublicKey: ""
+jwtRsaPrivateKey: ""
 
 # TLS settings
 tls:
