@@ -2,9 +2,6 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "peaka.fullname" . }}-create-nfs-share
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     spec:
@@ -23,12 +20,29 @@ spec:
               kubectl version
 
               until nslookup {{ include "peaka.fullname" . }}-nfs-server.{{ .Release.Namespace }}.svc.cluster.local ; do
-                echo waiting for nfs-server; sleep 2 ;
+                echo waiting for nfs-server; sleep 5 ;
               done
               CLUSTER_IP=$(kubectl get svc {{ include "peaka.fullname" . }}-nfs-server -o jsonpath='{.spec.clusterIP}')
               echo "IP of the nfs-server is ${CLUSTER_IP}"
 
-              cat <<EOF | kubectl apply -f -
+              if [[ $(kubectl get pv {{ include "peaka.fullname" . }}-nfs-share) ]] ; then     # if nfs share already exists
+
+                # nfs share exists and IP of nfs share is the same as IP of nfs-server, this is desired, exit peacefully.
+                if [[ $(kubectl get pv {{ include "peaka.fullname" . }}-nfs-share -o jsonpath='{.spec.nfs.server}') == "${CLUSTER_IP}" ]] ; then
+                  echo "Current IP of nfs-server and the IP of nfs-share matches. Nothing to do. Exiting."
+                  exit 0
+
+                # if not, this is not desired, return an error message.
+                else
+                  echo "Current IP of nfs-server and the IP of nfs-share does not match. This is an undesired state."
+                  echo "To fix, delete everything related to nfs-server and nfs-share, and run helm upgrade"
+                  exit 1
+                fi
+
+              else    # nfs-share does not exist, create it
+                echo "nfs-share does not exit, creating it..."
+
+                cat <<EOF | kubectl apply -f -
               apiVersion: v1
               kind: PersistentVolume
               metadata:
@@ -66,5 +80,6 @@ spec:
                   requests:
                     storage: {{ .Values.nfsShare.size }}
               EOF
+              fi
 
       restartPolicy: OnFailure
