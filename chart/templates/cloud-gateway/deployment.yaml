@@ -28,7 +28,7 @@ spec:
               containerPort: 8080
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.cloudGateway.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

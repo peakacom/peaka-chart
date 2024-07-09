@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: {{ default "IfNotPresent" .Values.webhookResolver.image.imagePullPolicy }}
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.webhookResolver.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

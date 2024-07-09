@@ -30,7 +30,7 @@ spec:
               containerPort: 7070
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.collabSharedb.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

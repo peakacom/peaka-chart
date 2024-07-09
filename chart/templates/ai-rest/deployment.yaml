@@ -38,7 +38,7 @@ spec:
             {{- toYaml .Values.aiRest.resources | nindent 12 }}
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
       {{- with .Values.aiRest.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

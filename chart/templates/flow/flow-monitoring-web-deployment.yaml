@@ -29,7 +29,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/
               name: nginx-config

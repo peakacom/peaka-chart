@@ -28,7 +28,7 @@ spec:
               containerPort: 80
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.dataCache.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -45,7 +45,7 @@ spec:
               containerPort: 8080
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           env:
             - name: "PAYLOAD_SIZE_LIMIT"
               value: "100mb"

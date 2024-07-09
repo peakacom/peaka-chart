@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: {{ default "IfNotPresent" .Values.dispatcherAssigner.image.imagePullPolicy }}
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.dispatcherAssigner.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

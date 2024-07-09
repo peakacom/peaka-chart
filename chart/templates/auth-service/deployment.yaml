@@ -31,7 +31,7 @@ spec:
               containerPort: 8080
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.authService.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}

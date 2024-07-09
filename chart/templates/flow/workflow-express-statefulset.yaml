@@ -29,7 +29,7 @@ spec:
               containerPort: 80
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.workflowWorkerExpress.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -46,7 +46,7 @@ spec:
               value: "50mb"
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.workflowWorkerExpress.sidecar.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

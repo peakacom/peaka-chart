@@ -95,7 +95,7 @@ spec:
           {{- end }}
           envFrom:
             - configMapRef:
-                name: {{ include "peaka.fullname" . }}-config
+                name: {{ include "peaka.fullname" . }}-env-config
           livenessProbe:
             exec:
               command:
