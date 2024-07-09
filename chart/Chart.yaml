@@ -49,10 +49,10 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: postgresql
-    alias: postgresqlBigtable
+    alias: postgresqlbigtable
     version: 13.4.4
     repository: https://charts.bitnami.com/bitnami
-    condition: postgresqlBigtable.enabled
+    condition: postgresqlbigtable.enabled
   - name: temporal-operator
     alias: temporal
     version: 0.3.0
