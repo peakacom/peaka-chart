@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-dispatcher-dlq
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: dispatcher-dlq
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dispatcherDlq.image.name }}:{{ .Values.dispatcherDlq.image.tag }}"

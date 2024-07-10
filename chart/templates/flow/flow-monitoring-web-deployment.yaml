@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-flow-monitoring
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: flow-monitoring-web
           image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.flowMonitoringWeb.image.name .Values.flowMonitoringWeb.image.tag }}

@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-secret-store-service
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: secret-store-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.secretStoreService.image.name }}:{{ .Values.secretStoreService.image.tag }}"

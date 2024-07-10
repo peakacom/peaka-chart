@@ -27,6 +27,10 @@ spec:
         release: {{ .Release.Name }}
         component: worker
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         fsGroup: 1001
       serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}

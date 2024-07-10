@@ -20,6 +20,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-monitoring-service
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: monitoring-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.monitoringService.image.name }}:{{ .Values.monitoringService.image.tag }}"

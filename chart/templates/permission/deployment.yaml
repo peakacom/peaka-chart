@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-permission-service
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: permission-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}"

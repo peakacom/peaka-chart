@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-cloud-gateway
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: cloud-gateway
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.cloudGateway.image.name }}:{{ .Values.cloudGateway.image.tag }}"

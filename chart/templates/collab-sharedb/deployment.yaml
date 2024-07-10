@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-collab-sharedb
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: collab-sharedb
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}"

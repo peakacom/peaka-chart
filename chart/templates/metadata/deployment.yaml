@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-metadata-service
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: metadata-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}"

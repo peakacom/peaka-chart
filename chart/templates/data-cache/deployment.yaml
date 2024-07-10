@@ -19,6 +19,10 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-cache
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: data-cache
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataCache.image.name }}:{{ .Values.dataCache.image.tag }}"
