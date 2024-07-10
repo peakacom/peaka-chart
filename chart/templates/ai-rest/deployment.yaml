@@ -30,6 +30,9 @@ spec:
           env:
             - name: SERVICE_NAME
               value: "be-ai-rest"
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: ai-rest
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.aiRest.image.name }}:{{ .Values.aiRest.image.tag}}"

@@ -30,6 +30,9 @@ spec:
         env:
           - name: SERVICE_NAME
             value: "be-workflow-history"
+        envFrom:
+          - configMapRef:
+              name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: workflow-history
           image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.workflowHistory.image.name .Values.workflowHistory.image.tag }}
