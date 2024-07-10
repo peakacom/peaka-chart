@@ -4,6 +4,8 @@ fullnameOverride: ""
 imagePullSecrets: ""
 
 # Create a public & private key pair and feed them to here
+# generate a public key with `openssl genrsa -out key.pem 2048`
+# generate a private key with `openssl rsa -in key.pem -outform PEM -pubout -out key.pem.pub`
 jwtRsaPublicKey: ""
 jwtRsaPrivateKey: ""
 
