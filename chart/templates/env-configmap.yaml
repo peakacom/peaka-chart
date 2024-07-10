@@ -7,3 +7,8 @@ data:
   MINIO_ACCESS_KEY: {{ quote (include "peaka.minio.accessKey" . ) }}
   MINIO_SECRET_KEY: {{ quote (include "peaka.minio.secretKey" . ) }}
 
+  STUDIO_DB_ADDRESS: "jdbc:postgresql://{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}"
+  DB_USERNAME: {{ include "peaka.postgresql.user" . | quote }}
+  DB_PASSWORD: {{ include "peaka.postgresql.password" . | quote }}
+
+  SECRET_STORAGE_SERVICE: "http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80"
