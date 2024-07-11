@@ -71,10 +71,10 @@ europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 Set http scheme for Peaka
 */}}
 {{- define "peaka.httpScheme" -}}
-{{- if .Values.tls.enabled }}
-https
+{{- if .Values.tls.enabled -}}
+{{- "https" }}
 {{- else }}
-http
+{{- "http" }}
 {{- end }}
 {{- end }}
 
@@ -82,10 +82,10 @@ http
 Set ws scheme for Peaka
 */}}
 {{- define "peaka.websocketScheme" -}}
-{{- if .Values.tls.enabled }}
-wss
+{{- if .Values.tls.enabled -}}
+{{- "wss" }}
 {{- else }}
-ws
+{{- "ws" }}
 {{- end }}
 {{- end }}
 
@@ -195,7 +195,7 @@ Define the peaka.kafka.fullname template with .Release.Name and "kafka"
 Set kafka port
 */}}
 {{- define "peaka.kafka.port" }}
-{{- default 9092 (quote .Values.kafka.service.ports.client) }}
+{{- default 9092 .Values.kafka.service.ports.client }}
 {{- end }}
 
 {{/*

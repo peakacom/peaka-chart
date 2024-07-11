@@ -4,12 +4,49 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 domain: "localhost"
+port: 80
 
 # Create a public & private key pair and feed them to here
 # generate a private key with `openssl genrsa -out key.pem 2048`
 # generate a public key with `openssl rsa -in key.pem -outform PEM -pubout -out key.pem.pub`
-jwtRsaPublicKey: ""
-jwtRsaPrivateKey: ""
+jwtRsaPublicKey: "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnQco6kt2qyolT7DwsGFA
+EBdMi6Vt/QZ6WdoqqrKFKDF4FUQFbyjSF9pJ0B6LCUbuxdAOn3y9Ju5Rp3wAlIMh
+3vSU8YJm61Tk7K3hCdlgnD0DJZ7PSeTiSYGVljf4Vmr2lX04wvLlTvj1WkAEddOX
+bLK1n21REGZyuIm7bw+sv2KpnP+LA5BhDsdqDAiqSNwlvFmnACpGr3dkWdIEwrmh
+16KYbQX4wKYOTjZQCHdwGHNiEc37kcN4x/n8XdlGC65ssTRARy2Yx5kk8pCwsDcI
+jH0r4ct4ss4kesCFnB/A2pbe922VlMVs8YZYKTuGDcGRYvcn3r/YVCEfx7EuhsQC
+IwIDAQAB
+-----END PUBLIC KEY-----"
+jwtRsaPrivateKey: "-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAnQco6kt2qyolT7DwsGFAEBdMi6Vt/QZ6WdoqqrKFKDF4FUQF
+byjSF9pJ0B6LCUbuxdAOn3y9Ju5Rp3wAlIMh3vSU8YJm61Tk7K3hCdlgnD0DJZ7P
+SeTiSYGVljf4Vmr2lX04wvLlTvj1WkAEddOXbLK1n21REGZyuIm7bw+sv2KpnP+L
+A5BhDsdqDAiqSNwlvFmnACpGr3dkWdIEwrmh16KYbQX4wKYOTjZQCHdwGHNiEc37
+kcN4x/n8XdlGC65ssTRARy2Yx5kk8pCwsDcIjH0r4ct4ss4kesCFnB/A2pbe922V
+lMVs8YZYKTuGDcGRYvcn3r/YVCEfx7EuhsQCIwIDAQABAoIBAHD7X9MELQQGtQXb
+t7IQpvls6iRoCPVPHeVcdeqPvAMpZM9YO9i5NED5TLaz4zHvmYk2o+7Y33gNbS7m
+p7wzhcFXlXsXalnUoUox6YMepsaDl6oP0/HE/5QH6stExifXmkgA60BJZ/gkZNRk
+z1C/x2nsQ4XML9FvBQgGAZhtXMvuXnN4/Nicv9w+XgPNBFPdiPclcwonWA7VMDga
+o0BRJVmAVaEq8BDyQY4Jm32q0EXmPKd5DYCWsEQWPBZYjUsgQUKL67/bextw4XcR
+Ddw5Q4GnkYJCA730Odo8huJaLzWmmypkiAZTimG7Gl8KTZE0v+g6XdC3TwQ/xifn
+hYMdcpECgYEA0XiO0bMZRXxVjb2VB8uLo4ODYRNL92b4hLNgc58weGekzH0oF8QT
+6kjuh/szqmMgVE8IYO2ENWxQnxbMpLLUBX3RgpzEuEX1zhjMKx+zRfu0GDNA9OIK
+oqhxCWI6V3h85tG/C5ZlzoZ9LM9xV3k6yJDfGJKAsylj6N/d6OMRKX0CgYEAv+h2
+rB+8kGNoELIRkHBL47ZwyDPCKh166mSCSrVYo5vOKAFHqXsem8LxPA1cXbeMLMXg
+/l0gPK/fsnHhfkQ5rioeDSMJK0JNnDC83J4Jpue4TkXRX91b9H2jLw2k0c5NhNRS
++1YIZzhENDXKrZmmV71gF31iUNnrHrzA0QgQrB8CgYAg+BOqh8DjgeVJUNyDBJNu
+4gUso0fioa9d24nDyPttCAsVMGG+E9t6lY4NkwkXuVBeVK4h62BStECgOYtuJMNg
+NeRi5V/FDSXaEWcZJn0l967p3C9OG8HGxjI8YtyB5fHqtnqWTU6qydor0l6pgOgy
+pzKmAHEHQe16urmHrS2HVQKBgGPWnX6YmDIJ9UbSTP723RRfgrc07iuY4Kx2k64o
+QDAFy6/WUqDic58XQQc78DS1W9CjNZU/f5jy6o7cXjKhbdyk/rNY6dk+ij/avzaL
+ZXwWizT1b6LO95rvjejZ0UhxarTS/UTSklaY2CrNXV8JU5fL5uTxjyd+56o7Cpj0
++C+DAoGBAMDObugNucMjf0kAZ9bgq4kebaVu1QeboRGiKxz/x/r+TvrzQMS5ghsD
+Rgnj/MpOfHaX4fAv9DI5lx7qnQ64713VXeqNgBbGxKshYV/Q63/o/x6O8h6aN9X9
+gYuM1GcRepbRjEX0UMJu8Bo4ndw6BA2UdPc7q0NN7hu27lyQ3DqM
+-----END RSA PRIVATE KEY-----"
+
+openAIApiKey:
 
 connector:
   credentials:
@@ -168,7 +205,7 @@ postgresqlbigtable:
 
 # Default values for cp-kafka-connect.
 kafkaConnect:
-  enabled: true
+  enabled: false
 
   replicaCount: 1
 
@@ -723,16 +760,6 @@ scheduledFlowRunner:
     successThreshold: 1
     timeoutSeconds: 5
 
-searchService:
-  enabled: true
-  replicaCount: 1
-  image:
-    name: "be-search-service"
-    tag: "prod"
-    imagePullPolicy: "IfNotPresent"
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
 
 secretStoreService:
   enabled: true
@@ -867,18 +894,6 @@ workflowWorkerExpress:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
-
-flowMonitoringWeb:
-  enabled: true
-  replicaCount: 1
-  image:
-    name: "fe-flow-monitoring"
-    tag: "prod"
-    imagePullPolicy: "IfNotPresent"
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
-  readinessProbe: {}
 
 studioWeb:
   enabled: true
