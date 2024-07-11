@@ -3,7 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ include "peaka.fullname" . }}-env-config
 data:
-  MINIO_ADDRESS: "http://{{ include "peaka.minio.fullname" . }}:{{ include "peaka.minio.port" . }}"
+
+  MINIO_ADDRESS: "http://{{ include "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.minio.port" . }}"
   MINIO_ACCESS_KEY: {{ quote (include "peaka.minio.accessKey" . ) }}
   MINIO_SECRET_KEY: {{ quote (include "peaka.minio.secretKey" . ) }}
 
@@ -12,3 +13,106 @@ data:
   DB_PASSWORD: {{ include "peaka.postgresql.password" . | quote }}
 
   SECRET_STORAGE_SERVICE: "http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+
+  AUTH_SERVICE_EXTERNAL_ADDRESS: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/auth"
+  FETCH_METADATA_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/runtimeapi"
+  REACT_APP_FETCH_METADATA_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/runtimeapi"
+  DISPATCHER_HOST_NAME: "{{ .Values.domain }}/service/dispatcher"
+  API_HOST_NAME_PATTERN: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/api/.*"
+  STUDIO_HOST: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}"
+  STUDIO_API_HOST: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/studioapi"
+  CODE2_DOMAIN: "{{ .Values.domain }}"
+  DISPATCHER_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/dispatcher"
+  COLLABORATION_BACKEND_ADDRESS: "{{ include "peaka.websocketScheme" . }}://{{ .Values.domain }}/service/sharedb"
+  STUDIO_API_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/studioapi/api"
+  TOKEN_SERVICE_PUBLIC_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/token-service"
+  TOKEN_SERVICE_REDIRECT_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/oauth2/callback"
+  DBC_PUBLIC_URL: "{{ include ""peaka.dbc.url" . }}"
+  STUDIO_API_HOST_NO_SCHEME: "{{ .Values.domain }}/service/studioapi"
+
+  ENVIRONMENT: "production"
+  TEST_ENVIRONMENT: false
+  CLUSTER_NAMESPACE: prod
+
+  LOGIN_BETA_CLOSED: true
+  ENVIRONMENT_SCOPE: "STABLE"
+  USER_ACTIVATION: "DEFAULT_ACTIVE"
+  ENABLE_TABLE_ACTIVE: true
+  HUBSPOT_ENABLED: false
+
+  REDIS_SINGLE_SERVER_ADDRESS: "redis://{{ include "peaka.redis-master.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:6379"
+  REDIS_SINGLE_SERVER_HOST_NAME: "{{ include "peaka.redis-master.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+
+  BOOTSTRAP_ADDRESS: "{{ include "peaka.kafka.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.kafka.port" . }}"
+  KAFKA_CONNECT_ADDRESS: "http://{{ include "peaka.kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8083"
+
+  TEMPORAL_TARGET: "{{ include "peaka.temporal.frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:7233"
+
+  DB_HOST: "{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+  STUDIODB_SCHEMA: "studio"
+
+  DB_PORT: {{ include "peaka.postgresql.port" . }}
+  DB_NAME: {{ include "peaka.postgresql.database" . | quote }}
+
+  TRINO_ADDRESS: "jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080"
+  TRINO_PASSWORD: "{{ .Values.trino.password }}"
+  TRINO_USERNAME: "{{ .Values.trino.username }}"
+  TRINO_JDBC_URL: "jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/?user=trino"
+
+  TOKEN_SERVICE_INTERNAL_ADDRESS: "http://{{ include "peaka.fullname" . }}-be-token-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  AUTH_SERVICE_INTERNAL_ADDRESS: "http://{{ include "peaka.fullname" . }}-be-auth-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  DATA_REST_INTERNAL_ADDRESS: "http://{{ include "peaka.fullname" . }}-be-data-rest.{{ .Release.Namespace }}.svc.cluster.local:80"
+  EMAIL_SERVICE_INTERNAL_URL: "http://{{ include "peaka.fullname" . }}-be-email-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  PERMISSIONS_SERVICE_ADDRESS: "http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  STUDIO_API_SERVICE_ADDRESS: "http://{{ include "peaka.fullname" . }}-be-studio-api.{{ .Release.Namespace }}.svc.cluster.local:80"
+  METADATA_SERVICE_URL: "http://{{ include "peaka.fullname" . }}-be-metadata-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  METADATA_SERVICE_HOST: "{{ include "peaka.fullname" . }}-be-metadata-service.{{ .Release.Namespace }}.svc.cluster.local"
+  STUDIO_API_SERVICE_HOST_NAME: "{{ include "peaka.fullname" . }}-be-studio-api.{{ .Release.Namespace }}.svc.cluster.local"
+  SHAREDB_URL: "http://{{ include "peaka.fullname" . }}-be-collab-sharedb.{{ .Release.Namespace }}.svc.cluster.local:80"
+  SCHEDULEDFLOWRUNNER_URL: "http://{{ include "peaka.fullname" . }}-be-scheduled-flow-runner.{{ .Release.Namespace }}.svc.cluster.local:80"
+  ACTION_SERVICE_URL: "http://{{ include "peaka.fullname" . }}-be-workflow-worker-express.{{ .Release.Namespace }}.svc.cluster.local:80/express-worker/action/execute"
+  DATA_CACHE_SERVICE_URL: "http://{{ include "peaka.fullname" . }}-be-data-cache.{{ .Release.Namespace }}.svc.cluster.local:80"
+  MONITORING_SERVICE_INTERNAL_URL: "http://{{ include "peaka.fullname" . }}-be-monitoring-service.{{ .Release.Namespace }}.svc.cluster.local:80"
+  JEXL_ADDRESS: "localhost:8080"
+  SIDECAR_PORT: "8080"
+
+
+  CODE2_DEFAULT_SENDER: "info@peaka.com"
+  CODE2_DEFAULT_EMAIL_SERVICE_PROVIDER: "{{ default "sendgrid" .Values.emailServiceProvider }}"
+  DEFAULT_SMTP_SERVER_HOST: "{{ default "localhost" .Values.smtpServerHost }}"
+  DEFAULT_SMTP_SERVER_PORT: "{{ default 25 .Values.smtpServerPort }}"
+  DEFAULT_SMTP_SERVER_USERNAME: "{{ default "default" .Values.smtpServerUsername }}"
+  DEFAULT_SMTP_SERVER_PASSWORD: "{{ default "default" .Values.smtpServerPassword }}"
+  DEFAULT_SMTP_TLS_ENABLED: "{{ default "false" .Values.smtpTlsEnabled }}"
+
+  SECRET_STORE_SECRET_KEY: {{ .Values.secretStoreService.secretEncryptionKey | quote }}
+  JWT_RSA_PRIVATE_KEY_PATH: "/secrets/jwt/rsa/privatekey.pem"
+  JWT_RSA_PUBLIC_KEY_PATH: "/secrets/jwt/rsa/publickey.pem"
+  PUBLIC_CERT: "/secrets/jwt/rsa/publickey.pem"
+
+  MONGODB_ARCHITECTURE: {{ .Values.mongodb.architecture }}
+  SHAREDB_MONGO: "mongodb://{{ include "peaka.mongodb.fullname" }}.{{ .Release.Namespace }}.svc.cluster.local"
+
+
+  APP_BASEDIR: "/metadata-nfs"
+  GITHUB_ENABLED: "false"
+  CONNECTOR_BASEDIR: "/run/resource/connector"
+
+
+  SAMPLE_DATA_APP_ID: {{ .Values.sampleDataAppId }}
+
+  BIGTABLE_BUFFER_DB_HOST: "{{ include "peaka.bigtable.fullname" .  | quote }}.{{ .Release.Namespace }}.svc.cluster.local"
+  BIGTABLE_BUFFER_DB_PORT: {{ include "peaka.bigtable.port" | quote }}
+  BIGTABLE_BUFFER_DB_USERNAME: {{ include "peaka.bigtable.user" | quote }}
+  BIGTABLE_BUFFER_DB_PASSWORD: {{ include "peaka.bigtable.password" | quote }}
+  BIGTABLE_BUFFER_DB_NAME: "{{ include "peaka.bigtable.database" .  | quote }}"
+
+  PAYMENT_ENABLED: "false"
+  USAGE_MONITORING_ENABLED: "false"
+  SOCIAL_LOGIN_ENABLED: "false"
+  CODE2_ENVIRONMENT: "prod"
+
+  DBC_PUBLIC_PORT: {{ include "peaka.dbc.port" . }}
+  ONPREMISE: "true"
+
+  OPENAI_API_KEY: "{{ .Values.openAIApiKey | quote }}"

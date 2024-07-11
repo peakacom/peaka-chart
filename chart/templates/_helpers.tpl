@@ -213,6 +213,15 @@ Define the peaka.redis.fullname template with .Release.Name and "redis"
 {{- end -}}
 
 {{/*
+Define the peaka.redis-master.fullname template with .Release.Name and "redis-master"
+*/}}
+{{- define "peaka.redis-master.fullname" -}}
+{{- printf "%s-%s" .Release.Name "redis-master" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
+
+{{/*
 Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
 */}}
 {{- define "peaka.bigtable.fullname" -}}
@@ -286,6 +295,18 @@ Create a default fully qualified schema registry name for kafka connect.
 
 {{- define "peaka.trino.coordinator" -}}
 {{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{- define "peaka.temporal.frontend.fullname" -}}
+{{- printf "%s-%s" .Release.Name "temporal-frontend" | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
+{{- define "peaka.dbc.url" -}}
+{{- printf "%s/dbc" .Values.domain -}}
+{{- end }}
+
+{{- define "peaka.dbc.port" -}}
+{{- default 4567 .Values.dbc.port -}}
 {{- end }}
 
 {{/*

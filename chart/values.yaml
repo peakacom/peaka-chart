@@ -3,6 +3,8 @@ fullnameOverride: ""
 
 imagePullSecrets: []
 
+domain: "localhost"
+
 # Create a public & private key pair and feed them to here
 # generate a private key with `openssl genrsa -out key.pem 2048`
 # generate a public key with `openssl rsa -in key.pem -outform PEM -pubout -out key.pem.pub`
@@ -25,6 +27,8 @@ liquibase:
     tag: "prod"
     imagePullPolicy: "IfNotPresent"
 
+dbc:
+  port: 4567
 
 # disable this if you want to use an external postgresql server
 postgresql:
@@ -733,6 +737,7 @@ searchService:
 secretStoreService:
   enabled: true
   replicaCount: 1
+  secretEncryptionKey: "key"
   image:
     name: "be-secret-store-service"
     tag: "prod"
