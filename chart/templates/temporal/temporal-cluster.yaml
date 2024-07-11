@@ -1,3 +1,4 @@
+{{- if .Values.temporal.enabled }}
 apiVersion: temporal.io/v1beta1
 kind: TemporalCluster
 metadata:
@@ -26,3 +27,4 @@ spec:
       passwordSecretRef:
         name: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretName }}
         key: {{ default (include "peaka.postgresql.passwordSecretKey" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretKey }}
+{{- end }}
