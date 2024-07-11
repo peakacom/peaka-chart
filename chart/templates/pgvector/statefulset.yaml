@@ -64,7 +64,7 @@ spec:
             timeoutSeconds: 30
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: pgvector
+              name: {{ include "peaka.fullname" . }}-pgvector
               subPath: postgres
               readOnly: false
   volumeClaimTemplates:
