@@ -6,6 +6,7 @@ This Helm chart deploys Peaka in a Kubernetes cluster.
 
 - Kubernetes 1.22+
 - Helm 3+
+- PV provisioner support in the underlying infrastructure
 - cert-manager CRDs:  
   Peaka depends on Temporal to run flows, which require cert-manager CRDs. To install them:
   ```shell
