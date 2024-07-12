@@ -419,6 +419,9 @@ trino:
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
+      - -XX:+UnlockDiagnosticVMOptions
+      - -XX:G1NumCollectionsKeepPinned=10000000
+      - -XX:+EnableDynamicAgentLoading
     additionalExposedPorts: {}
     resources: {}
       # We usually recommend not to specify default resources and to leave this as a conscious
@@ -463,6 +466,9 @@ trino:
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
+      - -XX:+UnlockDiagnosticVMOptions
+      - -XX:G1NumCollectionsKeepPinned=10000000
+      - -XX:+EnableDynamicAgentLoading
     additionalConfigFiles: {}
     additionalExposedPorts: {}
     resources: {}

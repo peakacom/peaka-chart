@@ -46,6 +46,7 @@ data:
     node-scheduler.include-coordinator=true
 {{- end }}
     http-server.http.port={{ .Values.trino.service.port }}
+    http-server.process-forwarded=true
     query.max-memory={{ .Values.trino.server.config.query.maxMemory }}
     query.max-memory-per-node={{ .Values.trino.coordinator.config.query.maxMemoryPerNode }}
     query.max-length={{ .Values.trino.coordinator.config.query.maxLength }}
