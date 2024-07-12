@@ -20,9 +20,6 @@ data:
 
       location / {
         try_files $uri $uri/ /index.html;
-        add_header X-Frame-Options "DENY";
-        add_header Access-Control-Allow-Origin $cors_allow_host;
-        add_header Access-Control-Allow-Methods "GET";
       }
     
       location ~* .js$ {
@@ -35,8 +32,6 @@ data:
           etag off;
           if_modified_since off;
           add_header Cache-Control "public, no-transform";
-          add_header Access-Control-Allow-Origin $cors_allow_host;
-          add_header Access-Control-Allow-Methods "GET";
       }
 
       gzip on;
