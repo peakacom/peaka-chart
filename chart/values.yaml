@@ -134,6 +134,13 @@ kafka:
     replicaCount: 1
     persistence:
       size: 2Gi
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+    interbroker:
+      protocol: PLAINTEXT
 
 mongodb:
   # do not disable as Peaka requires a MongoDB server to be present in order to operate correctly.
