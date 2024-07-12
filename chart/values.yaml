@@ -163,6 +163,7 @@ mariadb:
 kafka:
   # do not disable as Peaka is not yet tested with other MQ options.
   enabled: true
+  nameOverride: kafka
   provisioning:
     numPartitions: 20
   extraConfig: |-
