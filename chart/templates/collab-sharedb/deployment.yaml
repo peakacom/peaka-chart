@@ -32,6 +32,10 @@ spec:
               containerPort: 8080
             - name: http
               containerPort: 7070
+          volumeMounts:
+            - mountPath: "/secrets/jwt/rsa"
+              name: jwt-rsa-secret
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
@@ -43,6 +47,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      volumes:
+        - name: jwt-rsa-secret
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
       {{- if .Values.collabSharedb.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
       {{- end }}
