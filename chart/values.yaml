@@ -376,7 +376,6 @@ temporal:
 
 # peaka uses trino for sql engine
 trino:
-  enabled: true
   fullnameOverride: ""
   nameOverride: ""
   workerNameOverride: ""
@@ -529,7 +528,6 @@ trino:
     annotations: {}
 
 aiRest:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-ai-rest"
@@ -541,7 +539,6 @@ aiRest:
   tolerations: {}
 
 authService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-auth-service"
@@ -562,7 +559,6 @@ authService:
     timeoutSeconds: 5
 
 cloudGateway:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-cloud-gateway"
@@ -573,7 +569,6 @@ cloudGateway:
   affinity: {}
 
 collabSharedb:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-collab-sharedb"
@@ -594,7 +589,6 @@ collabSharedb:
     timeoutSeconds: 15
 
 dataCache:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-data-cache"
@@ -620,7 +614,6 @@ dataCache:
     timeoutSeconds: 5
 
 dataRest:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-data-rest"
@@ -631,7 +624,6 @@ dataRest:
   affinity: {}
 
 dispatcher:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-dispatcher"
@@ -642,7 +634,6 @@ dispatcher:
   affinity: {}
 
 dispatcherAssigner:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-dispatcher-assigner"
@@ -653,7 +644,6 @@ dispatcherAssigner:
   affinity: {}
 
 dispatcherDlq:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-dispatcher-dlq"
@@ -664,7 +654,6 @@ dispatcherDlq:
   affinity: {}
 
 emailService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-email-service"
@@ -675,7 +664,6 @@ emailService:
   affinity: {}
 
 metadataService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-metadata-service"
@@ -696,7 +684,6 @@ metadataService:
     timeoutSeconds: 5
 
 monitoringService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-monitoring-service"
@@ -717,7 +704,6 @@ monitoringService:
     timeoutSeconds: 5
 
 permissionService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-permission-service"
@@ -738,7 +724,6 @@ permissionService:
     timeoutSeconds: 5
 
 runtimeApi:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-runtime-api"
@@ -759,7 +744,6 @@ runtimeApi:
     timeoutSeconds: 5
 
 scheduledFlowRunner:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-scheduled-flow-runner"
@@ -781,7 +765,6 @@ scheduledFlowRunner:
 
 
 secretStoreService:
-  enabled: true
   replicaCount: 1
   secretEncryptionKey: "key"
   image:
@@ -803,7 +786,6 @@ secretStoreService:
     timeoutSeconds: 5
 
 studioApi:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-studio-api"
@@ -824,7 +806,6 @@ studioApi:
     timeoutSeconds: 5
 
 tokenService:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-token-service"
@@ -845,7 +826,6 @@ tokenService:
     timeoutSeconds: 5
 
 webhookResolver:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-webhook-resolver"
@@ -856,7 +836,6 @@ webhookResolver:
   affinity: {}
 
 workflowHistory:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-workflow-history"
@@ -877,7 +856,6 @@ workflowHistory:
     timeoutSeconds: 5
 
 workflowStarter:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-workflow-starter"
@@ -888,7 +866,6 @@ workflowStarter:
   affinity: {}
 
 workflowWorkerExpress:
-  enabled: true
   replicaCount: 1
   image:
     name: "be-workflow-worker-express"
@@ -915,7 +892,6 @@ workflowWorkerExpress:
     timeoutSeconds: 5
 
 studioWeb:
-  enabled: true
   replicaCount: 1
   image:
     name: "fe-studio-app"
