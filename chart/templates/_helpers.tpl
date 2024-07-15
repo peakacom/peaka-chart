@@ -309,6 +309,127 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- default 4567 .Values.dbc.port -}}
 {{- end }}
 
+{{- define "peaka.connectors.default-oauth-clients" }}
+{{- if and .Values.connector.credentials.provider.google.clientId .Values.connector.credentials.provider.google.clientSecret }}
+      "google": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.google.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.google.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.google_ads.clientId .Values.connector.credentials.provider.google_ads.clientSecret .Values.connector.credentials.provider.google_ads.developerToken }}
+      "google_ads": {
+        "clientInfo": {
+          "type": "google_ads_oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.google_ads.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.google_ads.clientSecret }}",
+          "developerToken":"{{ .Values.connector.credentials.provider.google_ads.developerToken }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.hubspot.clientId .Values.connector.credentials.provider.hubspot.clientSecret }}
+      "hubspot": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.hubspot.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.hubspot.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.mailchimp.clientId .Values.connector.credentials.provider.mailchimp.clientSecret }}
+      "mailchimp": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.mailchimp.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.mailchimp.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.slack.clientId .Values.connector.credentials.provider.slack.clientSecret }}
+      "slack": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.slack.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.slack.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.intercom.clientId .Values.connector.credentials.provider.intercom.clientSecret }}
+      "intercom": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.intercom.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.intercom.clientSecret }}"
+        }
+      },
+     {{- end }}
+     {{- if and .Values.connector.credentials.provider.zoho_crm.clientId .Values.connector.credentials.provider.zoho_crm.clientSecret }}
+      "zoho_crm": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.zoho_crm.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.zoho_crm.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.linkedin.clientId .Values.connector.credentials.provider.linkedin.clientSecret }}
+      "linkedin": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.linkedin.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.linkedin.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.facebook.clientId .Values.connector.credentials.provider.facebook.clientSecret }}
+      "facebook": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.facebook.clientId }}",
+          "clientSecret":"{{ .Values.connector.credentials.provider.facebook.clientSecret }}"
+         }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.pipedrive.clientId .Values.connector.credentials.provider.pipedrive.clientSecret }}
+      "pipedrive": {
+        "clientInfo": {
+            "type": "oauth_client_info",
+            "clientId": "{{ .Values.connector.credentials.provider.pipedrive.clientId }}",
+            "clientSecret":"{{ .Values.connector.credentials.provider.pipedrive.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.dynamics_365.clientId .Values.connector.credentials.provider.dynamics_365.clientSecret .Values.connector.credentials.provider.dynamics_365.tenantId }}
+      "dynamics_365": {
+        "clientInfo": {
+          "type": "microsoft_oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.dynamics_365.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.dynamics_365.clientSecret }}",
+          "tenantId": "{{ .Values.connector.credentials.provider.dynamics_365.tenantId }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.microsoft.clientId .Values.connector.credentials.provider.microsoft.clientSecret }}
+      "microsoft": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.microsoft.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.microsoft.clientSecret }}"
+        }
+      },
+    {{- end }}
+    {{- if and .Values.connector.credentials.provider.quickbooks_online.clientId .Values.connector.credentials.provider.quickbooks_online.clientSecret }}
+      "quickbooks_online": {
+        "clientInfo": {
+          "type": "oauth_client_info",
+          "clientId": "{{ .Values.connector.credentials.provider.quickbooks_online.clientId }}",
+          "clientSecret": "{{ .Values.connector.credentials.provider.quickbooks_online.clientSecret }}"
+        }
+      },
+    {{- end }}
+{{- end }}
 {{/*
 Create the name of the trino service account to use
 */}}

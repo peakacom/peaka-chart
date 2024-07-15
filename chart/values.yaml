@@ -48,9 +48,53 @@ gYuM1GcRepbRjEX0UMJu8Bo4ndw6BA2UdPc7q0NN7hu27lyQ3DqM
 
 openAIApiKey:
 
+#set default oauth clients to be used for initializing respective connections
 connector:
   credentials:
     enabled: true
+    provider:
+      google:
+        clientId:
+        clientSecret:
+      google_ads:
+        clientId:
+        clientSecret:
+        developerToken:
+      hubspot:
+        clientId:
+        clientSecret:
+      mailchimp:
+        clientId:
+        clientSecret:
+      slack:
+        clientId:
+        clientSecret:
+      intercom:
+        clientId:
+        clientSecret:
+      zoho_crm:
+        clientId:
+        clientSecret:
+      linkedin:
+        clientId:
+        clientSecret:
+      facebook:
+        clientId:
+        clientSecret:
+      pipedrive:
+        clientId:
+        clientSecret:
+      dynamics_365:
+        clientId:
+        clientSecret:
+        tenantId:
+      microsoft:
+        clientId:
+        clientSecret:
+      quickbooks_online:
+        clientId:
+        clientSecret:
+
 
 # TLS settings
 tls:
