@@ -115,3 +115,5 @@ data:
   ONPREMISE: "true"
 
   OPENAI_API_KEY: {{ default "" .Values.openAIApiKey}}
+  CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain }}
+  CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.domain }}
