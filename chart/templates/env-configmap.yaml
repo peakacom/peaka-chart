@@ -114,6 +114,8 @@ data:
   DBC_PUBLIC_PORT: "{{ include "peaka.dbc.port" . }}"
   ONPREMISE: "true"
 
-  OPENAI_API_KEY: {{ default "" .Values.openAIApiKey}}
-  CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain }}
-  CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.domain }}
+  OPENAI_API_KEY: {{ default "" .Values.openAIApiKey | quote }}
+  CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain | quote }}
+  CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.domain | quote }}
+
+  GRPC_DNS_RESOLVER: "native"
