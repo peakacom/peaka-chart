@@ -711,7 +711,7 @@ metadataService:
   replicaCount: 1
   image:
     name: "be-metadata-service"
-    tag: "prod"
+    tag: "onpremise"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
