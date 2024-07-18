@@ -108,7 +108,7 @@ tls:
 liquibase:
   image:
     name: "be-data-migrator"
-    tag: "prod"
+    tag: "v0.0.33"
     imagePullPolicy: "IfNotPresent"
 
 dbc:
@@ -132,15 +132,13 @@ postgresql:
     persistence:
       size: 2Gi
     initdb:
-      scriptsConfigMap: postgresql-initdb-scripts
+      scriptsConfigMap: peaka-postgresql-initdb-scripts
       user: "postgres"
       password: "postgres"
 
 # peaka requires an NFS server to implement some functionalities
 nfsServer:
   enabled: true
-  # set this if you are using an external nfs server
-  nfsServerAddress: ""
   persistentVolume:
     # pv size of the nfs server
     size: 2Gi
@@ -212,7 +210,6 @@ mariadb:
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
-  # do not disable as Peaka is not yet tested with other MQ options.
   enabled: true
   nameOverride: kafka
   provisioning:
@@ -237,7 +234,6 @@ kafka:
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
 mongodb:
-  # do not disable as Peaka requires a MongoDB server to be present in order to operate correctly.
   enabled: true
   architecture: standalone
   useStatefulSet: true
