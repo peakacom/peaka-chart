@@ -9,9 +9,25 @@ This Helm chart deploys Peaka in a Kubernetes cluster.
 - PV provisioner support in the underlying infrastructure
 - cert-manager:  
   Peaka depends on Temporal to run flows, which requires cert-manager.
+
+## Installation
+### Get repository
+```shell
+helm repo add peaka https://peaka-chart.storage.googleapis.com/charts
+helm repo update
+```
+
+### Install
+```shell
+helm install [RELEASE_NAME] peaka/peaka
+```
+
+## Configuration
+Some configurations must be set for Peaka to run as expected. 
+
 - Peaka's container images are not publicly available. This means that a Kubernetes Secret of type `docker-registry`
-will be required. With the given `json` file containing access credentials to Peaka's container image registry, 
-run (in the same namespace in which you'll install Peaka):
+  will be required. With the given `json` file containing access credentials to Peaka's container image registry,
+  run (in the same namespace in which you'll install Peaka):
   ```shell
   kubectl create secret docker-registry <image-pull-secret-name> \
     --docker-server=https://europe-west3-docker.pkg.dev \
@@ -21,4 +37,4 @@ run (in the same namespace in which you'll install Peaka):
   ```
   Then, add the name of this secret to `.Values.imagePullSecrets`.
 - Generate JWT public/private key pair encrypted with RSA and fill `.Values.jwtRsaPublicKey`
-and `.Values.jwtRsaPrivateKey`.
+  and `.Values.jwtRsaPrivateKey`.
