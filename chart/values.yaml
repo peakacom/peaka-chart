@@ -104,6 +104,7 @@ tls:
   cert: ""
   key: ""
 
+# peaka uses a `liquibase` image to reflect database migrations.
 liquibase:
   image:
     name: "be-data-migrator"
@@ -113,7 +114,8 @@ liquibase:
 dbc:
   port: 4567
 
-# disable this if you want to use an external postgresql server
+# peaka uses postgresql to persist some internal data.
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 postgresql:
   enabled: true
   volumePermissions:
@@ -134,7 +136,7 @@ postgresql:
       user: "postgres"
       password: "postgres"
 
-# disable this if you want to use an external nfs server
+# peaka requires an NFS server to implement some functionalities
 nfsServer:
   enabled: true
   # set this if you are using an external nfs server
@@ -191,6 +193,8 @@ minio:
   persistence:
     size: 2Gi
 
+# database to be used for thrift store.
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
 mariadb:
   enabled: true
   replicaCount: 1
@@ -206,6 +210,7 @@ mariadb:
   persistence:
     size: 2Gi
 
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
   # do not disable as Peaka is not yet tested with other MQ options.
   enabled: true
@@ -230,6 +235,7 @@ kafka:
     interbroker:
       protocol: PLAINTEXT
 
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
 mongodb:
   # do not disable as Peaka requires a MongoDB server to be present in order to operate correctly.
   enabled: true
@@ -238,6 +244,7 @@ mongodb:
   persistence:
     size: 2Gi
 
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
   enabled: true
   auth:
@@ -247,6 +254,7 @@ redis:
     persistence:
       size: 2Gi
 
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 postgresqlbigtable:
   enabled: true
   volumePermissions:
@@ -420,7 +428,7 @@ temporal:
         passwordSecretName: ""
         passwordSecretKey: ""
 
-# peaka uses trino for sql engine
+# peaka uses trino as distributed sql engine
 trino:
   fullnameOverride: ""
   nameOverride: ""
