@@ -11,7 +11,7 @@ metadata:
 data:
   cat_00000000_0000_0000_0000_000000000000.properties: |
     connector.name=postgresql
-    connection-url="jdbc:postgresql://{{ template "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.postgresql.port" . }}/{{ template "peaka.postgresql.database" . }}"
+    connection-url=jdbc:postgresql://{{ template "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.postgresql.port" . }}/{{ template "peaka.postgresql.database" . }}
     connection-user={{ template "peaka.postgresql.user" . }}
     connection-password={{ template "peaka.postgresql.password" . }}
     case-insensitive-name-matching=true

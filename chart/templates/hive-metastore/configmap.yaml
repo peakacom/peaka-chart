@@ -44,11 +44,11 @@ data:
 
       <property>
           <name>fs.s3a.access.key</name>
-          <value>{{ include "peaka.minio.accessKey" . }} </value>
+          <value>{{ include "peaka.minio.accessKey" . }}</value>
       </property>
       <property>
           <name>fs.s3a.secret.key</name>
-          <value> {{ include "peaka.minio.secretKey" . }} </value>
+          <value>{{ include "peaka.minio.secretKey" . }}</value>
       </property>
       <property>
           <name>fs.s3a.endpoint</name>

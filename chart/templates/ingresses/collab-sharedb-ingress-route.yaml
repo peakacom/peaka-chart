@@ -35,7 +35,12 @@ metadata:
 spec:
   headers:
     customRequestHeaders:
+      {{- if .Values.tls.enabled }}
       X-Forwarded-Proto: https
+      {{- else }}
+      X-Forwarded-Proto: http
+      {{- end }}
+
 
 ---
 apiVersion: traefik.containo.us/v1alpha1

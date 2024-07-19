@@ -211,28 +211,28 @@ Define the peaka.mariadb.fullname template with .Release.Name and "mariadb"
 Set mariadb user
 */}}
 {{- define "peaka.mariadb.user" }}
-{{- default "peaka" (quote .Values.mariadb.db.user) }}
+{{- default "peaka"  .Values.mariadb.db.user }}
 {{- end }}
 
 {{/*
 Set mariadb password
 */}}
 {{- define "peaka.mariadb.password" }}
-{{- default "peaka" (quote .Values.mariadb.db.password) }}
+{{- default "peaka" .Values.mariadb.db.password }}
 {{- end }}
 
 {{/*
 Set mariadb db name
 */}}
 {{- define "peaka.mariadb.dbName" }}
-{{- default "metastore_db" (quote .Values.mariadb.db.name) }}
+{{- default "metastore_db"  .Values.mariadb.db.name }}
 {{- end }}
 
 {{/*
 Set mariadb port
 */}}
 {{- define "peaka.mariadb.port" }}
-{{- default 3306 (quote .Values.mariadb.service.ports.mysql) }}
+{{- default 3306  .Values.mariadb.service.ports.mysql }}
 {{- end }}
 
 {{/*
