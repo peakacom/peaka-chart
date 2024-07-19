@@ -102,18 +102,18 @@ Set Ingress route entry point based on TLS enabled
 
 
 {{- define "peaka.routes.baseUrl" -}}
-{{- if .Values.port }}
+{{- if .Values.port -}}
 {{ include "peaka.httpScheme" . }}://{{ .Values.domain }}:{{ .Values.port }}
-{{- else }}
+{{- else -}}
 {{ include "peaka.httpScheme" . }}://{{ .Values.domain }}
 {{- end -}}
 {{- end -}}
 
 
 {{- define "peaka.routes.baseUrlNoScheme" -}}
-{{- if .Values.port }}
+{{- if .Values.port -}}
 {{ .Values.domain }}:{{ .Values.port }}
-{{- else }}
+{{- else -}}
 {{ .Values.domain }}
 {{- end -}}
 {{- end -}}

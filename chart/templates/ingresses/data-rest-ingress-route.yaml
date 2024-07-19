@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - {{ include "peaka.ingress.entryPoint" . }}
   routes:
-    - match: Host(`{{ .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/data`)
+    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/data`)
       kind: Rule
       priority: 10
       middlewares:
@@ -46,5 +46,5 @@ metadata:
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
   replacePathRegex:
-    regex: ^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)
-    replacement: /(.*)
+    regex: "^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)"
+    replacement: "/${1}"

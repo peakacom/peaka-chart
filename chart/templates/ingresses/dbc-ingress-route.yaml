@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - dbc
   routes:
-    - match: Host(`{{ .Values.domain }}`) && PathPrefix(`/dbc`)
+    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/dbc`)
       kind: Rule
       priority: 10
       middlewares:
@@ -33,5 +33,5 @@ metadata:
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
   replacePathRegex:
-    regex: ^/dbc/(.*)
-    replacement: /(.*)
+    regex: "^/dbc/(.*)"
+    replacement: "/${1}"

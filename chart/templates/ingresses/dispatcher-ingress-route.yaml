@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - {{ include "peaka.ingress.entryPoint" . }}
   routes:
-    - match: Host(`{{ .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/dispatcher`)
+    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/dispatcher`)
       kind: Rule
       priority: 10
       middlewares:
@@ -33,5 +33,5 @@ metadata:
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
   replacePathRegex:
-    regex: ^/{{ include "peaka.routes.servicePath" . }}/dispatcher/(.*)
-    replacement: /(.*)
+    regex: "^/{{ include "peaka.routes.servicePath" . }}/dispatcher/(.*)"
+    replacement: "/${1}"
