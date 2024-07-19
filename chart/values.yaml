@@ -237,6 +237,10 @@ mongodb:
   enabled: true
   architecture: standalone
   useStatefulSet: true
+  auth:
+    enabled: false
+  arbiter:
+    enabled: false
   persistence:
     size: 2Gi
 
