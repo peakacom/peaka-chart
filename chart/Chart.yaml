@@ -58,3 +58,8 @@ dependencies:
     version: 0.3.0
     repository: https://alexandrevilain.github.io/temporal-operator
     condition: temporal.enabled
+  - name: traefik
+    alias: traefik
+    version: 20.8.0
+    repository: https://helm.traefik.io/traefik
+    condition: traefik.enabled

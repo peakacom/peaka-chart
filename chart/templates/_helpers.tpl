@@ -89,6 +89,47 @@ Set ws scheme for Peaka
 {{- end }}
 {{- end }}
 
+{{/*
+Set Ingress route entry point based on TLS enabled
+*/}}
+{{- define "peaka.ingress.entryPoint" -}}
+{{- if .Values.tls.enabled -}}
+{{- "websecure" }}
+{{- else }}
+{{- "web" }}
+{{- end }}
+{{- end }}
+
+
+{{- define "peaka.routes.baseUrl" -}}
+{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}:{{ .Values.port }}
+{{- end -}}
+
+{{- define "peaka.routes.baseUrlNoScheme" -}}
+{{ .Values.domain }}:{{ .Values.port }}
+{{- end -}}
+
+{{- define "peaka.routes.baseServiceUrl" -}}
+{{ include  "peaka.routes.baseUrl" . }}/{{ include "peaka.routes.servicePath" . }}
+{{- end -}}
+
+{{- define "peaka.routes.baseServiceUrlNoScheme" -}}
+{{ include  "peaka.routes.baseUrlNoScheme" . }}/{{ include "peaka.routes.servicePath" . }}
+{{- end -}}
+
+
+{{- define "peaka.routes.servicePath" -}}
+service
+{{- end -}}
+
+{{- define "peaka.routes.apiPath" -}}
+api
+{{- end -}}
+
+{{- define "peaka.routes.partnerPath" -}}
+partner
+{{- end -}}
+
 {{- define "peaka.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

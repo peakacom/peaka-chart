@@ -1,0 +1,37 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-dbc-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-dbc
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - dbc
+  routes:
+    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`) && PathPrefix(`/dbc`)
+      kind: Rule
+      priority: 10
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-dbc-replace-path-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-data-rest
+          port: http
+          passHostHeader: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-dbc-replace-path-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-dbc
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: ^/dbc/(.*)
+    replacement: /(.*)

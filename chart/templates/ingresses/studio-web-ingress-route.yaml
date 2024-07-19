@@ -1,0 +1,22 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-fe-studio-app-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`)
+      kind: Rule
+      priority: 1
+      services:
+        - name: {{ include "peaka.fullname" . }}-fe-studio-app
+          port: http
+          passHostHeader: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}

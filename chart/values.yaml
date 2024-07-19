@@ -4,7 +4,7 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 domain: "localhost"
-port: 80
+port: 8080
 
 # Create a public & private key pair and feed them to here
 # generate a private key with `openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048`
@@ -951,3 +951,57 @@ studioWeb:
   nodeSelector: {}
   affinity: {}
   readinessProbe: {}
+
+traefik:
+  enabled: true
+  logs:
+    general:
+      level: "TRACE"
+  service:
+    type: ClusterIP
+  ports:
+    # The name of this one can't be changed as it is used for the readiness and
+    # liveness probes, but you can adjust its config to your liking
+    traefik:
+      port: 9000
+      expose: true
+      # The exposed port for this service
+      exposedPort: 9000
+      # The port protocol (TCP/UDP)
+      protocol: TCP
+    web:
+      port: 8000
+      # hostPort: 8000
+      expose: true
+      exposedPort: 80
+      # The port protocol (TCP/UDP)
+      protocol: TCP
+      tls:
+        enabled: false
+    websecure:
+      port: 8443
+      # hostPort: 8443
+      expose: true
+      exposedPort: 443
+      # The port protocol (TCP/UDP)
+      protocol: TCP
+      tls:
+        enabled: false
+        # this is the name of a TLSOption definition
+    dbc:
+      port: 4567
+      expose: true
+      exposedPort: 4567
+      protocol: TCP
+      tls:
+        enabled: false
+  globalArguments:
+    - "--api.insecure=true"
+    - "--api.dashboard=true"
+    - "--log.level=TRACE"
+  ingressClass:
+    enabled: false
+  providers:
+    kubernetesCRD:
+      enabled: true
+      allowCrossNamespace: true

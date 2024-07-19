@@ -1,0 +1,75 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-studio-api-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/api`)
+      kind: Rule
+      priority: 10
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-drop-internal-headers
+        - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-studio-api
+          port: http
+          passHostHeader: true
+
+    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`) && PathPrefix(`/oauth2/callback`)
+      kind: Rule
+      priority: 101
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-oauth-replace-path
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-studio-api
+          port: http
+          passHostHeader: true
+
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-drop-internal-headers
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  headers:
+    customRequestHeaders:
+      "X-Peaka-User-Id": "" # Removes
+      "X-Peaka-Scope": "" # Removes
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-oauth-replace-path
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePath:
+    path: /api/connections/oauth2/callback
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-studio-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: ^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)
+    replacement: /(.*)

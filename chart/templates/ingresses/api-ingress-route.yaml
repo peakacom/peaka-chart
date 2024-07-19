@@ -1,0 +1,37 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-api-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`) && PathPrefix(`/{{ include "peaka.routes.apiPath" . }}`)
+      kind: Rule
+      priority: 10
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-api-replace-path-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-dispatcher
+          port: http
+          passHostHeader: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-api-replace-path-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-api
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: ^/api/(.*)
+    replacement: /(.*)

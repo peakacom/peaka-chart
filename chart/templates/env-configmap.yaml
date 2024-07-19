@@ -13,21 +13,21 @@ data:
 
   SECRET_STORAGE_SERVICE: "http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80"
 
-  AUTH_SERVICE_EXTERNAL_ADDRESS: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/auth"
-  FETCH_METADATA_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/runtimeapi"
-  REACT_APP_FETCH_METADATA_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/runtimeapi"
-  DISPATCHER_HOST_NAME: "{{ .Values.domain }}/service/dispatcher"
-  API_HOST_NAME_PATTERN: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/api/.*"
-  STUDIO_HOST: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}"
-  STUDIO_API_HOST: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/studioapi"
+  AUTH_SERVICE_EXTERNAL_ADDRESS: "{{ include "peaka.routes.baseServiceUrl" . }}/auth"
+  FETCH_METADATA_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/runtimeapi"
+  REACT_APP_FETCH_METADATA_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/runtimeapi"
+  DISPATCHER_HOST_NAME: "{{ .Values.domain }}/{{ include "peaka.routes.servicePath" . }}/dispatcher"
+  API_HOST_NAME_PATTERN: "{{ include "peaka.routes.baseUrl" . }}/{{ include "peaka.routes.apiPath" . }}/.*"
+  STUDIO_HOST: "{{ include "peaka.routes.baseUrl" . }}"
+  STUDIO_API_HOST: "{{ include "peaka.routes.baseServiceUrl" . }}/studioapi"
   CODE2_DOMAIN: "{{ .Values.domain }}"
-  DISPATCHER_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/dispatcher"
-  COLLABORATION_BACKEND_ADDRESS: "{{ include "peaka.websocketScheme" . }}://{{ .Values.domain }}/service/sharedb"
-  STUDIO_API_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/studioapi/api"
-  TOKEN_SERVICE_PUBLIC_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/service/token-service"
-  TOKEN_SERVICE_REDIRECT_URL: "{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}/oauth2/callback"
+  DISPATCHER_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/dispatcher"
+  COLLABORATION_BACKEND_ADDRESS: "{{ include "peaka.websocketScheme" . }}://{{ .Values.domain }}/{{ include "peaka.routes.servicePath" . }}/sharedb"
+  STUDIO_API_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/studioapi/api"
+  TOKEN_SERVICE_PUBLIC_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/token-service"
+  TOKEN_SERVICE_REDIRECT_URL: "{{ include "peaka.routes.baseUrl" . }}/oauth2/callback"
   DBC_PUBLIC_URL: "{{ include "peaka.dbc.url" . }}"
-  STUDIO_API_HOST_NO_SCHEME: "{{ .Values.domain }}/service/studioapi"
+  STUDIO_API_HOST_NO_SCHEME: "{{ include "peaka.routes.baseServiceUrlNoScheme" . }}/studioapi"
 
   ENVIRONMENT: "production"
   TEST_ENVIRONMENT: "false"
@@ -113,6 +113,8 @@ data:
 
   DBC_PUBLIC_PORT: "{{ include "peaka.dbc.port" . }}"
   ONPREMISE: "true"
+
+  ZIPY_ENABLED: "false"
 
   OPENAI_API_KEY: {{ default "" .Values.openAIApiKey | quote }}
   CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain | quote }}
