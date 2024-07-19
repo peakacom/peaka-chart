@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - {{ include "peaka.ingress.entryPoint" . }}
   routes:
-    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`)
+    - match: Host(`{{ .Values.domain }}`)
       kind: Rule
       priority: 1
       services:

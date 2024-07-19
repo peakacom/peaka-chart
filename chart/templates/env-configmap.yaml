@@ -115,7 +115,7 @@ data:
   ONPREMISE: "true"
 
   ZIPY_ENABLED: "false"
-
+  GA_ENABLED: "false"
   OPENAI_API_KEY: {{ default "" .Values.openAIApiKey | quote }}
   CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain | quote }}
   CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.domain | quote }}

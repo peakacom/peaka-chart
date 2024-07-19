@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - dbc
   routes:
-    - match: Host(`{{ include "peaka.routes.baseUrl" . }}`) && PathPrefix(`/dbc`)
+    - match: Host(`{{ .Values.domain }}`) && PathPrefix(`/dbc`)
       kind: Rule
       priority: 10
       middlewares:
