@@ -200,6 +200,8 @@ minio:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
 mariadb:
   enabled: true
+  image:
+    tag: 10.11.4-debian-11-r3
   replicaCount: 1
   db:
     user: peaka
