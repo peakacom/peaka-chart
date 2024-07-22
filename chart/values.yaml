@@ -6,6 +6,11 @@ imagePullSecrets: []
 domain: "localhost"
 port: 8181
 
+rootUser:
+    email: "root@onpremise.com"
+    password: "s3cr3t"
+
+
 # Create a public & private key pair and feed them to here
 # generate a private key with `openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048`
 # generate a public key with `openssl pkey -in rsakey.pem -pubout -out rsapubkey.pem`
@@ -949,7 +954,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: "fe-studio-app"
-    tag: "v1.0.66"
+    tag: "v1.0.79"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}

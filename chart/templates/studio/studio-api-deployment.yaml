@@ -40,6 +40,17 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          env:
+            - name: ROOT_USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.fullname" . }}-studio-root-user-secret
+                  key: username
+            - name: ROOT_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.fullname" . }}-studio-root-user-secret
+                  key: password
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
