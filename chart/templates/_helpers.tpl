@@ -276,7 +276,7 @@ Define the peaka.redis-master.fullname template with .Release.Name and "redis-ma
 Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
 */}}
 {{- define "peaka.bigtable.fullname" -}}
-{{- printf "%s-%s" .Release.Name "bigtable" | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Release.Name "postgresqlbigtable" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "peaka.bigtable.port" -}}
