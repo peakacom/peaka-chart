@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: {{ .Values.hiveMetastore.image.pullPolicy | quote }}
           env:
             - name: METASTORE_DB_HOSTNAME
-              value: {{ .Values.mariadb.serviceName }}
+              value: {{ include "peaka.mariadb.fullname" . | quote }}
             - name: HADOOP_HEAPSIZE
               value: {{ .Values.hiveMetastore.hadoopHeapSize | quote }}
             - name: METASTORE_TYPE
