@@ -270,12 +270,17 @@ postgresqlbigtable:
     username: "code2db"
     password: "code2db"
     database: "code2db"
+    postgresPassword: "postgres"
   primary:
     extendedConfiguration: |-
       idle_session_timeout = 600000
       max_connections = 1000
     persistence:
       size: 2Gi
+    initdb:
+      scriptsConfigMap: peaka-postgresqlbigtable-initdb-scripts
+      user: "postgres"
+      password: "postgres"
 
 # Default values for cp-kafka-connect.
 kafkaConnect:
