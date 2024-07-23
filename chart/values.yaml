@@ -678,7 +678,7 @@ dataRest:
   replicaCount: 1
   image:
     name: "be-data-rest"
-    tag: "v0.0.170"
+    tag: "v0.0.178"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -850,7 +850,7 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "v0.0.171"
+    tag: "v0.0.176"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -870,7 +870,7 @@ tokenService:
   replicaCount: 1
   image:
     name: "be-token-service"
-    tag: "v0.0.34"
+    tag: "v0.0.35"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -920,7 +920,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: "be-workflow-starter"
-    tag: "v0.0.65"
+    tag: "v0.0.66"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}

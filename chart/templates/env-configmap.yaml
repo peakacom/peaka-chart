@@ -27,7 +27,7 @@ data:
   TOKEN_SERVICE_PUBLIC_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/token-service"
   TOKEN_SERVICE_REDIRECT_URL: "{{ include "peaka.routes.baseUrl" . }}/oauth2/callback"
   DBC_PUBLIC_URL: "{{ include "peaka.dbc.url" . }}"
-  STUDIO_API_HOST_NO_SCHEME: "{{ include "peaka.routes.baseServiceUrlNoScheme" . }}/studioapi"
+  STUDIO_API_HOST_NO_SCHEME: "{{ include "peaka.routes.baseServiceUrlNoScheme" . }}"
 
   ENVIRONMENT: "production"
   TEST_ENVIRONMENT: "false"
