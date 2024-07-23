@@ -45,6 +45,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.permissionService.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.permissionService.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}

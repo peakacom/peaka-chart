@@ -66,6 +66,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.studioApi.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.studioApi.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}

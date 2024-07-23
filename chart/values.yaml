@@ -613,13 +613,23 @@ authService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -668,13 +678,23 @@ dataCache:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 45
+    initialDelaySeconds: 60
     periodSeconds: 20
     successThreshold: 1
     timeoutSeconds: 5
@@ -738,33 +758,23 @@ metadataService:
   resources: {}
   nodeSelector: {}
   affinity: {}
-  readinessProbe:
+  livenessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
-    periodSeconds: 5
+    initialDelaySeconds: 60
+    periodSeconds: 20
     successThreshold: 1
     timeoutSeconds: 5
-
-monitoringService:
-  replicaCount: 1
-  image:
-    name: "be-monitoring-service"
-    tag: "v0.0.2"
-    imagePullPolicy: "IfNotPresent"
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -778,13 +788,23 @@ permissionService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -798,13 +818,23 @@ runtimeApi:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -818,17 +848,26 @@ scheduledFlowRunner:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
-
 
 secretStoreService:
   replicaCount: 1
@@ -840,13 +879,23 @@ secretStoreService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -860,13 +909,23 @@ studioApi:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -880,13 +939,23 @@ tokenService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -910,13 +979,23 @@ workflowHistory:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -946,13 +1025,23 @@ workflowWorkerExpress:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
   readinessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health
       port: 9090
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5

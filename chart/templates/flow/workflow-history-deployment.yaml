@@ -47,6 +47,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.workflowHistory.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.workflowHistory.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}

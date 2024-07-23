@@ -37,6 +37,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.runtimeApi.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.runtimeApi.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
