@@ -42,9 +42,17 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.secretStoreService.readinessProbe }}
+          volumeMounts:
+            - name: connection-providers
+              readOnly: true
+              mountPath: /secrets
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      volumes:
+        - name: connection-providers
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-connection-credentials-secret
       {{- if .Values.secretStoreService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.secretStoreService.terminationGracePeriodSeconds }}
       {{- end }}

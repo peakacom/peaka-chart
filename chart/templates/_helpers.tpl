@@ -371,7 +371,7 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "peaka.dbc.url" -}}
-{{- printf "%s/dbc" .Values.domain -}}
+{{- .Values.domain -}}
 {{- end }}
 
 {{- define "peaka.dbc.port" -}}

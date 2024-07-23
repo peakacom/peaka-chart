@@ -459,7 +459,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.509
+    tag: v0.0.512
   initContainers: {}
   auth: {}
     # Set username and password
@@ -871,7 +871,7 @@ scheduledFlowRunner:
 
 secretStoreService:
   replicaCount: 1
-  secretEncryptionKey: "key"
+  secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
     name: "be-secret-store-service"
     tag: "v0.0.19"
@@ -904,8 +904,8 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "v0.0.176"
-    imagePullPolicy: "IfNotPresent"
+    tag: "latest"
+    imagePullPolicy: "Always"
   resources: {}
   nodeSelector: {}
   affinity: {}

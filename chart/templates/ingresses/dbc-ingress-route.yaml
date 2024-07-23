@@ -9,11 +9,9 @@ spec:
   entryPoints:
     - dbc
   routes:
-    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/dbc`)
+    - match: Host(`{{  .Values.domain }}`) && (PathPrefix(`/ui`) || PathPrefix(`/v1`))
       kind: Rule
-      priority: 10
-      middlewares:
-        - name: {{ include "peaka.fullname" . }}-dbc-replace-path-middleware
+      priority: 1000
       services:
         - name: {{ include "peaka.fullname" . }}-be-data-rest
           port: http
@@ -22,16 +20,3 @@ spec:
   tls:
     secretName: {{ include "peaka.fullname" . }}-tls-secret
   {{- end }}
-
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "peaka.fullname" . }}-dbc-replace-path-middleware
-  labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-dbc
-    {{- include "peaka.labels" . | nindent 4 }}
-spec:
-  replacePathRegex:
-    regex: "^/dbc/(.*)"
-    replacement: "/${1}"
