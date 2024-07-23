@@ -112,7 +112,12 @@ data:
   CODE2_ENVIRONMENT: "prod"
 
   DBC_PUBLIC_PORT: "{{ include "peaka.dbc.port" . }}"
+  DBC_SCHEME: {{ include "peaka.httpScheme" . | quote }}
   ONPREMISE: "true"
+
+  STUDIO_API_PORT: {{ .Values.port | quote }}
+  STUDIO_API_SCHEME: {{ include "peaka.httpScheme" . | quote }}
+  STUDIO_API_PATH: "/service/studioapi/data"
 
   ZIPY_ENABLED: "false"
   GA_ENABLED: "false"
