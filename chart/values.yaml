@@ -930,7 +930,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: "be-workflow-worker-express"
-    tag: "v0.0.65"
+    tag: "v0.0.66"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
