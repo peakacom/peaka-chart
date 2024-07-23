@@ -1004,7 +1004,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: "be-workflow-starter"
-    tag: "v0.0.66"
+    tag: "v0.0.67"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -1014,7 +1014,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: "be-workflow-worker-express"
-    tag: "v0.0.66"
+    tag: "v0.0.67"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
