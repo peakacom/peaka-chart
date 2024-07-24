@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - dbc
   routes:
-    - match: Host(`{{  .Values.domain }}`) && (PathPrefix(`/ui`) || PathPrefix(`/v1`))
+    - match: Host(`{{  .Values.domain }}`)
       kind: Rule
       priority: 1000
       services:
