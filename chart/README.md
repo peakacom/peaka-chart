@@ -32,7 +32,7 @@ Some configurations must be set for Peaka to run as expected.
   kubectl create secret docker-registry <image-pull-secret-name> \
     --docker-server=https://europe-west3-docker.pkg.dev \
     --docker-username=_json_key \
-    --docker-password=<path/to/given/json/file> \
+    --docker-password="$(cat <path/to/given/json/file>)" \
     --docker-email=not@val.id
   ```
   Then, add the name of this secret to `.Values.imagePullSecrets`.
