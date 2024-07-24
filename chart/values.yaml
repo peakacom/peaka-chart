@@ -5,7 +5,7 @@ imagePullSecrets: []
 
 domain: "localhost"
 # use this port for port-forwarding
-port: 8181
+port: 8000
 
 rootUser:
   email: "root@onpremise.com"
@@ -15,45 +15,10 @@ rootUser:
 # Create a public & private key pair and feed them to here
 # generate a private key with `openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048`
 # generate a public key with `openssl pkey -in rsakey.pem -pubout -out rsapubkey.pem`
-jwtRsaPublicKey: |
-  -----BEGIN PUBLIC KEY-----
-  MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp3+eCXXU3G0xIC8iKWVm
-  zTYUjoLyrOCtPMCkYBtwlNjMaD9+sytgCeuoCl2hohpjP3yrhoqPchFXhsDVP7cf
-  MV+uhbSYcB3nhItEI/wtIKAV/olziKk0obXlrYl8yzCLmyOfVfJYqWIsR7O3XKLJ
-  gjiNcECXe9aZF/d35NshvaOH0WkrWajDjiid3MVwM4RXhRrN8vSNfcowe/c9iDZL
-  CfMlauh6wUJKpMZrfK+snYvT1rDqcQM0UwvJFmj2droEhq1TsnEE5SVelCpcvaIQ
-  HWDwZ8sasN4kBHxFOCxUvbTtK3KrANu7tbAt37aZwMnE+kwNvp8Xa4LyuLKMPh7h
-  PQIDAQAB
-  -----END PUBLIC KEY-----
-jwtRsaPrivateKey: |
-  -----BEGIN PRIVATE KEY-----
-  MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCnf54JddTcbTEg
-  LyIpZWbNNhSOgvKs4K08wKRgG3CU2MxoP36zK2AJ66gKXaGiGmM/fKuGio9yEVeG
-  wNU/tx8xX66FtJhwHeeEi0Qj/C0goBX+iXOIqTShteWtiXzLMIubI59V8lipYixH
-  s7dcosmCOI1wQJd71pkX93fk2yG9o4fRaStZqMOOKJ3cxXAzhFeFGs3y9I19yjB7
-  9z2INksJ8yVq6HrBQkqkxmt8r6ydi9PWsOpxAzRTC8kWaPZ2ugSGrVOycQTlJV6U
-  Kly9ohAdYPBnyxqw3iQEfEU4LFS9tO0rcqsA27u1sC3ftpnAycT6TA2+nxdrgvK4
-  sow+HuE9AgMBAAECggEARyJHAxyEHGLRCKqLtwnl6UPM4iMRncLDP7hOdrRgkQ4r
-  bSB+FehXXo8yq8hM4xOSz70J+VbyCY783XEaf3ctK6JHc2gZjw/cKWmdtCyeG6tw
-  +8rzAnhdrkmaM6NemMpSl72+ptkHt1PGm2Li/dfyfTe4NZJw4vplxQxnYg2AHFFd
-  c92DQnpsM2qOgS+n/KbRLfb9Ym/v5l29/C0t8pQPb0vC4yVobINJ2EVAH95Ax0HL
-  r0QHtzHKmBmUR18QWkY1QhNmWMhFA6cPEpRw1agbNBrv3DYoFVP0DDslBZXil7Wr
-  xTYIg2JvHKMZwlxAKJFszLs6Ppo7D+aGXKS2yhX1nwKBgQDPYi17tTTCxaydYvN7
-  YUK44a5LS4NyUEKhk1EgM8ITNorPPk9+jZGW63WogVW6YGV2ddrOUKW7KE2TL31i
-  QxhzrS1OC4UOnIvr5xPfBnj4erPFfvWcYJarR0/jmbAzMaaLADjAxk83x+3dDgew
-  onOxhU8l47rjtTIuZ9cZHFRk4wKBgQDOw8x8t+oHUwZr5nf3n7O1ByxezlYx1YOC
-  CFH9V4antJ7WQ8YGy0PHB5oz/ZG1AP67TBkHes7NZcX+Oku9ndtcQ0GADRhmHLTZ
-  2PPSCUCMVz94K5sWuPzN7GXqlSUyFYHDCZPdEme81wiiax4ahs4TzhjC/dM/sPKe
-  ml2xPOibXwKBgQChvzYwVU24WArgmivDYEF1B3g0e8oi35yIfuj4T8YfzBuJtlS0
-  JOCXsEANVAq0GbkpIpSs89O/XJjcol6NxD0PA9PhGjUGB21OaeVivp6dVr5d3D7e
-  X6tEHZOeteDqnOADbAHXwRRKMmJAVlADIUFRBOONbsf2D/36mbz3ddQQ9wKBgETQ
-  vdo0i9tsMpLu3ba4nGL/xDC5k856NY6tnjwnSVW/s620WNAiDqjLSvNKzZfkgONt
-  bFck9HdADCmU1WiChWOrrr0jnp89pqNqpZueILGUyDcCrFdfsiQHLdRpVzvYFJwJ
-  MAFAAu7C0sjbxeUmQKguy+b5+7kS92z6C3zVvMUZAoGAY6Dsj33HHuCL+TI4gJn/
-  JcxNFryxUdGzCFClYOfmectKRAG7MHqAMy1l+h8H5GPwUhzagpZhiqE650WWUf/J
-  WkwrjqojrClJ55jMLkChNCXcIotT6w8W2ozeY3ti7lBGQUSUIi+REM8bEQ7RyZnV
-  4cxo31jCrllvNNEeQdbL0zk=
-  -----END PRIVATE KEY-----
+jwtRsaPublicKey: ""
+jwtRsaPrivateKey: ""
+
+# enter your openAI api key to use built-in chatGPT.
 openAIApiKey:
 
 #set default oauth clients to be used for initializing respective connections
