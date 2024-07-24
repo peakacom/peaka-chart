@@ -23,9 +23,11 @@ spec:
         release: {{ .Release.Name }}
         component: coordinator
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}
       {{- with .Values.trino.securityContext }}

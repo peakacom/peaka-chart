@@ -27,9 +27,11 @@ spec:
         release: {{ .Release.Name }}
         component: worker
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       {{- end }}
       securityContext:
         fsGroup: 1001

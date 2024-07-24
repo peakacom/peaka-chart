@@ -19,9 +19,11 @@ spec:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-scheduled-flow-runner
         {{- include "peaka.labels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       {{- end }}
       initContainers:
         - name: liquibase
