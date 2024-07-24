@@ -223,6 +223,7 @@ kafka:
   nameOverride: kafka
   provisioning:
     numPartitions: 20
+    replicationFactor: 1
   extraConfig: |-
     log.retention.hours=12
     max.message.bytes=50000000
