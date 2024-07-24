@@ -12,8 +12,6 @@ spec:
     - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.apiPath" . }}`)
       kind: Rule
       priority: 10
-      middlewares:
-        - name: {{ include "peaka.fullname" . }}-api-replace-path-middleware
       services:
         - name: {{ include "peaka.fullname" . }}-be-dispatcher
           port: http
@@ -23,15 +21,3 @@ spec:
     secretName: {{ include "peaka.fullname" . }}-tls-secret
   {{- end }}
 
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "peaka.fullname" . }}-api-replace-path-middleware
-  labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-api
-    {{- include "peaka.labels" . | nindent 4 }}
-spec:
-  replacePathRegex:
-    regex: "^/api/(.*)"
-    replacement: "/${1}"
