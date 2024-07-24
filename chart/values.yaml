@@ -7,8 +7,8 @@ domain: "localhost"
 port: 8181
 
 rootUser:
-    email: "root@onpremise.com"
-    password: "s3cr3t"
+  email: "root@onpremise.com"
+  password: "s3cr3t"
 
 
 # Create a public & private key pair and feed them to here
