@@ -718,7 +718,7 @@ dispatcher:
   replicaCount: 1
   image:
     name: "be-dispatcher"
-    tag: "v0.0.25"
+    tag: "v0.0.26"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -909,8 +909,8 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "latest"
-    imagePullPolicy: "Always"
+    tag: "v0.0.178"
+    imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -969,7 +969,7 @@ webhookResolver:
   replicaCount: 1
   image:
     name: "be-webhook-resolver"
-    tag: "v0.0.30"
+    tag: "v0.0.31"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -1055,7 +1055,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: "fe-studio-app"
-    tag: "v1.0.79"
+    tag: "v1.0.81"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
