@@ -1,21 +1,34 @@
+{{ include "peaka.chart" . }} deployed!
+
 {{- if eq .Values.traefik.service.type "ClusterIP" "NodePort" }}
 Peaka can be accessed via port {{ .Values.traefik.ports.web.port }} on the following DNS name from within your cluster:
 {{ template "peaka.fullname" . }}-traefik.{{ .Release.Namespace }}.svc.cluster.local
 
+{{- if .Values.port }}
 To access Peaka from localhost, run the below commands:
 
   1. export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name=traefik" -o jsonpath="{.items[0].metadata.name}")
 
-  2. kubectl port-forward $POD_NAME 8000 --namespace {{ .Release.Namespace }}
+  2. kubectl port-forward $POD_NAME {{ .Values.port }} --namespace {{ .Release.Namespace }}
 
-You can now access Peaka on http://localhost:8000.
+You can now access Peaka on http://localhost:{{ .Values.port }}.
+{{- else }}
+To access Peaka from localhost, please set a port to .Values.port.
+{{- end }}
 
 {{- end }}
 {{- if eq .Values.traefik.service.type "LoadBalancer" }}
-Peaka can be accessed via port {{ .Values.traefik.ports.web.exposedPort }} on an external IP address. Get the service external IP address by:
+{{- $port := "" }}
+{{- if .Values.tls.enabled }}
+{{- $port = .Values.traefik.ports.websecure.exposedPort }}
+{{- else }}
+{{- $port = .Values.traefik.ports.web.exposedPort }}
+{{- end }}
+
+Peaka can be accessed via port {{ $port }} on an external IP address. Get the service external IP address by:
 kubectl get svc --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name=traefik
 
 Note that the public IP may take a couple of minutes to be available.
 
-You can now access Peaka on http://<External-IP>:{{ .Values.traefik.ports.web.exposedPort }}.
+You can now access Peaka on {{ include "peaka.httpScheme" . }}://<External-IP>:{{ $port }}.
 {{- end }}
