@@ -410,7 +410,6 @@ temporal:
         passwordSecretName: ""
         passwordSecretKey: ""
 
-# peaka uses trino as distributed sql engine
 trino:
   fullnameOverride: ""
   nameOverride: ""
