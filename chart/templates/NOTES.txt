@@ -5,6 +5,7 @@ Peaka can be accessed via port {{ .Values.traefik.ports.web.port }} on the follo
 {{ template "peaka.fullname" . }}-traefik.{{ .Release.Namespace }}.svc.cluster.local
 
 {{- if .Values.port }}
+
 To access Peaka from localhost, run the below commands:
 
   1. export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name=traefik" -o jsonpath="{.items[0].metadata.name}")
