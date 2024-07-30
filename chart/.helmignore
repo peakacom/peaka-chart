@@ -21,3 +21,5 @@
 .idea/
 *.tmproj
 .vscode/
+# Temporary values file
+.values.yaml
