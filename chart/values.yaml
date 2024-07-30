@@ -558,7 +558,6 @@ trino:
       pluginDir: /usr/lib/trino/plugin
     coordinatorExtraConfig: ""
     workerExtraConfig: ""
-  nodePort: 32181
   service:
     type: ClusterIP
     port: 8080
@@ -1062,7 +1061,7 @@ traefik:
       expose: true
       exposedPort: 80
       # The port protocol (TCP/UDP)
-      nodePort: 30080
+      #nodePort: 30080
       protocol: TCP
       tls:
         enabled: false
@@ -1070,7 +1069,7 @@ traefik:
       port: 8443
       # hostPort: 8443
       expose: true
-      nodePort: 30443
+      #nodePort: 30443
       exposedPort: 443
       # The port protocol (TCP/UDP)
       protocol: TCP
@@ -1081,7 +1080,7 @@ traefik:
       port: 4567
       expose: true
       exposedPort: 4567
-      nodePort: 30567
+      #nodePort: 30567
       protocol: TCP
       tls:
         enabled: false
