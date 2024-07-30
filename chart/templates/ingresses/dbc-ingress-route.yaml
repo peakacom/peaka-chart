@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - dbc
   routes:
-    - match: Host(`{{  .Values.domain }}`)
+    - match: Host(`{{  .Values.accessUrl.domain }}`)
       kind: Rule
       priority: 1000
       services:

@@ -3,9 +3,22 @@ fullnameOverride: ""
 
 imagePullSecrets: []
 
-domain: "localhost"
-# use this port for port-forwarding
-port: 8000
+# Configure the URL and port through which the services will be accessed.
+# Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.
+accessUrl:
+
+  # Set the common domain through which the services will be accessed.
+  domain: "localhost"
+
+  # Set the common URL scheme for accessing the services.
+  scheme: http
+
+  # set the port through which the Studio web application will be accessed.
+  # use this port for port-forwarding
+  port: 8000
+
+  # set the port through which the JDBC service will be accessed.
+  dbcPort: 4567
 
 rootUser:
   email: "root@onpremise.com"
@@ -81,10 +94,6 @@ liquibase:
     name: "be-data-migrator"
     tag: "v0.0.33"
     imagePullPolicy: "IfNotPresent"
-
-# port for partner api
-dbc:
-  port: 4567
 
 # peaka uses postgresql to persist some internal data.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
@@ -1053,6 +1062,7 @@ traefik:
       expose: true
       exposedPort: 80
       # The port protocol (TCP/UDP)
+      nodePort: 30080
       protocol: TCP
       tls:
         enabled: false
@@ -1060,6 +1070,7 @@ traefik:
       port: 8443
       # hostPort: 8443
       expose: true
+      nodePort: 30443
       exposedPort: 443
       # The port protocol (TCP/UDP)
       protocol: TCP
@@ -1070,6 +1081,7 @@ traefik:
       port: 4567
       expose: true
       exposedPort: 4567
+      nodePort: 30567
       protocol: TCP
       tls:
         enabled: false

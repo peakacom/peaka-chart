@@ -71,21 +71,17 @@ europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 Set http scheme for Peaka
 */}}
 {{- define "peaka.httpScheme" -}}
-{{- if .Values.tls.enabled -}}
-{{- "https" }}
-{{- else }}
-{{- "http" }}
-{{- end }}
+{{- .Values.accessUrl.scheme -}}
 {{- end }}
 
 {{/*
 Set ws scheme for Peaka
 */}}
 {{- define "peaka.websocketScheme" -}}
-{{- if .Values.tls.enabled -}}
-{{- "wss" }}
-{{- else }}
+{{- if eq .Values.accessUrl.scheme "http"  -}}
 {{- "ws" }}
+{{- else }}
+{{- "wss" }}
 {{- end }}
 {{- end }}
 
@@ -102,19 +98,19 @@ Set Ingress route entry point based on TLS enabled
 
 
 {{- define "peaka.routes.baseUrl" -}}
-{{- if .Values.port -}}
-{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}:{{ .Values.port }}
+{{- if .Values.accessUrl.port -}}
+{{ include "peaka.httpScheme" . }}://{{ .Values.accessUrl.domain }}:{{ .Values.accessUrl.port }}
 {{- else -}}
-{{ include "peaka.httpScheme" . }}://{{ .Values.domain }}
+{{ include "peaka.httpScheme" . }}://{{ .Values.accessUrl.domain }}
 {{- end -}}
 {{- end -}}
 
 
 {{- define "peaka.routes.baseUrlNoScheme" -}}
-{{- if .Values.port -}}
-{{ .Values.domain }}:{{ .Values.port }}
+{{- if .Values.accessUrl.port -}}
+{{ .Values.accessUrl.domain }}:{{ .Values.accessUrl.port }}
 {{- else -}}
-{{ .Values.domain }}
+{{ .Values.accessUrl.domain }}
 {{- end -}}
 {{- end -}}
 
@@ -371,11 +367,11 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "peaka.dbc.url" -}}
-{{- .Values.domain -}}
+{{- .Values.accessUrl.domain -}}
 {{- end }}
 
 {{- define "peaka.dbc.port" -}}
-{{- default 4567 .Values.dbc.port -}}
+{{- default 4567 .dbcPort -}}
 {{- end }}
 
 {{- define "peaka.connectors.default-oauth-clients" }}

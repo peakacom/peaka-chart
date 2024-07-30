@@ -9,7 +9,7 @@ spec:
   entryPoints:
     - {{ include "peaka.ingress.entryPoint" . }}
   routes:
-    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/api`)
+    - match: Host(`{{  .Values.accessUrl.domain }}`) && PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/api`)
       kind: Rule
       priority: 10
       middlewares:
@@ -20,7 +20,7 @@ spec:
           port: http
           passHostHeader: true
 
-    - match: Host(`{{  .Values.domain }}`) && PathPrefix(`/oauth2/callback`)
+    - match: Host(`{{  .Values.accessUrl.domain }}`) && PathPrefix(`/oauth2/callback`)
       kind: Rule
       priority: 101
       middlewares:

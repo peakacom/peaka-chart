@@ -20,14 +20,14 @@ data:
   API_HOST_NAME_PATTERN: "{{ include "peaka.routes.baseUrlNoScheme" . }}/{{ include "peaka.routes.apiPath" . }}/.*"
   STUDIO_HOST: "{{ include "peaka.routes.baseUrl" . }}"
   STUDIO_API_HOST: "{{ include "peaka.routes.baseServiceUrl" . }}/studioapi"
-  CODE2_DOMAIN: "{{ .Values.domain }}"
+  CODE2_DOMAIN: "{{ .Values.accessUrl.domain }}"
   DISPATCHER_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/dispatcher"
   COLLABORATION_BACKEND_ADDRESS: "{{ include "peaka.websocketScheme" . }}://{{ include "peaka.routes.baseServiceUrlNoScheme" . }}/sharedb"
   STUDIO_API_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/studioapi/api"
   TOKEN_SERVICE_PUBLIC_URL: "{{ include "peaka.routes.baseServiceUrl" . }}/token-service"
   TOKEN_SERVICE_REDIRECT_URL: "{{ include "peaka.routes.baseUrl" . }}/oauth2/callback"
   DBC_PUBLIC_URL: "{{ include "peaka.dbc.url" . }}"
-  STUDIO_API_HOST_NO_SCHEME: "{{ .Values.domain }}"
+  STUDIO_API_HOST_NO_SCHEME: "{{ .Values.accessUrl.domain }}"
 
   ENVIRONMENT: "production"
   TEST_ENVIRONMENT: "false"
@@ -115,14 +115,14 @@ data:
   DBC_SCHEME: {{ include "peaka.httpScheme" . | quote }}
   ONPREMISE: "true"
 
-  STUDIO_API_PORT: {{ .Values.port | quote }}
+  STUDIO_API_PORT: {{ .Values.accessUrl.port | quote }}
   STUDIO_API_SCHEME: {{ include "peaka.httpScheme" . | quote }}
   STUDIO_API_PATH: "/service/studioapi/data"
 
   ZIPY_ENABLED: "false"
   GA_ENABLED: "false"
   OPENAI_API_KEY: {{ default "" .Values.openAIApiKey | quote }}
-  CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.domain | quote }}
-  CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.domain | quote }}
+  CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
+  CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 
   GRPC_DNS_RESOLVER: "native"

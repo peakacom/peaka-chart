@@ -4,17 +4,17 @@
 Peaka can be accessed via port {{ .Values.traefik.ports.web.port }} on the following DNS name from within your cluster:
 {{ template "peaka.fullname" . }}-traefik.{{ .Release.Namespace }}.svc.cluster.local
 
-{{- if .Values.port }}
+{{- if .Values.accessUrl.port }}
 
 To access Peaka from localhost, run the below commands:
 
   1. export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name=traefik" -o jsonpath="{.items[0].metadata.name}")
 
-  2. kubectl port-forward $POD_NAME {{ .Values.port }} --namespace {{ .Release.Namespace }}
+  2. kubectl port-forward $POD_NAME {{ .Values.accessUrl.port }} --namespace {{ .Release.Namespace }}
 
-You can now access Peaka on http://localhost:{{ .Values.port }}.
+You can now access Peaka on http://localhost:{{ .Values.accessUrl.port }}.
 {{- else }}
-To access Peaka from localhost, please set a port to .Values.port.
+To access Peaka from localhost, please set a port to .Values.accessUrl.port.
 {{- end }}
 
 {{- end }}
