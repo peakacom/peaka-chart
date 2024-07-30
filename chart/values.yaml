@@ -1064,7 +1064,7 @@ traefik:
       # The port protocol (TCP/UDP)
       protocol: TCP
       tls:
-        enabled: false
+        enabled: true
         # this is the name of a TLSOption definition
     dbc:
       port: 4567
