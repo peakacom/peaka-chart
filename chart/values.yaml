@@ -102,7 +102,7 @@ postgresql:
       idle_session_timeout = 600000
       max_connections = 1000
     persistence:
-      size: 2Gi
+      size: 4Gi
     initdb:
       scriptsConfigMap: peaka-postgresql-initdb-scripts
       user: "postgres"
@@ -113,7 +113,7 @@ nfsServer:
   enabled: true
   persistentVolume:
     # pv size of the nfs server
-    size: 2Gi
+    size: 4Gi
     # keep the nfs pvc on helm uninstalls
     volumeDeletionProtection: true
     # path to be used as the nfs share
@@ -131,7 +131,7 @@ nfsShare:
   # keep the nfs pvc on helm uninstalls
   volumeDeletionProtection: true
   # size of the nfs share
-  size: 2Gi
+  size: 4Gi
   # what happens to a persistent volume when released from its claim (Retain/Delete)
   persistentVolumeReclaimPolicy: Retain
   # path that is exported by the NFS server
@@ -161,7 +161,7 @@ minio:
   mode: standalone
   replicas: 1
   persistence:
-    size: 2Gi
+    size: 4Gi
 
 # database to be used for thrift store.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
@@ -180,7 +180,7 @@ mariadb:
     mariabackup:
       password: peaka
   persistence:
-    size: 2Gi
+    size: 4Gi
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
@@ -200,7 +200,7 @@ kafka:
   controller:
     replicaCount: 1
     persistence:
-      size: 2Gi
+      size: 4Gi
   listeners:
     client:
       protocol: PLAINTEXT
@@ -219,7 +219,7 @@ mongodb:
   arbiter:
     enabled: false
   persistence:
-    size: 2Gi
+    size: 4Gi
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
@@ -229,7 +229,7 @@ redis:
   architecture: standalone
   master:
     persistence:
-      size: 2Gi
+      size: 4Gi
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 postgresqlbigtable:
@@ -246,7 +246,7 @@ postgresqlbigtable:
       idle_session_timeout = 600000
       max_connections = 1000
     persistence:
-      size: 2Gi
+      size: 4Gi
     initdb:
       scriptsConfigMap: peaka-postgresqlbigtable-initdb-scripts
       user: "postgres"
@@ -370,7 +370,7 @@ pgvector:
     user: vectordb
     password: vectordb
   persistence:
-    size: 8Gi
+    size: 4Gi
   image:
     repository: "ankane/pgvector"
     version: v0.5.1
