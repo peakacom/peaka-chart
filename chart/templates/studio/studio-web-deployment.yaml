@@ -5,9 +5,6 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
     {{- include "peaka.labels" . | nindent 4 }}
-  annotations:
-    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
-    checksum/nginx-config: {{ include (print $.Template.BasePath "/studio/studio-web-configmap.yaml") . | sha256sum }}
 spec:
   replicas: {{ .Values.studioWeb.replicaCount }}
   selector:
@@ -19,6 +16,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-fe-studio-app
         {{- include "peaka.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+        checksum/nginx-config: {{ include (print $.Template.BasePath "/studio/studio-web-configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

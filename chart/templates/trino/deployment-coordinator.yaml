@@ -8,8 +8,6 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: coordinator
-  annotations:
-    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
 spec:
   selector:
     matchLabels:
@@ -22,6 +20,8 @@ spec:
         app: {{ template "peaka.trino.fullname" . }}
         release: {{ .Release.Name }}
         component: coordinator
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

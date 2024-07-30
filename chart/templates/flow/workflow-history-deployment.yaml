@@ -5,8 +5,6 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-history
     {{- include "peaka.labels" . | nindent 4 }}
-  annotations:
-    checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
 spec:
   replicas: {{ .Values.workflowHistory.replicaCount }}
   selector:
@@ -18,6 +16,8 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-workflow-history
         {{- include "peaka.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
