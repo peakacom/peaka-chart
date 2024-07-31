@@ -7,7 +7,7 @@ This Helm chart deploys Peaka in a Kubernetes cluster.
 - Kubernetes 1.22+
 - Helm 3+
 - PV provisioner support in the underlying infrastructure
-- cert-manager
+- cert-manager installed on the cluster
 
 ## Installation
 ### Get repository
