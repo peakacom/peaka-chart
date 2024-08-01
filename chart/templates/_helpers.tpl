@@ -371,7 +371,7 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "peaka.dbc.port" -}}
-{{- default 4567 .dbcPort -}}
+{{- default 4567 .Values.accessUrl.dbcPort -}}
 {{- end }}
 
 {{- define "peaka.connectors.defaultOauthClients" }}
