@@ -12,7 +12,7 @@ To access Peaka from localhost, run the below commands:
 
   2. kubectl port-forward $POD_NAME {{ .Values.accessUrl.port }} --namespace {{ .Release.Namespace }}
 
-You can now access Peaka on http://localhost:{{ .Values.accessUrl.port }}.
+You can now access Peaka on {{ .Values.accessUrl.scheme }}://localhost:{{ .Values.accessUrl.port }}.
 {{- else }}
 To access Peaka from localhost, please set a port to .Values.accessUrl.port.
 {{- end }}
