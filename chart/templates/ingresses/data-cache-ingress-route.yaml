@@ -11,7 +11,7 @@ spec:
   routes:
     - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/data-cache`)
       kind: Rule
-      priority: 10
+      priority: 11
       middlewares:
         - name: {{ include "peaka.fullname" . }}-be-data-cache-auth-middleware
         - name: {{ include "peaka.fullname" . }}-be-data-cache-replace-path-middleware
