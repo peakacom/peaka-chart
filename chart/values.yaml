@@ -437,7 +437,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.516
+    tag: v0.0.525
   initContainers: {}
   auth: {}
     # Set username and password
@@ -645,7 +645,7 @@ dataCache:
   replicaCount: 1
   image:
     name: "be-data-cache"
-    tag: "v0.0.61"
+    tag: "v0.0.67"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
@@ -680,7 +680,7 @@ dataRest:
   replicaCount: 1
   image:
     name: "be-data-rest"
-    tag: "v0.0.180"
+    tag: "v0.0.193"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -881,7 +881,7 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "v0.0.181"
+    tag: "v0.0.192"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -911,7 +911,7 @@ tokenService:
   replicaCount: 1
   image:
     name: "be-token-service"
-    tag: "v0.0.37"
+    tag: "v0.0.44"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -951,7 +951,7 @@ workflowHistory:
   replicaCount: 1
   image:
     name: "be-workflow-history"
-    tag: "v0.0.16"
+    tag: "v0.0.19"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -981,7 +981,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: "be-workflow-starter"
-    tag: "v0.0.68"
+    tag: "v0.0.72"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -991,7 +991,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: "be-workflow-worker-express"
-    tag: "v0.0.68"
+    tag: "v0.0.72"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
@@ -1027,7 +1027,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: "fe-studio-app"
-    tag: "v1.0.87"
+    tag: "v1.0.106"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
