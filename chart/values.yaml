@@ -130,7 +130,6 @@ nfsServer:
   deployment:
     # it is our recommendation that you run nfs server as root, otherwise is not tested
     containerSecurityContext:
-      enabled: true
       privileged: true
     containerPort: 2049
   servicePort: 2049
