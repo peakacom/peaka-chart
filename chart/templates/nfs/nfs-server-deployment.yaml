@@ -23,11 +23,9 @@ spec:
           ports:
             - name: nfs
               containerPort: {{ .Values.nfsServer.deployment.containerPort }}
-          {{- if .Values.nfsServer.deployment.containerSecurityContext.enabled }}
           {{- with .Values.nfsServer.deployment.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
           {{- end }}
           volumeMounts:
             - mountPath: {{ .Values.nfsServer.persistentVolume.mountPath }}
