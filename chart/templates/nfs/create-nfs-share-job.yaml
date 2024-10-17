@@ -47,10 +47,6 @@ spec:
               kind: PersistentVolume
               metadata:
                 name: {{ include "peaka.fullname" . }}-nfs-share
-                {{- if  .Values.nfsShare.volumeDeletionProtection }}
-                annotations:
-                  helm.sh/resource-policy: "keep"
-                {{- end }}
               spec:
                 capacity:
                   storage: {{ .Values.nfsShare.size }}

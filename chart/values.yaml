@@ -123,8 +123,6 @@ nfsServer:
   persistentVolume:
     # pv size of the nfs server
     size: 4Gi
-    # keep the nfs pvc on helm uninstalls
-    volumeDeletionProtection: true
     # path to be used as the nfs share
     mountPath: /nfsshare
   deployment:
@@ -141,7 +139,7 @@ nfsShare:
   # size of the nfs share
   size: 4Gi
   # what happens to a persistent volume when released from its claim (Retain/Delete)
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   # path that is exported by the NFS server
   path: "/"
 
