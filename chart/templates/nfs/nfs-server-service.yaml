@@ -7,6 +7,10 @@ spec:
   ports:
     - name: nfs
       port: {{ .Values.nfsServer.servicePort }}
+      protocol: TCP
+    - name: udp-111
+      port: 111
+      protocol: UDP
   selector:
     role: {{ include "peaka.fullname" . }}-nfs-server
 {{- end -}}

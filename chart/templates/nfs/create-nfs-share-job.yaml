@@ -47,15 +47,22 @@ spec:
               kind: PersistentVolume
               metadata:
                 name: {{ include "peaka.fullname" . }}-nfs-share
+                annotations:
+                  pv.kubernetes.io/provisioned-by: nfs.csi.k8s.io
               spec:
                 capacity:
                   storage: {{ .Values.nfsShare.size }}
                 accessModes:
                   - ReadWriteMany
-                nfs:
-                  path: {{ .Values.nfsShare.path | quote }}
-                  server: $CLUSTER_IP
+                mountOptions:
+                  - nfsvers=4.1
                 persistentVolumeReclaimPolicy: {{ .Values.nfsShare.persistentVolumeReclaimPolicy }}
+                csi:
+                  driver: nfs.csi.k8s.io
+                  volumeHandle: {{ include "peaka.fullname" . }}-nfs-server.{{ .Release.Namespace }}.svc.cluster.local/##
+                  volumeAttributes:
+                    server: {{ include "peaka.fullname" . }}-nfs-server.{{ .Release.Namespace }}.svc.cluster.local
+                    share: /
 
               ---
 
@@ -63,10 +70,6 @@ spec:
               kind: PersistentVolumeClaim
               metadata:
                 name: {{ include "peaka.fullname" . }}-nfs-share
-                {{- if  .Values.nfsShare.volumeDeletionProtection }}
-                annotations:
-                  helm.sh/resource-policy: "keep"
-                {{- end }}
               spec:
                 accessModes:
                   - ReadWriteMany

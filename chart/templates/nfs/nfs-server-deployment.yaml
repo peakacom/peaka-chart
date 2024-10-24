@@ -23,6 +23,9 @@ spec:
           ports:
             - name: nfs
               containerPort: {{ .Values.nfsServer.deployment.containerPort }}
+            - name: udp-111
+              containerPort: 111
+              protocol: UDP
           {{- with .Values.nfsServer.deployment.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
