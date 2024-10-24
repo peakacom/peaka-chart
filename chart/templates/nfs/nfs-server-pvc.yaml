@@ -8,5 +8,8 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.nfsServer.persistentVolume.size | quote }}
+      storage: {{ .Values.nfsServer.persistence.size }}
+  {{- if ( include "peaka.nfsServer.storageClass" . ) }}
+  storageClassName: {{ include "peaka.nfsServer.storageClass" . }}
+  {{- end }}
 {{- end }}
