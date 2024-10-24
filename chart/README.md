@@ -35,5 +35,3 @@ Some configurations must be set for Peaka to run as expected.
     --docker-email=not@val.id
   ```
   Then, add the name of this secret to `.Values.imagePullSecrets`.
-- Generate JWT public/private key pair encrypted with RSA and fill `.Values.jwtRsaPublicKey`
-  and `.Values.jwtRsaPrivateKey`.
