@@ -9,4 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: {{ .Values.trino.coordinator.persistence.size }}
+  {{- if ( include "peaka.trino.coordinator.storageClass" . ) }}
+  storageClassName: {{ include "peaka.trino.coordinator.storageClass" . }}
+  {{- end }}

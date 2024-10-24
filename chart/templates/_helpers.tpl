@@ -136,6 +136,14 @@ api
 partner
 {{- end -}}
 
+{{- define "peaka.nfsServer.storageClass" -}}
+{{- if .Values.nfsServer.persistence.storageClass -}}
+{{- .Values.nfsServer.persistence.storageClass -}}
+{{- else -}}
+{{- .Values.global.storageClass -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "peaka.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -158,6 +166,14 @@ partner
 
 {{- define "peaka.postgresql.passwordSecretKey" -}}
 {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+{{- end -}}
+
+{{- define "peaka.pgvector.storageClass" -}}
+{{- if .Values.pgvector.persistence.storageClass -}}
+{{- .Values.pgvector.persistence.storageClass -}}
+{{- else -}}
+{{- .Values.global.storageClass -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.hive.name" -}}
@@ -343,6 +359,14 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- define "peaka.trino.coordinator" -}}
 {{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
+
+{{- define "peaka.trino.coordinator.storageClass" -}}
+{{- if .Values.trino.coordinator.persistence.storageClass -}}
+{{- .Values.trino.coordinator.persistence.storageClass -}}
+{{- else -}}
+{{- .Values.global.storageClass -}}
+{{- end -}}
+{{- end -}}
 
 {{- define "peaka.temporal.frontend.fullname" -}}
 {{- printf "%s-temporal-frontend" ( include "peaka.temporal.fullname" . )  -}}

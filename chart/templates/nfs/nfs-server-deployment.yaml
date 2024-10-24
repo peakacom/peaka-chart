@@ -19,7 +19,7 @@ spec:
           image: itsthenetwork/nfs-server-alpine
           env:
             - name: SHARED_DIRECTORY
-              value: {{ .Values.nfsServer.persistentVolume.mountPath }}
+              value: {{ .Values.nfsServer.persistence.mountPath }}
           ports:
             - name: nfs
               containerPort: {{ .Values.nfsServer.deployment.containerPort }}
@@ -28,7 +28,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - mountPath: {{ .Values.nfsServer.persistentVolume.mountPath }}
+            - mountPath: {{ .Values.nfsServer.persistence.mountPath }}
               name: nfs-volume
       volumes:
         - name: nfs-volume
