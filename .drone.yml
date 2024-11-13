@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: kubernetes
 name: build
@@ -88,3 +89,9 @@ volumes:
       name: gcp-bucket-writer
       default_mode: 420 # same as 644 in octal, or u+w,a+r
       optional: false
+
+---
+kind: signature
+hmac: f0f9e130bbf2b4933dea9823cfe603a652747bb2bc786955a5bf0647cb1232aa
+
+...
