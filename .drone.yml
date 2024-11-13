@@ -1,0 +1,90 @@
+kind: pipeline
+type: kubernetes
+name: build
+
+trigger:
+  event:
+    - custom
+    - tag
+
+steps:
+  - name: version-check
+    image: alpine:3.20
+    pull: always
+    commands:
+      - |
+        apk add yq
+        if [ $(cat chart/Chart.yaml | yq '.version') != "${DRONE_TAG#v}" ] ; then 
+          echo "Version in tag and Chart.yaml does not match. Failing."; 
+          exit 1 
+        fi
+    depends_on:
+      - clone
+
+  - name: helm-package
+    image: alpine/helm:3.16
+    commands:
+      - |
+        cd chart
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add minio https://charts.min.io/
+        helm repo add temporal-operator https://alexandrevilain.github.io/temporal-operator
+        helm repo add traefik https://helm.traefik.io/traefik
+
+        helm dependency update .
+        helm dependency build .
+
+        helm package .
+    depends_on:
+      - version-check
+
+  - name: get-index-file
+    image: google/cloud-sdk:500.0.0-slim
+    environment:
+      SERVICE_ACCOUNT_NAME:
+        from_secret: CHART_BUCKET_WRITER_SA
+    commands:
+      - |
+        cd chart
+        gcloud auth activate-service-account "${SERVICE_ACCOUNT_NAME}" --key-file /gcp/gcp-bucket-writer.json
+        gsutil -m cp gs://peaka-chart/charts/index.yaml index.yaml
+    volumes:
+      - name: gcp-bucket-writer
+        path: /gcp
+    depends_on:
+      - version-check
+
+  - name: update-index-file
+    image: alpine/helm:3.16
+    commands:
+      - |
+        cd chart
+        helm repo index . --url https://peaka-chart.storage.googleapis.com/charts --merge index.yaml
+    depends_on:
+      - get-index-file
+      - helm-package
+
+  - name: push
+    image: google/cloud-sdk:500.0.0-slim
+    environment:
+      SERVICE_ACCOUNT_NAME:
+        from_secret: CHART_BUCKET_WRITER_SA
+    commands:
+      - |
+        cd chart
+        gcloud auth activate-service-account "${SERVICE_ACCOUNT_NAME}" --key-file /gcp/gcp-bucket-writer.json
+        cat index.yaml
+        gsutil -m cp index.yaml gs://peaka-chart/charts/
+        gsutil -m cp peaka-"${DRONE_TAG#v}".tgz gs://peaka-chart/charts/
+    volumes:
+      - name: gcp-bucket-writer
+        path: /gcp
+    depends_on:
+      - update-index-file
+
+volumes:
+  - name: gcp-bucket-writer
+    config_map:
+      name: gcp-bucket-writer
+      default_mode: 420 # same as 644 in octal, or u+w,a+r
+      optional: false
