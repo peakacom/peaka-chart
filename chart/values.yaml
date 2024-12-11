@@ -433,7 +433,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.529
+    tag: v0.0.553
   initContainers: {}
   auth: {}
     # Set username and password
@@ -584,7 +584,7 @@ authService:
   replicaCount: 1
   image:
     name: "be-auth-service"
-    tag: "v0.0.16"
+    tag: "v0.0.17"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -614,7 +614,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: "be-cloud-gateway"
-    tag: "v0.0.26"
+    tag: "v0.0.35"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -624,7 +624,7 @@ collabSharedb:
   replicaCount: 1
   image:
     name: "be-collab-sharedb"
-    tag: "v0.0.20"
+    tag: "v0.0.21"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -644,7 +644,7 @@ dataCache:
   replicaCount: 1
   image:
     name: "be-data-cache"
-    tag: "v0.0.68"
+    tag: "v0.0.86"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
@@ -679,7 +679,7 @@ dataRest:
   replicaCount: 1
   image:
     name: "be-data-rest"
-    tag: "v0.0.199"
+    tag: "v0.0.216"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -759,7 +759,7 @@ permissionService:
   replicaCount: 1
   image:
     name: "be-permission-service"
-    tag: "v0.0.28"
+    tag: "v0.0.30"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -880,7 +880,7 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "v0.0.196"
+    tag: "v0.0.213"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -910,7 +910,7 @@ tokenService:
   replicaCount: 1
   image:
     name: "be-token-service"
-    tag: "v0.0.48"
+    tag: "v0.0.56"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -980,7 +980,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: "be-workflow-starter"
-    tag: "v0.0.72"
+    tag: "v0.0.78"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
@@ -990,7 +990,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: "be-workflow-worker-express"
-    tag: "v0.0.72"
+    tag: "v0.0.78"
     imagePullPolicy: "IfNotPresent"
   sidecar:
     imageName: "be-common-flow-utilities-service"
@@ -1026,7 +1026,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: "fe-studio-app"
-    tag: "v1.0.123"
+    tag: "v1.0.173"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
