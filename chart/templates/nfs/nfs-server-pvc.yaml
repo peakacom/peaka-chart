@@ -9,7 +9,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.nfsServer.persistence.size }}
-  {{- if ( include "peaka.nfsServer.storageClass" . ) }}
-  storageClassName: {{ include "peaka.nfsServer.storageClass" . }}
-  {{- end }}
+  {{- include "peaka.common.storage.class" (dict "persistence" .Values.nfsServer.persistence "global" .Values.global) | nindent 2 }}
 {{- end }}

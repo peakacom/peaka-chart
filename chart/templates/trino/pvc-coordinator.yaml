@@ -10,6 +10,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.trino.coordinator.persistence.size }}
-  {{- if ( include "peaka.trino.coordinator.storageClass" . ) }}
-  storageClassName: {{ include "peaka.trino.coordinator.storageClass" . }}
-  {{- end }}
+  {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}

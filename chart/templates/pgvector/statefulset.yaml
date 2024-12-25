@@ -76,7 +76,5 @@ spec:
         resources:
           requests:
             storage:  {{ .Values.pgvector.persistence.size }}
-        {{- if ( include "peaka.pgvector.storageClass" . ) }}
-        storageClassName: {{ include "peaka.pgvector.storageClass" . }}
-        {{- end }}
+        {{- include "peaka.common.storage.class" (dict "persistence" .Values.pgvector.persistence "global" .Values.global) | nindent 8 }}
 {{- end }}

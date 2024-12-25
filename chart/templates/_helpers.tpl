@@ -61,6 +61,29 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Return  the proper Storage Class
+{{ include "common.storage.class" ( dict "persistence" .Values.path.to.the.persistence "global" $.Values.global) }}
+*/}}
+{{- define "peaka.common.storage.class" -}}
+
+  {{- $storageClass := .persistence.storageClass -}}
+  {{- if .global -}}
+      {{- if .global.storageClass -}}
+          {{- $storageClass = .global.storageClass -}}
+      {{- end -}}
+  {{- end -}}
+
+  {{- if $storageClass -}}
+    {{- if (eq "-" $storageClass) -}}
+        {{- printf "storageClassName: \"\"" -}}
+    {{- else }}
+        {{- printf "storageClassName: %s" $storageClass -}}
+    {{- end -}}
+  {{- end -}}
+
+{{- end -}}
+
+{{/*
 Set image registry for peaka images
 */}}
 {{- define "peaka.image.registry" -}}
@@ -144,14 +167,6 @@ LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFN
 LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRFhHY0FEcGtQU0U1VnoKWUxSeCtzSlh2czVZeHUyTGNORzZ1VGh3eHdkb1V0K2N1RXhKVXNidENETVNNMnRJZWdNY2x4Y0Y2WEhuUGVIZgpkaVdObEd0Vk9yZ0JRemIrdTRTVjYrQmEwbDVxTGE2Z0t1SXVsZkxUR0toc01WUmNlLy9ITG14NkpxL2lJS0hFCmdBa0MzYUNROW96WFJINmFIenphRjZyNFF3QTJEc1RRN25jcmhoQ2l4UThjNlIvdHVxZlNacnNEZjRSYjJTbzUKN0tqQ0NUaTNEbmNaZ2ExdDFSZ0xocFNjdyszcjd0ejFLRmgxTWZSMUJoeG5ZNzVuNkE3VTBmY1hhYlF2cWptNAowN3hpK2ZRZUdYKzIyeG5rVE9BaXA1cERlTjFqOUw2RDNoTkYwelJFaFhpOUpTcDhBS090dXNGbzN2ajlqMHBtCnZmYnA3WFJ0QWdNQkFBRUNnZ0VBSkxpaWFXMFZ5SFFyOEMvSzltZHBES3BJRjJ0VWk5alZrVE5FTWFxa3R0aHAKRU52OHVBclA1NURlQ1NZcWswdXpJc3NmZE5TcTY1K0tvMGZMOXV6bTJ2ekVnNENxVDVnTE5UMzR4Z0NDZWsxMApzYWJJaU12MEVibzBySTNLV1dTWTRMUHA5SHVNek1XbDRFSThaNWNXN1pDTnNFVmkrS1JMRXU5MThsNmIxMTVqCmJzRnRXRGRWRXp2SWVGbW56Y0ZiS2F3eG1iWnlpWWpGWDkrVitDUFRkY2h5ejkwMzFIdEpCeklBWUZmUm1jTHQKNmpQR1F3SkRBNXo2TklZWnh0dVJSRVExeGljNXRod0UrbURvaCtBVkx4TGpNVjQ5dlJST3ZRZ3d3WTk1TFRKawpTb2Vqb29icndhVGVtMkkyN1RtUk8rdm1US0ZhUndSaU4yWmdOL3Q4Z1FLQmdRRHhuSXIwdC9jNVgwNU5sYWw0CldKV2VKanhvSnNwbTlmcU1EUTFvWUh1SDJYWDJJQ3JFMzFxcXRzeUVJWVJmOTV4UVo0cHNaWVNBNDBwSkJEaHkKa2NFZmUvTEpZNXhzRzVHcnJqTjJQZ0RoZTl1LzF0SEpkdWFzNTExdXJLUUZzR1NTSEliMzVUWkIwbzZEbW9Mdgo1NG9EQXFKY3hqYktpUUl5T0l3U3JJbnM3UUtCZ1FEajZRbmdTS0QvQWE4UDB4WFk1TDBpNk9haEdFemlyM0ZPCkpxQmR3dEg0dm9aMFFhQkZ1dEJEOWxqZEZwVjY4RFY1ZVJnSXJkZks0QW4xSXhWZWhScmJTTUNuZGplZjhpVjkKL0t2UjBsWEh0aW5RWGRtUitYaUlOMEl3aVliSXFpUHEwLzQwUmlUZktwUU54RXNJZWpJckRFMkRLZk1nQTdoMApZUmVHSitBMWdRS0JnSEtqekdzQlB4VEIyKzJFTGIwa2l4bFhHeUp3QldtRkhUU0duTzRCbVp1RDJ5ekZab1d6ClZObmJrbjYvU0lnZ2ZOTEp6aXhRbnVabzhqNWkra1dpVXZnVlg4V2V0Z0cxc3hDNnYwQkRlemVDQldxcEN6R0UKY1Q5cEtEUHpSb0JNaWV1cURZQmlDYlNCcTQxV0t2cVo2aW96ZmNaM1psZ0RXajlxQlV4M0FacWhBb0dBQkh4dgp6MVJlcHVaWGxjNG4zZThTc2Y4M212QXBnMFRFekM4Q2RSWUNvQXpRQkxYTis5RmpqQkxyU043SzduS1ArdVloClRQcHZCdlZGL09kRjRtaG9VT3lycmlBcmxDQm1FSWJLc3dTYTM2VjhTVGV2c3FuZ2IzMzI5WkdmYjQrNXlVT0cKKzJ4dUNWNkRMNG92bCtrZjE2MFVVWUtmNEg5eVFBZ3hPRmpNbHdFQ2dZRUFrdk1ueFNoZ0U4dnp3Z1laZ3BvYgpIakhnTjA0ai9CNXpQZ0djdGNFYzlKR21xYlBidG9Cb1hsVFdHTURPOTlMenVnZHdIUGd6MXlkL0UvejJPamc3CnZHNTJDd1BnYUx4WWZzUzlKdFMva2FuNDVaSzNocFRoTTdYK1Rjc0ZkUzMxTVNlZFVvRnN6cjNwUVNMMVVmRVgKMEFnZjNLT3hPQ1BOSitjeEVTcXNZYTQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
 {{- end -}}
 
-{{- define "peaka.nfsServer.storageClass" -}}
-{{- if .Values.nfsServer.persistence.storageClass -}}
-{{- .Values.nfsServer.persistence.storageClass -}}
-{{- else -}}
-{{- .Values.global.storageClass -}}
-{{- end -}}
-{{- end -}}
-
 {{- define "peaka.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -174,14 +189,6 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 
 {{- define "peaka.postgresql.passwordSecretKey" -}}
 {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
-{{- end -}}
-
-{{- define "peaka.pgvector.storageClass" -}}
-{{- if .Values.pgvector.persistence.storageClass -}}
-{{- .Values.pgvector.persistence.storageClass -}}
-{{- else -}}
-{{- .Values.global.storageClass -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "peaka.hive.name" -}}
@@ -367,14 +374,6 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- define "peaka.trino.coordinator" -}}
 {{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
-
-{{- define "peaka.trino.coordinator.storageClass" -}}
-{{- if .Values.trino.coordinator.persistence.storageClass -}}
-{{- .Values.trino.coordinator.persistence.storageClass -}}
-{{- else -}}
-{{- .Values.global.storageClass -}}
-{{- end -}}
-{{- end -}}
 
 {{- define "peaka.temporal.frontend.fullname" -}}
 {{- printf "%s-temporal-frontend" ( include "peaka.temporal.fullname" . )  -}}
