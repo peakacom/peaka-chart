@@ -62,7 +62,7 @@ Create the name of the service account to use
 
 {{/*
 Return  the proper Storage Class
-{{ include "common.storage.class" ( dict "persistence" .Values.path.to.the.persistence "global" $.Values.global) }}
+{{ include "peaka.common.storage.class" ( dict "persistence" .Values.path.to.the.persistence "global" $.Values.global) }}
 */}}
 {{- define "peaka.common.storage.class" -}}
 
