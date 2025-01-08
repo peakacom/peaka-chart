@@ -74,3 +74,7 @@ export POD_NAME=$(kubectl get pods --namespace <namespace> -l "app.kubernetes.io
 kubectl port-forward $POD_NAME 4567 --namespace <namespace>
 ```
 you can use the Peaka JDBC service using `http://localhost:4567`.
+
+## Known Limitations
+- If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
+web application. To enable TLS, update `tls.enabled`, `tls.cert` and `tls.key` parameters in `values.yaml`. 
