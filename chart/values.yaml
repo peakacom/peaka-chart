@@ -462,9 +462,18 @@ trino:
       - -XX:G1NumCollectionsKeepPinned=10000000
       - -XX:+EnableDynamicAgentLoading
     additionalExposedPorts: {}
+
+    # persistence configuration of trino coordinator
     persistence:
+      # additional annotations for trino coordinator pvc.
+      annotations: {}
+      # additional labels for trino coordinator pvc.
+      labels: {}
+      # storage size of the trino coordinator persistent volume
       size: 1Gi
+      # storageClass of the trino coordinator persistent volume
       storageClass: ""
+
     resources: {}
       # We usually recommend not to specify default resources and to leave this as a conscious
       # choice for the user. This also increases chances charts run on environments with little

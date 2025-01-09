@@ -2,8 +2,14 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ template "peaka.trino.coordinator" . }}
+  {{- if .Values.trino.coordinator.persistence.annotations }}
   annotations:
-    helm.sh/resource-policy: "keep"
+    {{- toYaml .Values.trino.coordinator.persistence.annotations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.trino.coordinator.persistence.labels }}
+  labels:
+    {{- toYaml .Values.trino.coordinator.persistence.labels | nindent 4}}
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
