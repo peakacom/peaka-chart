@@ -500,7 +500,7 @@ trino:
     nodeSelector: {}
     tolerations: []
     affinity: {}
-    additionalConfigFiles: { }
+    additionalConfigFiles: {}
   worker:
     config:
       memory:
