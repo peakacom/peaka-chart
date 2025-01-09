@@ -23,11 +23,14 @@ data:
     case-insensitive-name-matching=true
   iceberg.properties: |
     connector.name=iceberg
+    iceberg.catalog.type=hive_metastore
     hive.metastore.uri=thrift://{{ template "peaka.hive.name" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.hive.port" . }}
-    hive.s3.path-style-access=true
-    hive.s3.endpoint=http://{{ template "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.minio.port" . }}
-    hive.s3.aws-secret-key={{ template "peaka.minio.secretKey" . }}
-    hive.s3.aws-access-key={{ template "peaka.minio.accessKey" . }}
-    hive.fs.cache.max-size=100000
+    fs.native-s3.enabled=true
+    s3.path-style-access=true
+    s3.endpoint=http://{{ template "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.minio.port" . }}
+    s3.aws-secret-key={{ template "peaka.minio.secretKey" . }}
+    s3.aws-access-key={{ template "peaka.minio.accessKey" . }}
+    s3.region=us-east-1
+    hive.metastore-cache-maximum-size=100000
     iceberg.expire_snapshots.min-retention=30s
     iceberg.remove_orphan_files.min-retention=30s
