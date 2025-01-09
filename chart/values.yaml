@@ -889,7 +889,7 @@ studioApi:
   replicaCount: 1
   image:
     name: "be-studio-api"
-    tag: "v0.0.224"
+    tag: "v0.0.225"
     imagePullPolicy: "IfNotPresent"
   resources: {}
   nodeSelector: {}
