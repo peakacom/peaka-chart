@@ -123,6 +123,8 @@ data:
 
   ZIPY_ENABLED: "false"
   GA_ENABLED: "false"
+  POSTHOG_ENABLED: "false"
+  MIXPANEL_ENABLED: "false"
   OPENAI_API_KEY: {{ default "" .Values.openAIApiKey | quote }}
   CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
   CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
