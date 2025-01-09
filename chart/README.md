@@ -37,7 +37,7 @@ Some configurations must be set for Peaka to run as expected.
   Then, add the name of this secret to `.Values.imagePullSecrets`.
 
 
-- Peaka services need to know the public URL and port through which the services will be accessed beforehand. For that, you
+- Peaka services need to know the URL and port through which the services will be accessed beforehand. For that, you
 need to fill `accessUrl` parameter in `values.yaml`. Read [Configuring Access URLs](#configuring-access-urls)
 section for detailed explanation.
 
