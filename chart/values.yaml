@@ -414,6 +414,12 @@ temporal:
         dbPort: ""
         passwordSecretName: ""
         passwordSecretKey: ""
+    admintools:
+      enabled: false
+    ui:
+      enabled: false
+    log:
+      level: debug
 
 trino:
   fullnameOverride: ""

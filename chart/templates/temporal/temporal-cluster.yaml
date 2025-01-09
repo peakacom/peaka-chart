@@ -27,4 +27,10 @@ spec:
       passwordSecretRef:
         name: {{ default (include "peaka.postgresql.fullname" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretName }}
         key: {{ default (include "peaka.postgresql.passwordSecretKey" . ) .Values.temporal.temporalCluster.persistence.visibilityStore.passwordSecretKey }}
+  admintools:
+    enabled: {{  default "false" .Values.temporal.temporalCluster.admintools.enabled }}
+  ui:
+    enabled: {{ default "false" .Values.temporal.temporalCluster.ui.enabled }}
+  log:
+    level: {{ default "debug" .Values.temporal.temporalCluster.log.level }}
 {{- end }}
