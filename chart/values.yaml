@@ -89,7 +89,7 @@ tls:
 liquibase:
   image:
     name: "be-data-migrator"
-    tag: "v0.0.35"
+    tag: "v0.0.36"
     imagePullPolicy: "IfNotPresent"
 
 # peaka uses postgresql to persist some internal data.
