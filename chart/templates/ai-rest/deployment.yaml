@@ -26,9 +26,9 @@ spec:
         {{- end }}
       {{- end }}
       initContainers:
-        - name: liquibase
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.liquibase.image.name }}:{{ .Values.liquibase.image.tag}}"
-          imagePullPolicy: {{ default "IfNotPresent" .Values.liquibase.image.imagePullPolicy }}
+        - name: dataMigrator
+          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag}}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
               value: "be-ai-rest"

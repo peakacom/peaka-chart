@@ -85,8 +85,8 @@ tls:
   cert: ""
   key: ""
 
-# peaka uses a `liquibase` image to reflect database migrations.
-liquibase:
+# service for database migrations
+dataMigrator:
   image:
     name: "be-data-migrator"
     tag: "v0.0.36"
