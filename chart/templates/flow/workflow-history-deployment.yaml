@@ -26,7 +26,7 @@ spec:
         {{- end }}
       {{- end }}
       initContainers:
-      - name: dataMigrator
+      - name: data-migrator
         image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
         env:
