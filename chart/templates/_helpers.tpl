@@ -94,10 +94,10 @@ europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 Create imagePullSecret to pull Peaka images
 */}}
 {{- define "peaka.imageRegistry.secret" -}}
-{{- $registry := .Values.imagePullSecret.gcpRegistryAuth.registry -}}
-{{- $username := .Values.imagePullSecret.gcpRegistryAuth.username -}}
+{{- $registry := "https://europe-west3-docker.pkg.dev" -}}
+{{- $username := "_json_key" -}}
+{{- $email := "not@val.id" -}}
 {{- $password := .Values.imagePullSecret.gcpRegistryAuth.password -}}
-{{- $email := .Values.imagePullSecret.gcpRegistryAuth.email -}}
 {{- $auth := printf "%s:%s" $username $password | b64enc -}}
 {{- $config := dict "auths" (dict $registry (dict "username" $username "password" $password "email" $email "auth" $auth)) -}}
 {{- $config | toJson | b64enc -}}
