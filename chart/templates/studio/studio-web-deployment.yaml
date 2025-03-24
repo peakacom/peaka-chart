@@ -20,11 +20,9 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
         checksum/nginx-config: {{ include (print $.Template.BasePath "/studio/studio-web-configmap.yaml") . | sha256sum }}
     spec:
-      {{- if .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecret }}
       imagePullSecrets:
-        {{- range $_, $secret := .Values.imagePullSecrets }}
-        - name: {{ $secret }}
-        {{- end }}
+        - name: {{ .Values.imagePullSecret.name }}
       {{- end }}
       containers:
         - name: studio-web
