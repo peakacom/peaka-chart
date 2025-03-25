@@ -91,6 +91,19 @@ europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
 {{- end -}}
 
 {{/*
+Create imagePullSecret to pull Peaka images
+*/}}
+{{- define "peaka.imageRegistry.secret" -}}
+{{- $registry := "https://europe-west3-docker.pkg.dev" -}}
+{{- $username := "_json_key" -}}
+{{- $email := "not@val.id" -}}
+{{- $password := .Values.imagePullSecret.gcpRegistryAuth.password | required ".Values.imagePullSecret.gcpRegistryAuth.password is required." -}}
+{{- $auth := printf "%s:%s" $username $password | b64enc -}}
+{{- $config := dict "auths" (dict $registry (dict "username" $username "password" $password "email" $email "auth" $auth)) -}}
+{{- $config | toJson | b64enc -}}
+{{- end -}}
+
+{{/*
 Set http scheme for Peaka
 */}}
 {{- define "peaka.httpScheme" -}}

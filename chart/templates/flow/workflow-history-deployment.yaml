@@ -19,12 +19,11 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
-      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ .Values.imagePullSecret.name }}
+        {{- range $_, $secret := .Values.additionalImagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- end }}
       initContainers:
       - name: data-migrator
         image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag }}
