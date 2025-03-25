@@ -24,17 +24,10 @@ helm install [RELEASE_NAME] peaka/peaka
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 
-- Peaka's container images are not publicly available. This means that a Kubernetes Secret of type `docker-registry`
-  will be required. With the given `json` file containing access credentials to Peaka's container image registry,
-  run (in the same namespace in which you'll install Peaka):
-  ```shell
-  kubectl create secret docker-registry <image-pull-secret-name> \
-    --docker-server=https://europe-west3-docker.pkg.dev \
-    --docker-username=_json_key \
-    --docker-password="$(cat <path/to/given/json/file>)" \
-    --docker-email=not@val.id
-  ```
-  Then, add the name of this secret to `.Values.imagePullSecrets`.
+- Peaka's container images are not publicly available. You will be given a `json` file containing access credentials 
+  to Peaka's container image registry. You need to set the value of `.Values.imagePullSecret.gcpRegistryAuth.password` 
+  to the content to the `json` file. This will create a Kubernetes Secret of type `docker-registry`, which Peaka 
+  services will use as imagePullSecret.
 
 
 - Peaka services need to know the URL and port through which the services will be accessed beforehand. For that, you
