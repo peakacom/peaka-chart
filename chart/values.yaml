@@ -12,6 +12,12 @@ imagePullSecret:
     # enter the json file given below
     password: ""
 
+# any additional imagePullSecrets for Peaka images
+# E.g.
+# additionalImagePullSecrets:
+#   - imageRegistrySecretName
+additionalImagePullSecrets: []
+
 # Configure the URL and port through which the services will be accessed.
 # Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.
 accessUrl:

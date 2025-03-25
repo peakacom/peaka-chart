@@ -26,6 +26,9 @@ spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecret.name }}
+        {{- range $_, $secret := .Values.additionalImagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}
       {{- with .Values.trino.securityContext }}

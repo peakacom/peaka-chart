@@ -23,6 +23,9 @@ spec:
       {{- if .Values.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecret.name }}
+        {{- range $_, $secret := .Values.additionalImagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       {{- end }}
       containers:
         - name: studio-web
