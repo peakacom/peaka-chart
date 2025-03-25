@@ -6,10 +6,11 @@ nameOverride: ""
 fullnameOverride: ""
 
 # pull secret to fetch Peaka images
+# you will be given a secret json to authenticate to Peaka's container image registry.
 imagePullSecret:
   name: peaka-docker-registry
   gcpRegistryAuth:
-    # enter the json file given below
+    # enter the json file contents given below
     password: ""
 
 # any additional imagePullSecrets for Peaka images
