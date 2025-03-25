@@ -19,13 +19,11 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
-      {{- if .Values.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecret.name }}
         {{- range $_, $secret := .Values.additionalImagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- end }}
       containers:
         - name: secret-store-service
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.secretStoreService.image.name }}:{{ .Values.secretStoreService.image.tag }}"

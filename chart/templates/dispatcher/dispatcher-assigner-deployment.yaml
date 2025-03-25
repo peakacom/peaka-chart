@@ -19,13 +19,11 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
-      {{- if .Values.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecret.name }}
         {{- range $_, $secret := .Values.additionalImagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- end }}
       containers:
         - name: dispatcher-assigner
           image: "{{ include "peaka.image.registry" . }}/{{ .Values.dispatcherAssigner.image.name }}:{{ .Values.dispatcherAssigner.image.tag }}"
