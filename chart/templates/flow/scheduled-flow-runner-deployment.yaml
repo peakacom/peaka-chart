@@ -26,17 +26,17 @@ spec:
         {{- end }}
       initContainers:
         - name: data-migrator
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
-              value: "be-scheduled-flow-runner"
+              value: be-scheduled-flow-runner
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: scheduled-flow-runner
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.scheduledFlowRunner.image.name }}:{{ .Values.scheduledFlowRunner.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.scheduledFlowRunner.image.name }}:{{ .Values.scheduledFlowRunner.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.scheduledFlowRunner.image.imagePullPolicy }}
           ports:
             - name: http

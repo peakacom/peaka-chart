@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: cloud-gateway
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.cloudGateway.image.name }}:{{ .Values.cloudGateway.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.cloudGateway.image.name }}:{{ .Values.cloudGateway.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.cloudGateway.image.imagePullPolicy }}
           ports:
             - name: http

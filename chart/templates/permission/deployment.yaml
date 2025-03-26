@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: permission-service
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.permissionService.image.imagePullPolicy }}
           ports:
             - name: http
@@ -35,13 +35,13 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-            - mountPath: "/secrets/jwt/rsa"
+            - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
-            - mountPath: "/metadata-nfs"
+            - mountPath: /metadata-nfs
               name: metadata-nfs
               readOnly: false
-              subPath: "metadata"
+              subPath: metadata
           {{- with .Values.permissionService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

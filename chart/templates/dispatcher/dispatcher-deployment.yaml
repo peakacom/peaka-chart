@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: dispatcher
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dispatcher.image.name }}:{{ .Values.dispatcher.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.dispatcher.image.name }}:{{ .Values.dispatcher.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dispatcher.image.imagePullPolicy }}
           ports:
             - name: http

@@ -51,8 +51,8 @@ spec:
           image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.workflowWorkerExpress.sidecar.imageName .Values.workflowWorkerExpress.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.sidecar.imagePullPolicy }}
           env:
-            - name: "PAYLOAD_SIZE_LIMIT"
-              value: "50mb"
+            - name: PAYLOAD_SIZE_LIMIT
+              value: 50mb
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config

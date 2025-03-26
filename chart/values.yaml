@@ -24,7 +24,7 @@ additionalImagePullSecrets: []
 accessUrl:
 
   # Set the common domain through which the services will be accessed.
-  domain: "localhost"
+  domain: localhost
 
   # Set the common URL scheme for accessing the services.
   scheme: http
@@ -38,8 +38,8 @@ accessUrl:
 
 # initial registered user to sign in to Peaka studio
 rootUser:
-  email: "root@onpremise.com"
-  password: "s3cr3t"
+  email: root@onpremise.com
+  password: s3cr3t
 
 # enter your openAI api key to use built-in chatGPT.
 openAIApiKey:
@@ -101,9 +101,9 @@ tls:
 # service for database migrations
 dataMigrator:
   image:
-    name: "be-data-migrator"
-    tag: "v0.0.43"
-    imagePullPolicy: "IfNotPresent"
+    name: be-data-migrator
+    tag: v0.0.43
+    imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
@@ -112,10 +112,10 @@ postgresql:
   volumePermissions:
     enabled: true
   auth:
-    username: "code2db"
-    password: "code2db"
-    database: "code2db"
-    postgresPassword: "postgres"
+    username: code2db
+    password: code2db
+    database: code2db
+    postgresPassword: postgres
   primary:
     extendedConfiguration: |-
       idle_session_timeout = 600000
@@ -124,8 +124,8 @@ postgresql:
       size: 4Gi
     initdb:
       scriptsConfigMap: peaka-postgresql-initdb-scripts
-      user: "postgres"
-      password: "postgres"
+      user: postgres
+      password: postgres
 
 # peaka requires an NFS server to implement some functionalities
 nfsServer:
@@ -161,7 +161,7 @@ hiveMetastore:
     repository: bitsondatadev/hive-metastore
     tag: latest
     pullPolicy: IfNotPresent
-  hadoopHeapSize: "10240"
+  hadoopHeapSize: 10240
   # db type to be used as metastore. One of mysql or postgres (only mysql tested)
   metastoreType: mysql
   servicePort: 9083
@@ -254,10 +254,10 @@ postgresqlbigtable:
   volumePermissions:
     enabled: true
   auth:
-    username: "code2db"
-    password: "code2db"
-    database: "code2db"
-    postgresPassword: "postgres"
+    username: code2db
+    password: code2db
+    database: code2db
+    postgresPassword: postgres
   primary:
     extendedConfiguration: |-
       idle_session_timeout = 600000
@@ -266,8 +266,8 @@ postgresqlbigtable:
       size: 4Gi
     initdb:
       scriptsConfigMap: peaka-postgresqlbigtable-initdb-scripts
-      user: "postgres"
-      password: "postgres"
+      user: postgres
+      password: postgres
 
 # Default values for cp-kafka-connect.
 kafkaConnect:
@@ -390,7 +390,7 @@ pgvector:
     size: 4Gi
     storageClass: ""
   image:
-    repository: "ankane/pgvector"
+    repository: ankane/pgvector
     version: v0.5.1
   options:
     maxConnections: 1000
@@ -464,16 +464,16 @@ trino:
   coordinator:
     config:
       query:
-        maxMemoryPerNode: "9GB"
-        maxLength: "1000000000"     # a billion
+        maxMemoryPerNode: 9GB
+        maxLength: 1000000000     # a billion
       memory:
         heapHeadroomPerNode: ""
     jvm:
-      maxHeapSize: "25G"
+      maxHeapSize: 25G
       gcMethod:
-        type: "UseG1GC"
+        type: UseG1GC
         g1:
-          heapRegionSize: "32M"
+          heapRegionSize: 32M
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
@@ -525,14 +525,14 @@ trino:
       memory:
         heapHeadroomPerNode: ""
       query:
-        maxMemoryPerNode: "15GB"
-        maxLength: "1000000000"     # a billion
+        maxMemoryPerNode: 15GB
+        maxLength: 1000000000     # a billion
     jvm:
-      maxHeapSize: "50G"
+      maxHeapSize: 50G
       gcMethod:
-        type: "UseG1GC"
+        type: UseG1GC
         g1:
-          heapRegionSize: "32M"
+          heapRegionSize: 32M
     additionalJVMConfig:
       - -Dfile.encoding=UTF-8
       - --add-opens=java.base/java.nio=ALL-UNNAMED
@@ -559,8 +559,8 @@ trino:
     affinity: {}
   server:
     exchangeManager:
-      name: "filesystem"
-      baseDir: "/tmp/trino-local-file-system-exchange-manager"
+      name: filesystem
+      baseDir: /tmp/trino-local-file-system-exchange-manager
     autoscaling:
       enabled: false
       targetCPUUtilizationPercentage: 80
@@ -571,7 +571,7 @@ trino:
     config:
       path: /etc/trino
       query:
-        maxMemory: "20GB"
+        maxMemory: 20GB
       authenticationType: ""
       https:
         enabled: false
@@ -600,9 +600,9 @@ trino:
 aiRest:
   replicaCount: 1
   image:
-    name: "be-ai-rest"
-    tag: "v0.2.33"
-    imagePullPolicy: "IfNotPresent"
+    name: be-ai-rest
+    tag: v0.2.33
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -611,9 +611,9 @@ aiRest:
 authService:
   replicaCount: 1
   image:
-    name: "be-auth-service"
-    tag: "v0.0.19"
-    imagePullPolicy: "IfNotPresent"
+    name: be-auth-service
+    tag: v0.0.19
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -641,9 +641,9 @@ authService:
 cloudGateway:
   replicaCount: 1
   image:
-    name: "be-cloud-gateway"
-    tag: "v0.0.48"
-    imagePullPolicy: "IfNotPresent"
+    name: be-cloud-gateway
+    tag: v0.0.48
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -651,9 +651,9 @@ cloudGateway:
 collabSharedb:
   replicaCount: 1
   image:
-    name: "be-collab-sharedb"
-    tag: "v0.0.21"
-    imagePullPolicy: "IfNotPresent"
+    name: be-collab-sharedb
+    tag: v0.0.21
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -671,13 +671,13 @@ collabSharedb:
 dataCache:
   replicaCount: 1
   image:
-    name: "be-data-cache"
-    tag: "v0.0.96"
-    imagePullPolicy: "IfNotPresent"
+    name: be-data-cache
+    tag: v0.0.96
+    imagePullPolicy: IfNotPresent
   sidecar:
-    imageName: "be-common-flow-utilities-service"
-    imageTag: "v0.0.19"
-    imagePullPolicy: "IfNotPresent"
+    imageName: be-common-flow-utilities-service
+    imageTag: v0.0.19
+    imagePullPolicy: IfNotPresent
     resources: {}
   resources: {}
   nodeSelector: {}
@@ -706,9 +706,9 @@ dataCache:
 dataRest:
   replicaCount: 1
   image:
-    name: "be-data-rest"
-    tag: "v0.0.233"
-    imagePullPolicy: "IfNotPresent"
+    name: be-data-rest
+    tag: v0.0.233
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -716,9 +716,9 @@ dataRest:
 dispatcher:
   replicaCount: 1
   image:
-    name: "be-dispatcher"
-    tag: "v0.0.26"
-    imagePullPolicy: "IfNotPresent"
+    name: be-dispatcher
+    tag: v0.0.26
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -726,9 +726,9 @@ dispatcher:
 dispatcherAssigner:
   replicaCount: 1
   image:
-    name: "be-dispatcher-assigner"
-    tag: "v0.0.12"
-    imagePullPolicy: "IfNotPresent"
+    name: be-dispatcher-assigner
+    tag: v0.0.12
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -736,9 +736,9 @@ dispatcherAssigner:
 dispatcherDlq:
   replicaCount: 1
   image:
-    name: "be-dispatcher-dlq"
-    tag: "v0.0.13"
-    imagePullPolicy: "IfNotPresent"
+    name: be-dispatcher-dlq
+    tag: v0.0.13
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -746,9 +746,9 @@ dispatcherDlq:
 emailService:
   replicaCount: 1
   image:
-    name: "be-email-service"
-    tag: "v0.0.11"
-    imagePullPolicy: "IfNotPresent"
+    name: be-email-service
+    tag: v0.0.11
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -756,9 +756,9 @@ emailService:
 metadataService:
   replicaCount: 1
   image:
-    name: "be-metadata-service"
-    tag: "onpremise"
-    imagePullPolicy: "IfNotPresent"
+    name: be-metadata-service
+    tag: onpremise
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -786,9 +786,9 @@ metadataService:
 permissionService:
   replicaCount: 1
   image:
-    name: "be-permission-service"
-    tag: "v0.0.38"
-    imagePullPolicy: "IfNotPresent"
+    name: be-permission-service
+    tag: v0.0.38
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -816,9 +816,9 @@ permissionService:
 runtimeApi:
   replicaCount: 1
   image:
-    name: "be-runtime-api"
-    tag: "v0.0.11"
-    imagePullPolicy: "IfNotPresent"
+    name: be-runtime-api
+    tag: v0.0.11
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -846,9 +846,9 @@ runtimeApi:
 scheduledFlowRunner:
   replicaCount: 1
   image:
-    name: "be-scheduled-flow-runner"
-    tag: "v0.0.7"
-    imagePullPolicy: "IfNotPresent"
+    name: be-scheduled-flow-runner
+    tag: v0.0.7
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -877,9 +877,9 @@ secretStoreService:
   replicaCount: 1
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
-    name: "be-secret-store-service"
-    tag: "v0.0.19"
-    imagePullPolicy: "IfNotPresent"
+    name: be-secret-store-service
+    tag: v0.0.19
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -907,9 +907,9 @@ secretStoreService:
 studioApi:
   replicaCount: 1
   image:
-    name: "be-studio-api"
-    tag: "v0.0.238"
-    imagePullPolicy: "IfNotPresent"
+    name: be-studio-api
+    tag: v0.0.238
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -937,9 +937,9 @@ studioApi:
 tokenService:
   replicaCount: 1
   image:
-    name: "be-token-service"
-    tag: "v0.0.63"
-    imagePullPolicy: "IfNotPresent"
+    name: be-token-service
+    tag: v0.0.63
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -967,9 +967,9 @@ tokenService:
 webhookResolver:
   replicaCount: 1
   image:
-    name: "be-webhook-resolver"
-    tag: "v0.0.32"
-    imagePullPolicy: "IfNotPresent"
+    name: be-webhook-resolver
+    tag: v0.0.32
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -977,9 +977,9 @@ webhookResolver:
 workflowHistory:
   replicaCount: 1
   image:
-    name: "be-workflow-history"
-    tag: "v0.0.22"
-    imagePullPolicy: "IfNotPresent"
+    name: be-workflow-history
+    tag: v0.0.22
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -1007,9 +1007,9 @@ workflowHistory:
 workflowStarter:
   replicaCount: 1
   image:
-    name: "be-workflow-starter"
-    tag: "v0.0.85"
-    imagePullPolicy: "IfNotPresent"
+    name: be-workflow-starter
+    tag: v0.0.85
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -1017,13 +1017,13 @@ workflowStarter:
 workflowWorkerExpress:
   replicaCount: 1
   image:
-    name: "be-workflow-worker-express"
-    tag: "v0.0.85"
-    imagePullPolicy: "IfNotPresent"
+    name: be-workflow-worker-express
+    tag: v0.0.85
+    imagePullPolicy: IfNotPresent
   sidecar:
-    imageName: "be-common-flow-utilities-service"
-    imageTag: "v0.0.19"
-    imagePullPolicy: "IfNotPresent"
+    imageName: be-common-flow-utilities-service
+    imageTag: v0.0.19
+    imagePullPolicy: IfNotPresent
     resources: {}
     readinessProbe: {}
   resources: {}
@@ -1053,9 +1053,9 @@ workflowWorkerExpress:
 studioWeb:
   replicaCount: 1
   image:
-    name: "fe-studio-app"
-    tag: "v1.0.236"
-    imagePullPolicy: "IfNotPresent"
+    name: fe-studio-app
+    tag: v1.0.236
+    imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
@@ -1065,7 +1065,7 @@ traefik:
   enabled: true
   logs:
     general:
-      level: "DEBUG"
+      level: DEBUG
       format: text
     access:
       enabled: true

@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
         env:
           - name: SERVICE_NAME
-            value: "be-workflow-history"
+            value: be-workflow-history
         envFrom:
           - configMapRef:
               name: {{ include "peaka.fullname" . }}-env-config
