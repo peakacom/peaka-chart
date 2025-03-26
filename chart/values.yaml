@@ -465,7 +465,7 @@ trino:
     config:
       query:
         maxMemoryPerNode: 9GB
-        maxLength: 1000000000     # a billion
+        maxLength: "1000000000"     # a billion
       memory:
         heapHeadroomPerNode: ""
     jvm:
@@ -526,7 +526,7 @@ trino:
         heapHeadroomPerNode: ""
       query:
         maxMemoryPerNode: 15GB
-        maxLength: 1000000000     # a billion
+        maxLength: "1000000000"     # a billion
     jvm:
       maxHeapSize: 50G
       gcMethod:
