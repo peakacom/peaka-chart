@@ -11,6 +11,13 @@ imagePullSecret:
   name: peaka-docker-registry
   gcpRegistryAuth:
     # enter the json file contents given below
+    # E.g.
+    # imagePullSecret:
+    #   gcpRegistryAuth
+    #     password: |-
+    #       {
+    #       "file": "given-json-secret"
+    #       }
     password: ""
 
 # any additional imagePullSecrets for Peaka images
@@ -1126,5 +1133,5 @@ traefik:
       allowEmptyServices: false
       # ingressClass: traefik-internal
       # labelSelector: environment=production,method=traefik
-      namespaces: [ ]
+      namespaces: []
       # - "default"
