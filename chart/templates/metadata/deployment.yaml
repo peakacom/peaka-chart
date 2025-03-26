@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: metadata-service
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.metadataService.image.imagePullPolicy }}
           ports:
             - name: http
@@ -35,10 +35,10 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-            - mountPath: "/metadata-nfs"
+            - mountPath: /metadata-nfs
               name: metadata-nfs
               readOnly: false
-              subPath: "metadata"
+              subPath: metadata
           {{- with .Values.metadataService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

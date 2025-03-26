@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: data-cache
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataCache.image.name }}:{{ .Values.dataCache.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.dataCache.image.name }}:{{ .Values.dataCache.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.image.imagePullPolicy }}
           ports:
             - name: http
@@ -47,7 +47,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         - name: common-flow-utilities-service
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataCache.sidecar.imageName }}:{{ .Values.dataCache.sidecar.imageTag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.dataCache.sidecar.imageName }}:{{ .Values.dataCache.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.sidecar.imagePullPolicy }}
           ports:
             - name: http
@@ -56,8 +56,8 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           env:
-            - name: "PAYLOAD_SIZE_LIMIT"
-              value: "100mb"
+            - name: PAYLOAD_SIZE_LIMIT
+              value: 100mb
           {{- with .Values.dataCache.sidecar.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

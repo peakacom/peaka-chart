@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: {{ template "peaka.kafka-connect.fullname" . }}-server
-          image: "{{ .Values.kafkaConnect.image }}:{{ .Values.kafkaConnect.imageTag }}"
+          image: {{ .Values.kafkaConnect.image }}:{{ .Values.kafkaConnect.imageTag }}
           imagePullPolicy: {{ .Values.kafkaConnect.imagePullPolicy | quote }}
           ports:
             - name: kafka-connect
@@ -60,7 +60,7 @@ spec:
             - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
               value: {{ template "peaka.kafka-connect.cp-schema-registry.service-name" .}}
             - name: KAFKA_HEAP_OPTS
-              value: "{{ .Values.kafkaConnect.heapOptions }}"
+              value: {{ .Values.kafkaConnect.heapOptions }}
             {{- range $key, $value := .Values.kafkaConnect.configurationOverrides }}
             - name: {{ printf "CONNECT_%s" $key | replace "." "_" | upper | quote }}
               value: {{ $value | quote }}

@@ -26,17 +26,17 @@ spec:
         {{- end }}
       initContainers:
         - name: data-migrator
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
-              value: "be-studio-api"
+              value: be-studio-api
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: studio-api
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.studioApi.image.imagePullPolicy }}
           ports:
             - name: http
@@ -56,13 +56,13 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-            - mountPath: "/secrets/jwt/rsa"
+            - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
-            - mountPath: "/metadata-nfs"
+            - mountPath: /metadata-nfs
               name: metadata-nfs
               readOnly: false
-              subPath: "metadata"
+              subPath: metadata
           {{- with .Values.studioApi.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

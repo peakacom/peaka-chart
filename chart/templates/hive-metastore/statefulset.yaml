@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: metastore
-          image: "{{ .Values.hiveMetastore.image.repository }}:{{ .Values.hiveMetastore.image.tag }}"
+          image: {{ .Values.hiveMetastore.image.repository }}:{{ .Values.hiveMetastore.image.tag }}
           imagePullPolicy: {{ .Values.hiveMetastore.image.pullPolicy | quote }}
           env:
             - name: METASTORE_DB_HOSTNAME

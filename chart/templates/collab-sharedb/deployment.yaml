@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: collab-sharedb
-          image: "{{ include "peaka.image.registry" . }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}"
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.collabSharedb.image.imagePullPolicy }}
           ports:
             - name: websocket
@@ -34,7 +34,7 @@ spec:
             - name: http
               containerPort: 7070
           volumeMounts:
-            - mountPath: "/secrets/jwt/rsa"
+            - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
           envFrom:

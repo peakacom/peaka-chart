@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: pgvector
-          image: "{{ .Values.pgvector.image.repository }}:{{ .Values.pgvector.image.version }}"
+          image: {{ .Values.pgvector.image.repository }}:{{ .Values.pgvector.image.version }}
           args:
           - -c
           - max_connections={{ .Values.pgvector.options.maxConnections }}
