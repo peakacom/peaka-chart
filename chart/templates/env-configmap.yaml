@@ -132,3 +132,5 @@ data:
   CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 
   GRPC_DNS_RESOLVER: "native"
+
+  PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}

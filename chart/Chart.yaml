@@ -45,3 +45,7 @@ dependencies:
     version: 20.8.0
     repository: https://helm.traefik.io/traefik
     condition: traefik.enabled
+  - name: permify
+    version: 0.4.0
+    repository: https://permify.github.io/helm-charts
+    condition: permify.enabled

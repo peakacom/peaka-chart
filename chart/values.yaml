@@ -276,6 +276,44 @@ postgresqlbigtable:
       user: postgres
       password: postgres
 
+permify:
+  enabled: true
+  image:
+    tag: "v1.3.6"
+  replicaCount: 1
+  app:
+    account_id: "recdK3q5xuwJdGjrh"
+    server:
+      rate_limit: 100000
+    service:
+      circuit_breaker: false
+      watch:
+        enabled: false
+      schema:
+        cache:
+          number_of_counters: 1000
+          max_cost: 32MiB
+      permission:
+        bulk_limit: 100
+        concurrency_limit: 100
+        cache:
+          number_of_counters: 10000
+          max_cost: 2048MiB
+    database:
+      engine: postgres
+      uri_secret: permify-postgresql-uri-secret
+      name: permify
+      auto_migrate: true
+      max_open_connections: 20
+      max_idle_connections: 20
+      max_connection_lifetime: 86400s
+      max_connection_idle_time: 10800s
+      garbage_collection:
+        enabled: true
+        interval: 200h
+        window: 200h
+        timeout: 5m
+
 # Default values for cp-kafka-connect.
 kafkaConnect:
   enabled: false

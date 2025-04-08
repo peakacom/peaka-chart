@@ -410,6 +410,13 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{/*
+Define the peaka.permify.fullname template with .Release.Name and "permify"
+*/}}
+{{- define "peaka.permify.fullname" -}}
+{{- printf "%s-%s" .Release.Name "permify" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "peaka.dbc.url" -}}
 {{- .Values.accessUrl.domain -}}
 {{- end }}
@@ -577,6 +584,9 @@ kind: ConfigMap
 metadata:
   name: {{ .name }}
 data:
+  permify.sql: |
+    CREATE DATABASE permify WITH OWNER {{ .username }} ;
+
   studio.sql: |
     CREATE SCHEMA IF NOT EXISTS studio;
     ALTER SCHEMA studio OWNER TO {{ .username }} ;
