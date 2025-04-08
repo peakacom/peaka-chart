@@ -1,4 +1,4 @@
 .idea
 chart/charts
 chart/Chart.lock
-chart/.values.yaml
+chart/.values*.yaml
