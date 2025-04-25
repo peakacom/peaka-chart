@@ -41,10 +41,7 @@ spec:
       {{- if .Values.dispatcher.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.dispatcher.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.dispatcher.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.dispatcher.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.dispatcher.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

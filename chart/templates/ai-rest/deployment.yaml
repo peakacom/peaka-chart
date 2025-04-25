@@ -47,10 +47,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
-      {{- with .Values.aiRest.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.aiRest.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.aiRest.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

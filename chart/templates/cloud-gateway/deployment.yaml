@@ -41,10 +41,7 @@ spec:
       {{- if .Values.cloudGateway.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.cloudGateway.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.cloudGateway.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.cloudGateway.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

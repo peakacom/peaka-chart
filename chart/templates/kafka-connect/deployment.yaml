@@ -94,10 +94,7 @@ spec:
       {{- if .Values.kafkaConnect.volumes }}
 {{ toYaml .Values.kafkaConnect.volumes | trim | indent 6 }}
       {{- end}}
-      {{- if .Values.kafkaConnect.nodeSelector }}
-      nodeSelector:
-{{ toYaml .Values.kafkaConnect.nodeSelector | indent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.kafkaConnect.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- if .Values.kafkaConnect.tolerations }}
       tolerations:
 {{ toYaml .Values.kafkaConnect.tolerations | indent 8 }}

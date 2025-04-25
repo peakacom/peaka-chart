@@ -42,10 +42,7 @@ spec:
       {{- if .Values.webhookResolver.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.webhookResolver.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.webhookResolver.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.webhookResolver.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.webhookResolver.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

@@ -65,10 +65,7 @@ spec:
       {{- if .Values.dataCache.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.dataCache.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.dataCache.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.dataCache.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.dataCache.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

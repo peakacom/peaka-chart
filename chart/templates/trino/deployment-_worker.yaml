@@ -117,10 +117,7 @@ spec:
             successThreshold: {{ .Values.trino.worker.readinessProbe.successThreshold | default 1 }}
           resources:
             {{- toYaml .Values.trino.worker.resources | nindent 12 }}
-      {{- with .Values.trino.worker.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.trino.worker.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.trino.worker.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

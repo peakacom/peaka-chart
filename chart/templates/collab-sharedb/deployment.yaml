@@ -55,10 +55,7 @@ spec:
       {{- if .Values.collabSharedb.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.collabSharedb.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.collabSharedb.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.collabSharedb.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

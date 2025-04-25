@@ -59,10 +59,7 @@ spec:
       {{- if .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.scheduledFlowRunner.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.scheduledFlowRunner.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.scheduledFlowRunner.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

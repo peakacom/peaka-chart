@@ -84,6 +84,25 @@ Return  the proper Storage Class
 {{- end -}}
 
 {{/*
+Return the proper nodeSelector
+{{ include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.path.to.the.nodeSelector "global" $.Values.global) }}
+*/}}
+{{- define "peaka.common.nodeSelector" -}}
+
+  {{- $nodeSelector := .nodeSelector -}}
+  {{- if .global -}}
+      {{- if .global.nodeSelector -}}
+          {{- $nodeSelector = .global.nodeSelector -}}
+      {{- end -}}
+  {{- end -}}
+
+  {{- if $nodeSelector -}}
+    {{- printf "nodeSelector:\n  %s" ( toYaml $nodeSelector ) -}}
+  {{- end -}}
+
+{{- end -}}
+
+{{/*
 Environment variables injected into Peaka services
 */}}
 {{- define "peaka.common.envVars" -}}

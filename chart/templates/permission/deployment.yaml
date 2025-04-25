@@ -64,10 +64,7 @@ spec:
       {{- if .Values.permissionService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.permissionService.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.permissionService.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.permissionService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.permissionService.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

@@ -58,10 +58,7 @@ spec:
       {{- if .Values.metadataService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.metadataService.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.metadataService.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.metadataService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.metadataService.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

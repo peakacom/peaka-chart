@@ -2,6 +2,8 @@
 global:
   storageClass: ""
 
+  nodeSelector: {}
+
 nameOverride: ""
 fullnameOverride: ""
 

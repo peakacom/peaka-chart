@@ -51,10 +51,7 @@ spec:
       {{- if .Values.dataRest.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.dataRest.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.dataRest.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.dataRest.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.dataRest.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

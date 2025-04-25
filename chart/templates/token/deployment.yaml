@@ -49,10 +49,7 @@ spec:
       {{- if .Values.tokenService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.tokenService.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.tokenService.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.tokenService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.tokenService.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

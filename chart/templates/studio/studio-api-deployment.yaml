@@ -85,10 +85,7 @@ spec:
       {{- if .Values.studioApi.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.studioApi.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.studioApi.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.studioApi.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.studioApi.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

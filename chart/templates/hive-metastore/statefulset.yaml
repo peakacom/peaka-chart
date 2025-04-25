@@ -33,3 +33,4 @@ spec:
         - name: hive-config
           configMap:
             name: {{ template "peaka.hive.name" . }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.hiveMetastore.nodeSelector "global" $.Values.global) | nindent 6 }}

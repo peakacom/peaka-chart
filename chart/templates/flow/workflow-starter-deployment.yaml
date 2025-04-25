@@ -42,10 +42,7 @@ spec:
       {{- if .Values.workflowStarter.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowStarter.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.workflowStarter.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.workflowStarter.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.workflowStarter.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}

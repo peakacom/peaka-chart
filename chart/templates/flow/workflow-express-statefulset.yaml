@@ -67,10 +67,7 @@ spec:
       {{- if .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- with .Values.workflowWorkerExpress.nodeSelector }}
-      nodeSelector:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.workflowWorkerExpress.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.workflowWorkerExpress.affinity }}
       affinity:
       {{- toYaml . | nindent 8 }}
