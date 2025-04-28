@@ -97,7 +97,7 @@ Return the proper nodeSelector
   {{- end -}}
 
   {{- if $nodeSelector -}}
-    {{- printf "nodeSelector:\n  %s" ( toYaml $nodeSelector ) -}}
+    {{- printf "nodeSelector:\n  %s\n" ( toYaml $nodeSelector ) -}}
   {{- end -}}
 
 {{- end -}}
