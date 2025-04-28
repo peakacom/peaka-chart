@@ -68,6 +68,7 @@ spec:
               subPath: postgres
               readOnly: false
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.pgvector.nodeSelector "global" $.Values.global) | nindent 6 }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.pgvector.tolerations "global" $.Values.global) }}
   volumeClaimTemplates:
     - metadata:
         name: {{ include "peaka.fullname" . }}-pgvector

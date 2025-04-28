@@ -103,6 +103,33 @@ Return the proper nodeSelector
 {{- end -}}
 
 {{/*
+Return the proper tolerations
+{{ include "peaka.common.tolerations" ( dict "tolerations" .Values.path.to.the.tolerations "global" $.Values.global) }}
+*/}}
+{{- define "peaka.common.tolerations" -}}
+
+  {{- $tolerations := .tolerations -}}
+  {{- if .global -}}
+      {{- if .global.tolerations -}}
+          {{- $tolerations = .global.tolerations -}}
+      {{- end -}}
+  {{- end -}}
+
+  {{- if $tolerations -}}
+    {{- printf "tolerations:" -}}
+    {{- range $tolerations }}
+        - key: {{ .key }}
+          operator: {{ .operator }}
+          value: {{ .value | quote }}
+          {{- if .effect }}
+          effect: {{ .effect }}
+          {{- end }}
+    {{- end }}
+  {{- end -}}
+
+{{- end -}}
+
+{{/*
 Environment variables injected into Peaka services
 */}}
 {{- define "peaka.common.envVars" -}}

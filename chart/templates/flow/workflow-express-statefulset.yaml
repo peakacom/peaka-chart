@@ -72,3 +72,4 @@ spec:
       affinity:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.workflowWorkerExpress.tolerations "global" $.Values.global) }}

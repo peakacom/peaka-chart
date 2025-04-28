@@ -132,7 +132,4 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.trino.coordinator.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.trino.coordinator.tolerations "global" $.Values.global) }}
