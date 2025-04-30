@@ -38,10 +38,6 @@ spec:
             - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
-            - mountPath: /metadata-nfs
-              name: metadata-nfs
-              readOnly: false
-              subPath: metadata
           {{- with .Values.permissionService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -58,9 +54,6 @@ spec:
         - name: jwt-rsa-secret
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
-        - name: metadata-nfs
-          persistentVolumeClaim:
-            claimName: {{ include "peaka.fullname" . }}-nfs-share
       {{- if .Values.permissionService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.permissionService.terminationGracePeriodSeconds }}
       {{- end }}
