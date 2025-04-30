@@ -113,7 +113,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.44
+    tag: v0.0.46
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -474,7 +474,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.568
+    tag: v0.0.579
   initContainers: {}
   auth: {}
     # Set username and password
@@ -623,7 +623,7 @@ aiRest:
   replicaCount: 1
   image:
     name: be-ai-rest
-    tag: v0.2.41
+    tag: v0.2.43
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -664,7 +664,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.52
+    tag: v0.0.59
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -694,7 +694,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.98
+    tag: v0.0.101
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -729,7 +729,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.247
+    tag: v0.0.251
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -819,7 +819,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.45
+    tag: v0.0.47
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -970,7 +970,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.63
+    tag: v0.0.64
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1040,7 +1040,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.85
+    tag: v0.0.86
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1050,7 +1050,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.85
+    tag: v0.0.86
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1086,7 +1086,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.7
+    tag: v1.1.22
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
