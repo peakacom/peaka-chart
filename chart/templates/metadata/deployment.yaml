@@ -24,6 +24,28 @@ spec:
         {{- range $_, $secret := .Values.additionalImagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      initContainers:
+        - name: copy-metadata
+          image: {{ include "peaka.image.registry" . }}/{{ .Values.metadataService.initContainer.image.name }}:{{ .Values.metadataService.initContainer.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.metadataService.initContainer.image.imagePullPolicy }}
+          volumeMounts:
+            - name: metadata-volume
+              mountPath: /metadata
+              readOnly: false
+          command:
+            - sh
+            - -c
+            - |
+              echo "Creating required directories in the metadata volume ..."
+
+              # delete a directory if it exists and create it in either case
+              dir="/metadata/connector"; [ -d "$dir" ] && rm -rf "$dir"; mkdir "$dir"
+              dir="/metadata/development"; [ -d "$dir" ] && rm -rf "$dir"; mkdir "$dir"
+
+              echo "Copying contents of the metadata-connector to /metadata/connector..."
+
+              cp -R /app/. /metadata/connector
+
       containers:
         - name: metadata-service
           image: {{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}
@@ -35,10 +57,9 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-            - mountPath: /metadata-nfs
-              name: metadata-nfs
+            - name: metadata-volume
+              mountPath: /metadata
               readOnly: false
-              subPath: metadata
           {{- with .Values.metadataService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -52,9 +73,9 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: metadata-nfs
+        - name: metadata-volume
           persistentVolumeClaim:
-            claimName: {{ include "peaka.fullname" . }}-nfs-share
+            claimName: {{ include "peaka.fullname" . }}-data-be-metadata-service
       {{- if .Values.metadataService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.metadataService.terminationGracePeriodSeconds }}
       {{- end }}

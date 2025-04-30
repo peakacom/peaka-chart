@@ -781,9 +781,19 @@ metadataService:
     name: be-metadata-service
     tag: onpremise
     imagePullPolicy: IfNotPresent
+  initContainer:
+    image:
+      name: be-metadata-connector
+      tag: v1.0.1
+      imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  persistence:
+    annotations: {}
+    labels: {}
+    size: 2Gi
+    storageClass: ""
   livenessProbe:
     failureThreshold: 3
     httpGet:
@@ -930,7 +940,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.252
+    tag: onpremise
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}

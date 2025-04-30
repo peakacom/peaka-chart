@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "peaka.fullname" . }}-data-be-metadata-service
+  {{- if .Values.metadataService.persistence.annotations }}
+  annotations:
+    {{- toYaml .Values.metadataService.persistence.annotations | nindent 4 }}
+  {{- end }}
+  {{- if .Values.metadataService.persistence.labels }}
+  labels:
+    {{- toYaml .Values.metadataService.persistence.labels | nindent 4}}
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.metadataService.persistence.size }}
+  {{- include "peaka.common.storage.class" (dict "persistence" .Values.metadataService.persistence "global" .Values.global) | nindent 2 }}

@@ -227,7 +227,7 @@ MONGODB_ARCHITECTURE: {{ .Values.mongodb.architecture }}
 SHAREDB_MONGO: mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
 
 
-APP_BASEDIR: /metadata-nfs
+APP_BASEDIR: /metadata
 GITHUB_ENABLED: "false"
 CONNECTOR_BASEDIR: /run/resource/connector
 
