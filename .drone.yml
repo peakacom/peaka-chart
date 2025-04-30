@@ -31,6 +31,7 @@ steps:
         helm repo add minio https://charts.min.io/
         helm repo add temporal-operator https://alexandrevilain.github.io/temporal-operator
         helm repo add traefik https://helm.traefik.io/traefik
+        helm repo add permify https://permify.github.io/helm-charts
 
         helm dependency update .
         helm dependency build .
