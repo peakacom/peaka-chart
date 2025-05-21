@@ -2,8 +2,8 @@ apiVersion: v2
 name: peaka
 description: Helm chart of the best data integration platform, aka Peaka.
 type: application
-version: 0.3.16
-appVersion: "0.3.12"
+version: 0.3.17
+appVersion: "0.3.13"
 dependencies:
   - name: postgresql
     version: 13.4.4
