@@ -253,6 +253,17 @@ postgresqlbigtable:
       user: postgres
       password: postgres
 
+# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/clickhouse/values.yaml
+clickhouse:
+  enabled: true
+  keeper:
+    enabled: false
+  replicaCount: 1
+  shards: 1
+  auth:
+    username: peaka
+    password: peakaclickhouse123
+
 permify:
   enabled: true
   image:
