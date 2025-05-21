@@ -1109,7 +1109,7 @@ traefik:
     # liveness probes, but you can adjust its config to your liking
     traefik:
       port: 9000
-      expose: true
+      expose: false
       # The exposed port for this service
       exposedPort: 9000
       # The port protocol (TCP/UDP)
@@ -1117,7 +1117,7 @@ traefik:
     web:
       port: 8000
       # hostPort: 8000
-      expose: true
+      expose: false
       exposedPort: 80
       # The port protocol (TCP/UDP)
       #nodePort: 30080
@@ -1127,7 +1127,7 @@ traefik:
     websecure:
       port: 8443
       # hostPort: 8443
-      expose: true
+      expose: false
       #nodePort: 30443
       exposedPort: 443
       # The port protocol (TCP/UDP)
@@ -1137,7 +1137,7 @@ traefik:
         # this is the name of a TLSOption definition
     dbc:
       port: 4567
-      expose: true
+      expose: false
       exposedPort: 4567
       #nodePort: 30567
       protocol: TCP
