@@ -26,7 +26,7 @@ spec:
         {{- end }}
       initContainers:
         - name: copy-metadata
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.metadataService.initContainer.image.name }}:{{ .Values.metadataService.initContainer.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.metadataService.initContainer.image.registry }}/{{ .Values.metadataService.initContainer.image.name }}:{{ .Values.metadataService.initContainer.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.metadataService.initContainer.image.imagePullPolicy }}
           volumeMounts:
             - name: metadata-volume
@@ -48,7 +48,7 @@ spec:
 
       containers:
         - name: metadata-service
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.metadataService.image.registry }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.metadataService.image.imagePullPolicy }}
           ports:
             - name: http

@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: dispatcher-assigner
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.dispatcherAssigner.image.name }}:{{ .Values.dispatcherAssigner.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.dispatcherAssigner.image.registry }}/{{ .Values.dispatcherAssigner.image.name }}:{{ .Values.dispatcherAssigner.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dispatcherAssigner.image.imagePullPolicy }}
           envFrom:
             - configMapRef:

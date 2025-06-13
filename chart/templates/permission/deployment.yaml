@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: permission-service
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.permissionService.image.registry }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.permissionService.image.imagePullPolicy }}
           ports:
             - name: http

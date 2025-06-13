@@ -29,7 +29,7 @@ spec:
       {{- end }}
       containers:
         - name: auth-service
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.authService.image.name }}:{{ .Values.authService.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.authService.image.registry }}/{{ .Values.authService.image.name }}:{{ .Values.authService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.authService.image.imagePullPolicy }}
           ports:
             - name: http

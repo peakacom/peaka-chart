@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: token-service
-          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.tokenService.image.name .Values.tokenService.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.tokenService.image.registry }}/{{ .Values.tokenService.image.name }}:{{ .Values.tokenService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.tokenService.image.imagePullPolicy }}
           ports:
             - name: http

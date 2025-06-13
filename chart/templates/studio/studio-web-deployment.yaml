@@ -27,7 +27,7 @@ spec:
         {{- end }}
       containers:
         - name: studio-web
-          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.studioWeb.image.name .Values.studioWeb.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.studioWeb.image.registry }}/{{ .Values.studioWeb.image.name }}:{{ .Values.studioWeb.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.studioWeb.image.imagePullPolicy }}
           ports:
             - name: http

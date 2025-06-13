@@ -36,7 +36,7 @@ spec:
               name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: workflow-history
-          image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.workflowHistory.image.name .Values.workflowHistory.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.workflowHistory.image.registry }}/{{ .Values.workflowHistory.image.name }}:{{ .Values.workflowHistory.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowHistory.image.imagePullPolicy }}
           ports:
             - name: http

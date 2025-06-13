@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: webhook-resolver
-          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.webhookResolver.image.name .Values.webhookResolver.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.webhookResolver.image.registry }}/{{ .Values.webhookResolver.image.name }}:{{ .Values.webhookResolver.image.tag}}
           imagePullPolicy: {{ default "IfNotPresent" .Values.webhookResolver.image.imagePullPolicy }}
           envFrom:
             - configMapRef:

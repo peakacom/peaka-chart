@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: collab-sharedb
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.collabSharedb.image.registry }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.collabSharedb.image.imagePullPolicy }}
           ports:
             - name: websocket

@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: workflow-worker-express
-          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.workflowWorkerExpress.image.name .Values.workflowWorkerExpress.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.image.registry }}/{{ .Values.workflowWorkerExpress.image.name }}:{{ .Values.workflowWorkerExpress.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.image.imagePullPolicy }}
           command: ["/bin/sh", "-c", "export WORKER_ORDINAL_INDEX=${HOSTNAME##*-} && java -jar run/application.jar "]
           ports:
@@ -48,7 +48,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         - name: common-flow-utilities-service
-          image: {{ printf "%s/%s:%s" (include "peaka.image.registry" . ) .Values.workflowWorkerExpress.sidecar.imageName .Values.workflowWorkerExpress.sidecar.imageTag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.sidecar.imageRegistry }}/{{ .Values.workflowWorkerExpress.sidecar.imageName }}:{{ .Values.workflowWorkerExpress.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.sidecar.imagePullPolicy }}
           env:
             - name: PAYLOAD_SIZE_LIMIT

@@ -26,7 +26,7 @@ spec:
         {{- end }}
       initContainers:
         - name: data-migrator
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
@@ -36,7 +36,7 @@ spec:
                 name: {{ include "peaka.fullname" . }}-env-config
       containers:
         - name: studio-api
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.studioApi.image.registry }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.studioApi.image.imagePullPolicy }}
           ports:
             - name: http

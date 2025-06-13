@@ -26,7 +26,7 @@ spec:
         {{- end }}
       containers:
         - name: secret-store-service
-          image: {{ include "peaka.image.registry" . }}/{{ .Values.secretStoreService.image.name }}:{{ .Values.secretStoreService.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.secretStoreService.image.registry }}/{{ .Values.secretStoreService.image.name }}:{{ .Values.secretStoreService.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.secretStoreService.image.imagePullPolicy }}
           ports:
             - name: http
