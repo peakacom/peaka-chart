@@ -485,7 +485,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.586
+    tag: v0.0.589
   initContainers: {}
   auth: {}
     # Set username and password
@@ -634,7 +634,7 @@ aiRest:
   replicaCount: 1
   image:
     name: be-ai-rest
-    tag: v0.2.50
+    tag: v0.2.60
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -675,7 +675,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.61
+    tag: v0.0.64
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -705,11 +705,11 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.102
+    tag: v0.0.103
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.19
+    imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
     resources: {}
   resources: {}
@@ -740,7 +740,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.261
+    tag: v0.0.264
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -981,7 +981,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.65
+    tag: v0.0.66
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1051,7 +1051,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.86
+    tag: v0.0.88
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1061,11 +1061,11 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.86
+    tag: v0.0.88
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.19
+    imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
     resources: {}
     readinessProbe: {}
@@ -1097,7 +1097,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.29
+    tag: v1.1.42
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
