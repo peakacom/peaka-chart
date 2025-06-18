@@ -1,0 +1,55 @@
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  descriptor:
+    type: Peaka
+    version: {{ .Chart.AppVersion }}
+    description: |-
+      Peaka is a data integration platform that was built to replace the set of tools and cloud-based technologies
+      commonly known as the “modern data stack.” Usually adopted as a one-size-fits-all solution for organizations of
+      all sizes, the modern data stack is optimized for the needs and capabilities of an enterprise. Therefore, it is
+      too expensive to set up, too complicated to use, too demanding to maintain, and, more often than not, tragically
+      underutilized for startups and SMBs.
+      Considering that more than 80 percent of users want to just bring together and query their data, the modern data
+      stack’s value proposition is a weak one for non-enterprise customers, offering them little value that comes at
+      enormous cost and with increased organizational complexity.
+      Peaka simplifies the data integration process by virtualizing your data tables and joining data from different
+      sources without the need for complex and time-consuming ETL processes. Peaka establishes a semantic layer over
+      relational and NoSQL databases, SaaS tools, and APIs, allowing users to query disparate data sources as a single
+      source immediately.
+    links:
+      - description: Getting Started
+        url: https://docs.peaka.com/introduction
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}
+      {{- include "peaka.labels" . | nindent 6 }}
+  componentKinds:
+    - group: apps
+      kind: Deployment
+    - group: ''
+      kind: Service
+    - group: apps
+      kind: StatefulSet
+    - group: ''
+      kind: ConfigMap
+    - group: traefik.containo.us
+      kind: IngressRoute
+    - group: traefik.containo.us
+      kind: Middleware
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: temporal.io
+      kind: TemporalCluster
+    - group: ''
+      kind: PersistentVolumeClaim
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: ServiceAccount
