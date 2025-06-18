@@ -26,6 +26,11 @@ spec:
     links:
       - description: Getting Started
         url: https://docs.peaka.com/introduction
+      - description: About
+        url: https://www.peaka.com/
+    maintainers:
+      - name: Peaka Developers
+        email: dev@peaka.com
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Release.Name }}
