@@ -790,7 +790,7 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: onpremise
+    tag: v0.0.22
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -951,7 +951,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: onpremise
+    tag: v0.0.271
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
