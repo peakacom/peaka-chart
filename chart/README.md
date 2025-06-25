@@ -25,8 +25,8 @@ helm install [RELEASE_NAME] peaka/peaka
 Some configurations must be set for Peaka to run as expected. 
 
 - Peaka's container images are not publicly available. You will be given a `json` file containing access credentials 
-  to Peaka's container image registry. You need to set the value of `.Values.imagePullSecret.gcpRegistryAuth.password` 
-  to the content to the `json` file. This will create a Kubernetes Secret of type `docker-registry`, which Peaka 
+  to Peaka's container image registry. You need to set `.Values.imagePullSecret.gcpRegistryAuth.password` 
+  to the content of the `json` file. This will create a Kubernetes Secret of type `docker-registry`, which Peaka 
   services will use as imagePullSecret.
 
 
