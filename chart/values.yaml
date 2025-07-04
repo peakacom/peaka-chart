@@ -138,6 +138,17 @@ postgresql:
       user: postgres
       password: postgres
 
+# @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
+externalPostgresql:
+  enabled: false
+  # The IP or DNS of the Postgresql server
+  host: ""
+  port: 5432
+  username: code2db
+  password: code2db
+  database: code2db
+  postgresPassword: postgres
+
 # metastore for internal iceberg
 hiveMetastore:
   enabled: true

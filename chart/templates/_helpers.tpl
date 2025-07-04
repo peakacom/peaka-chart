@@ -137,12 +137,21 @@ MINIO_ADDRESS: http://{{ include "peaka.minio.fullname" . }}.{{ .Release.Namespa
 MINIO_ACCESS_KEY: {{ include "peaka.minio.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.minio.secretKey" .  | quote }}
 
+{{- if not .Values.externalPostgresql.enabled }}
 STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
 DB_HOST: {{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-DB_USERNAME: {{ include "peaka.postgresql.user" . | quote }}
-DB_PASSWORD: {{ include "peaka.postgresql.password" . | quote }}
+DB_USERNAME: {{ include "peaka.postgresql.user" . }}
+DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 DB_NAME: {{ include "peaka.postgresql.database" . }}
+{{- else }}
+STUDIO_DB_ADDRESS: jdbc:postgresql://{{ .Values.externalPostgresql.host }}:{{ .Values.externalPostgresql.port }}/{{ .Values.externalPostgresql.database }}
+DB_HOST: {{ .Values.externalPostgresql.host }}
+DB_USERNAME: {{ .Values.externalPostgresql.username }}
+DB_PASSWORD: {{ .Values.externalPostgresql.password }}
+DB_PORT: {{ .Values.externalPostgresql.port | quote }}
+DB_NAME: {{ .Values.externalPostgresql.database }}
+{{- end }}
 
 SECRET_STORAGE_SERVICE: http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80
 
