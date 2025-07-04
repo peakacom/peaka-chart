@@ -1,0 +1,7 @@
+{{- if and (not .Values.postgresql.enabled) (not .Values.externalPostgresql.enabled) }}
+{{- fail "You must enable either postgresql.enabled or externalPostgresql.enabled." }}
+{{- end }}
+
+{{- if and .Values.postgresql.enabled .Values.externalPostgresql.enabled }}
+{{- fail "You cannot enable both postgresql.enabled and externalPostgresql.enabled at the same time." }}
+{{- end }}
