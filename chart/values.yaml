@@ -118,6 +118,7 @@ dataMigrator:
 
 # peaka uses postgresql to persist some internal data.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
+# If externalPostgresql is used, set postgresql.enabled to false
 postgresql:
   enabled: true
   volumePermissions:
@@ -139,6 +140,7 @@ postgresql:
       password: postgres
 
 # @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
+# If internal postgresql is used, set externalPostgresql.enabled to false
 externalPostgresql:
   enabled: false
   # The IP or DNS of the Postgresql server
