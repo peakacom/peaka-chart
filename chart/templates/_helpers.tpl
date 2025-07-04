@@ -137,21 +137,12 @@ MINIO_ADDRESS: http://{{ include "peaka.minio.fullname" . }}.{{ .Release.Namespa
 MINIO_ACCESS_KEY: {{ include "peaka.minio.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.minio.secretKey" .  | quote }}
 
-{{- if not .Values.externalPostgresql.enabled }}
-STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
-DB_HOST: {{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.host" . }}:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
+DB_HOST: {{ include "peaka.postgresql.host" . }}
 DB_USERNAME: {{ include "peaka.postgresql.user" . }}
 DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 DB_NAME: {{ include "peaka.postgresql.database" . }}
-{{- else }}
-STUDIO_DB_ADDRESS: jdbc:postgresql://{{ .Values.externalPostgresql.host }}:{{ .Values.externalPostgresql.port }}/{{ .Values.externalPostgresql.database }}
-DB_HOST: {{ .Values.externalPostgresql.host }}
-DB_USERNAME: {{ .Values.externalPostgresql.username }}
-DB_PASSWORD: {{ .Values.externalPostgresql.password }}
-DB_PORT: {{ .Values.externalPostgresql.port | quote }}
-DB_NAME: {{ .Values.externalPostgresql.database }}
-{{- end }}
 
 SECRET_STORAGE_SERVICE: http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80
 
@@ -372,27 +363,55 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 {{- end -}}
 
 {{- define "peaka.postgresql.fullname" -}}
+{{- if .Values.postgresql.enabled -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.host" -}}
+{{- if .Values.postgresql.enabled -}}
+{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- else -}}
+{{- .Values.externalPostgresql.host -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.postgresql.port" -}}
+{{- if .Values.postgresql.enabled -}}
 {{- default 5432 .Values.postgresql.primary.service.ports.postgresql -}}
+{{- else -}}
+{{- default 5432 .Values.externalPostgresql.port -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.postgresql.user" -}}
+{{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.auth.username -}}
+{{- else -}}
+{{- .Values.externalPostgresql.username -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.postgresql.database" -}}
+{{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.auth.database -}}
+{{- else -}}
+{{- .Values.externalPostgresql.database -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.postgresql.password" -}}
+{{- if .Values.postgresql.enabled -}}
 {{- .Values.postgresql.auth.password -}}
+{{- else -}}
+{{- .Values.externalPostgresql.password -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.postgresql.passwordSecretKey" -}}
+{{- if .Values.postgresql.enabled -}}
 {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+{{- end -}}
 {{- end -}}
 
 {{- define "peaka.hive.name" -}}
