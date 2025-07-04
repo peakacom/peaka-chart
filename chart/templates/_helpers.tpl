@@ -138,8 +138,11 @@ MINIO_ACCESS_KEY: {{ include "peaka.minio.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.minio.secretKey" .  | quote }}
 
 STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
+DB_HOST: {{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
 DB_USERNAME: {{ include "peaka.postgresql.user" . | quote }}
 DB_PASSWORD: {{ include "peaka.postgresql.password" . | quote }}
+DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
+DB_NAME: {{ include "peaka.postgresql.database" . }}
 
 SECRET_STORAGE_SERVICE: http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80
 
@@ -179,11 +182,7 @@ KAFKA_CONNECT_ADDRESS: http://{{ include "peaka.kafka-connect.fullname" . }}.{{ 
 
 TEMPORAL_TARGET: {{ include "peaka.temporal.frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:7233
 
-DB_HOST: {{ include "peaka.postgresql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
 STUDIODB_SCHEMA: studio
-
-DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
-DB_NAME: {{ include "peaka.postgresql.database" . }}
 
 TRINO_ADDRESS: jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080
 TRINO_PASSWORD: {{ .Values.trino.password }}
