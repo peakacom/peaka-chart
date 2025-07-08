@@ -16,9 +16,14 @@ helm repo add peaka https://peaka-chart.storage.googleapis.com/charts
 helm repo update
 ```
 
+### Create Peaka Namespace
+```shell
+kubectl create namespace peaka
+```
+
 ### Install
 ```shell
-helm install [RELEASE_NAME] peaka/peaka
+helm install -n peaka [RELEASE_NAME] peaka/peaka
 ```
 
 ## Configuration
