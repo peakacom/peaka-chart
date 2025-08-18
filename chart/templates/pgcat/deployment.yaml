@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.pgcat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}
+spec:
+  replicas: {{ .Values.pgcat.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/pgcat/secret.yaml") . | sha256sum }}
+      {{- with .Values.pgcat.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}
+    spec:
+      {{- with .Values.pgcat.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "peaka.pgcat.fullname" . }}
+      {{- if .Values.pgcat.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.pgcat.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: pgcat
+          {{- if .Values.pgcat.containerSecurityContext }}
+          securityContext:
+            {{- toYaml .Values.pgcat.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
+          imagePullPolicy: {{ .Values.pgcat.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: pgcat
+              containerPort: {{ .Values.pgcat.configuration.general.port }}
+              protocol: TCP
+            - name: prometheus
+              containerPort: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: pgcat
+          readinessProbe:
+            tcpSocket:
+              port: pgcat
+          resources:
+            {{- toYaml .Values.pgcat.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /etc/pgcat
+            name: config
+      {{- with .Values.pgcat.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pgcat.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pgcat.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - secret:
+          defaultMode: 420
+          secretName: {{ include "peaka.pgcat.fullname" . }}
+        name: config

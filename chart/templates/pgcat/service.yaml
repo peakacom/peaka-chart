@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.pgcat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}
+spec:
+  type: {{ .Values.pgcat.service.type }}
+  ports:
+    - port: {{ .Values.pgcat.service.port }}
+      targetPort: pgcat
+      protocol: TCP
+      name: pgcat
+    - port: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
+      targetPort: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
+      protocol: TCP
+      name: prometheus
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}

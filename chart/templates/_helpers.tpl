@@ -627,6 +627,18 @@ Define the peaka.permify.fullname template with .Release.Name and "permify"
 {{- printf "%s-%s" .Release.Name "permify" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+
+{{/*
+Define the peaka.pgcat.fullname using "peaka.fullname"
+*/}}
+{{- define "peaka.pgcat.fullname" -}}
+{{- printf "%s-pgcat" (include "peaka.fullname" .) -}}
+{{- end -}}
+
+{{- define "peaka.pgcat.port" -}}
+{{- .Values.pgcat.configuration.general.port -}}
+{{- end -}}
+
 {{- define "peaka.dbc.url" -}}
 {{- .Values.accessUrl.domain -}}
 {{- end }}
