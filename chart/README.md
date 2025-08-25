@@ -75,4 +75,6 @@ you can use the Peaka JDBC service using `http://localhost:4567`.
 
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
-web application. To enable TLS, update `tls.enabled`, `tls.cert` and `tls.key` parameters in `values.yaml`. 
+web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart
+should be disabled by setting `tls.enabled` to false in `values.yaml`. If you plan to have Peaka terminate TLS, then set 
+`tls.enabled` to true and enter certificate details in `tls.cert` and `tls.key` in `values.yaml`. 
