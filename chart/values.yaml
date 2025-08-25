@@ -121,6 +121,8 @@ dataMigrator:
 # If externalPostgresql is used, set postgresql.enabled to false
 postgresql:
   enabled: true
+  image:
+    repository: bitnamilegacy/postgresql
   volumePermissions:
     enabled: true
   auth:
@@ -182,6 +184,7 @@ minio:
 mariadb:
   enabled: true
   image:
+    repository: bitnamilegacy/mariadb-galera
     tag: 10.11.4-debian-11-r3
   replicaCount: 1
   db:
@@ -200,6 +203,8 @@ mariadb:
 kafka:
   enabled: true
   nameOverride: kafka
+  image:
+    repository: bitnamilegacy/kafka
   provisioning:
     numPartitions: 20
     replicationFactor: 1
@@ -226,6 +231,8 @@ kafka:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
 mongodb:
   enabled: true
+  image:
+    repository: bitnamilegacy/mongodb
   architecture: standalone
   useStatefulSet: true
   auth:
@@ -238,8 +245,13 @@ mongodb:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
   enabled: true
+  global:
+    security:
+      allowInsecureImages: true
   auth:
     enabled: false
+  image:
+    repository: bitnamilegacy/redis
   architecture: standalone
   master:
     persistence:
@@ -250,6 +262,8 @@ postgresqlbigtable:
   enabled: true
   volumePermissions:
     enabled: true
+  image:
+    repository: bitnamilegacy/postgresql
   auth:
     username: code2db
     password: code2db
