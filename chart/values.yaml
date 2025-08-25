@@ -608,7 +608,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.592
+    tag: v0.0.598
   initContainers: {}
   auth: {}
     # Set username and password
@@ -768,7 +768,7 @@ authService:
   replicaCount: 1
   image:
     name: be-auth-service
-    tag: v0.0.19
+    tag: v0.0.20
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -798,7 +798,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.65
+    tag: v0.0.69
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -828,7 +828,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.104
+    tag: v0.0.123
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -863,7 +863,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.265
+    tag: v0.0.274
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -873,7 +873,7 @@ dispatcher:
   replicaCount: 1
   image:
     name: be-dispatcher
-    tag: v0.0.26
+    tag: v0.0.27
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -883,7 +883,7 @@ dispatcherAssigner:
   replicaCount: 1
   image:
     name: be-dispatcher-assigner
-    tag: v0.0.12
+    tag: v0.0.13
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -893,7 +893,7 @@ dispatcherDlq:
   replicaCount: 1
   image:
     name: be-dispatcher-dlq
-    tag: v0.0.13
+    tag: v0.0.14
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -903,7 +903,7 @@ emailService:
   replicaCount: 1
   image:
     name: be-email-service
-    tag: v0.0.11
+    tag: v0.0.12
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -913,7 +913,7 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v0.0.22
+    tag: v0.0.26
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -953,7 +953,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.50
+    tag: v0.0.55
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -983,7 +983,7 @@ runtimeApi:
   replicaCount: 1
   image:
     name: be-runtime-api
-    tag: v0.0.17
+    tag: v0.0.20
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1013,7 +1013,7 @@ scheduledFlowRunner:
   replicaCount: 1
   image:
     name: be-scheduled-flow-runner
-    tag: v0.0.7
+    tag: v0.0.11
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1044,7 +1044,7 @@ secretStoreService:
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
     name: be-secret-store-service
-    tag: v0.0.19
+    tag: v0.0.20
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1074,7 +1074,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.271
+    tag: v0.0.278
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1104,7 +1104,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.67
+    tag: v0.0.69
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1134,7 +1134,7 @@ webhookResolver:
   replicaCount: 1
   image:
     name: be-webhook-resolver
-    tag: v0.0.32
+    tag: v0.0.33
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1144,7 +1144,7 @@ workflowHistory:
   replicaCount: 1
   image:
     name: be-workflow-history
-    tag: v0.0.22
+    tag: v0.0.23
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1174,7 +1174,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.89
+    tag: v0.0.93
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1184,7 +1184,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.89
+    tag: v0.0.93
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1220,7 +1220,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.42
+    tag: v1.1.63
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
