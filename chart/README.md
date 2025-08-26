@@ -39,6 +39,10 @@ Some configurations must be set for Peaka to run as expected.
 need to fill `accessUrl` parameter in `values.yaml`. Read [Configuring Access URLs](#configuring-access-urls)
 section for detailed explanation.
 
+
+- Peaka appilaction utilizes [Traefik Proxy](https://traefik.io/traefik) for some internal routing configurations and 
+exposing Peaka to outside world. Read [Exposing Peaka](#exposing-peaka) for more information.
+
 ### Configuring Access URLs
 Before deploying Peaka, you must configure how the services will be accessed by setting the `accessUrl` parameters in `values.yaml`. These settings are crucial for:
 - Proper CORS (Cross-Origin Resource Sharing) policy configuration
@@ -72,6 +76,54 @@ export POD_NAME=$(kubectl get pods --namespace <namespace> -l "app.kubernetes.io
 kubectl port-forward $POD_NAME 4567 --namespace <namespace>
 ```
 you can use the Peaka JDBC service using `http://localhost:4567`.
+
+### Exposing Peaka
+Peaka application is accessible through the Traefik service deployed with this chart. By default, it is only available 
+inside the cluster (`ClusterIP`).
+
+**1. Choose service type**
+
+If you want to expose Peaka externally, update the `traefik.service.type` field in your `values.yaml`:
+```yaml
+traefik:
+  service:
+    type: LoadBalancer    # or NodePort / ClusterIP
+```
+- **ClusterIP** (default): Internal access only.
+- **NodePort**: Expose the app on each node’s IP at a fixed port.
+- **LoadBalancer**: Create an external load balancer (requires cloud provider support).
+
+**2. Choose ports to expose**
+- Peaka Studio Web Application
+  - Without TLS termiantion in Peaka:
+    ```yaml
+    traefik:
+      ports:
+        web:
+          expose: true
+          nodePort: 30080   # set this if using NodePort or LoadBalancer, otherwise Kubernetes will assign a random port    
+    ```
+
+  - With TLS termination in Peaka:
+    ```yaml
+    traefik:
+      ports:
+        websecure:
+          expose: true
+          nodePort: 30443   # set this if using NodePort or LoadBalancer, otherwise Kubernetes will assign a random port
+    ```
+
+- Peaka JDBC Service
+  ```yaml
+  traefik:
+    ports:
+      dbc:
+        expose: true
+        nodePort: 30567     # set this if using NodePort or LoadBalancer, otherwise Kubernetes will assign a random port
+  ```
+
+For more information about Traefik's installation parameters, consult the 
+[Traefik Helm Chart](https://github.com/traefik/traefik-helm-chart).
 
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 

@@ -1241,6 +1241,48 @@ studioWeb:
   affinity: {}
   readinessProbe: {}
 
+
+# -----------------------------------------------------------------------------
+# Service Exposure Settings
+# -----------------------------------------------------------------------------
+# The Peaka application is accessible through this Traefik service.
+# To expose Peaka outside the cluster, configure the service type below.
+#
+# Options:
+#   - ClusterIP    : Internal access only (default)
+#   - NodePort     : Expose on each node’s IP and a static port
+#   - LoadBalancer : Provision an external load balancer (if supported by your cloud)
+#
+# Ports:
+#   - web:
+#       Use this if TLS termination happens BEFORE traffic reaches Peaka.
+#       Set web.expose = true.
+#
+#   - websecure:
+#       Use this if you want Peaka to terminate TLS itself.
+#       Set websecure.expose = true.
+#
+#   - dbc:
+#       Use this if you want to expose the Peaka JDBC service.
+#       Set dbc.expose = true.
+# IMPORTANT (NodePort / LoadBalancer):
+#   If you set service.type = NodePort or LoadBalancer, you should also
+#   configure web.nodePort, websecure.nodePort, and/or dbc.nodePort.
+#   Otherwise, Kubernetes will assign random node ports.
+#
+# Example:
+# traefik:
+#   service:
+#     type: LoadBalancer
+#   ports:
+#     web:
+#       expose: true
+#       nodePort: 30080
+#     websecure:
+#       expose: false
+#     dbc:
+#       expose: true
+#       nodePort: 30567
 traefik:
   enabled: true
   logs:
