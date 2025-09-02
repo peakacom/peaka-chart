@@ -1,12 +1,22 @@
 # global parameters
 global:
+  # Default storage class for persistent volumes.
+  # Leave empty ("") to use the cluster’s default storage class.
   storageClass: ""
 
+  # Node selector to constrain a pod to run only on specific nodes.
+  # Example: {"disktype": "ssd"}
   nodeSelector: {}
 
+  # Tolerations allow pods to be scheduled on nodes with matching taints.
+  # Useful for running workloads on dedicated or tainted nodes.
   tolerations: []
 
+# Override the name of the chart. Useful to avoid collisions or enforce naming conventions.
 nameOverride: ""
+
+# Override the full name (release name + chart name).
+# Takes precedence over nameOverride when set.
 fullnameOverride: ""
 
 # Global container image registry.
