@@ -269,7 +269,7 @@ PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespa
 Set image registry for peaka images
 */}}
 {{- define "peaka.image.registry" -}}
-europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images
+{{ .Values.imageRegistry | default "europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images" }}
 {{- end -}}
 
 {{/*

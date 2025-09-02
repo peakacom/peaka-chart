@@ -9,6 +9,12 @@ global:
 nameOverride: ""
 fullnameOverride: ""
 
+# Global container image registry.
+# Leave empty ("") to use the default registry provided by Peaka.
+# Update this field if you want to pull images from another registry
+# (e.g., your private registry or Docker Hub).
+imageRegistry: ""
+
 # pull secret to fetch Peaka images
 # you will be given a secret json to authenticate to Peaka's container image registry.
 imagePullSecret:
