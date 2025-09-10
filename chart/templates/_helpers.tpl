@@ -179,6 +179,7 @@ REDIS_SINGLE_SERVER_HOST_NAME: {{ include "peaka.redis-master.fullname" . }}.{{ 
 
 BOOTSTRAP_ADDRESS: {{ include "peaka.kafka.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.kafka.port" . }}
 KAFKA_CONNECT_ADDRESS: http://{{ include "peaka.kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8083
+PEAKA_KAFKA_CONNECT_ADDRESS: "http://{{ include "peaka.monitoring-kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.monitoringKafkaConnect.servicePort }}"
 
 TEMPORAL_TARGET: {{ include "peaka.temporal.frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:7233
 
@@ -579,6 +580,43 @@ Create a default fully qualified schema registry name for kafka connect.
 {{- printf "%s" (index .Values "kafkaConnect" "cp-schema-registry" "url") -}}
 {{- else -}}
 {{- printf "http://%s:8081" (include "peaka.kafka-connect.cp-schema-registry.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define the peaka.monitoring-kafka-connect.fullname template with .Release.Name and "monitoring-kafka-connect"
+*/}}
+{{- define "peaka.monitoring-kafka-connect.fullname" -}}
+{{- printf "%s-%s" .Release.Name "monitoring-kafka-connect" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified kafka headless name.
+*/}}
+{{- define "peaka.monitoring-kafka-connect.kafka-headless.fullname" -}}
+{{- $name := "monitoring-kafka-headless" -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Set peaka.monitoring-kafka-connect.groupId to Release Name
+*/}}
+{{- define "peaka.monitoring-kafka-connect.groupId" -}}
+{{- .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified schema registry name for monitoring kafka connect.
+*/}}
+{{- define "peaka.monitoring-kafka-connect.cp-schema-registry.fullname" -}}
+{{- printf "%s-%s" .Release.Name "monitoring-kafka-connect-schema-registry" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "peaka.monitoring-kafka-connect.cp-schema-registry.service-name" -}}
+{{- if (index .Values "monitoringKafkaConnect" "cp-schema-registry" "url") -}}
+{{- printf "%s" (index .Values "monitoringKafkaConnect" "cp-schema-registry" "url") -}}
+{{- else -}}
+{{- printf "http://%s:8081" (include "peaka.monitoring-kafka-connect.cp-schema-registry.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 

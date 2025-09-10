@@ -1,0 +1,103 @@
+{{- if .Values.monitoringKafkaConnect.enabled }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
+apiVersion: apps/v1
+{{- else }}
+apiVersion: apps/v1beta2
+{{- end }}
+kind: Deployment
+metadata:
+  name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+  labels:
+    app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+    chart: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.monitoringKafkaConnect.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+        release: {{ .Release.Name }}
+      {{- if .Values.monitoringKafkaConnect.podAnnotations }}
+      annotations:
+      {{- range $key, $value := .Values.monitoringKafkaConnect.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-server
+          image: {{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
+          imagePullPolicy: {{ .Values.monitoringKafkaConnect.imagePullPolicy | quote }}
+          ports:
+            - name: kafka-connect
+              containerPort: {{ .Values.monitoringKafkaConnect.servicePort }}
+              protocol: TCP
+          resources:
+{{ toYaml .Values.monitoringKafkaConnect.resources | indent 12 }}
+          env:
+            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              value: {{ printf "%s:%s" (include "peaka.kafka.fullname" . ) (include "peaka.kafka.port" . ) }}
+            - name: CONNECT_GROUP_ID
+              value: {{ template "peaka.monitoring-kafka-connect.groupId" . }}
+            - name: CONNECT_CONFIG_STORAGE_TOPIC
+              value: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-config
+            - name: CONNECT_OFFSET_STORAGE_TOPIC
+              value: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-offset
+            - name: CONNECT_STATUS_STORAGE_TOPIC
+              value: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-status
+            - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
+              value: {{ template "peaka.monitoring-kafka-connect.cp-schema-registry.service-name" .}}
+            - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
+              value: {{ template "peaka.monitoring-kafka-connect.cp-schema-registry.service-name" .}}
+            - name: KAFKA_HEAP_OPTS
+              value: {{ .Values.monitoringKafkaConnect.heapOptions }}
+            {{- range $key, $value := .Values.monitoringKafkaConnect.configurationOverrides }}
+            - name: {{ printf "CONNECT_%s" $key | replace "." "_" | upper | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.monitoringKafkaConnect.customEnv }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+        {{- if .Values.monitoringKafkaConnect.customEnv.CUSTOM_SCRIPT_PATH }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              /etc/confluent/docker/run &
+              $CUSTOM_SCRIPT_PATH
+              sleep infinity
+          {{- if .Values.monitoringKafkaConnect.livenessProbe }}
+          livenessProbe:
+{{ toYaml .Values.monitoringKafkaConnect.livenessProbe | trim | indent 12 }}
+          {{- end }}
+        {{- end }}
+          {{- if .Values.monitoringKafkaConnect.volumeMounts }}
+          volumeMounts:
+{{ toYaml .Values.monitoringKafkaConnect.volumeMounts | indent 10 }}
+          {{- end}}
+      {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.monitoringKafkaConnect.imagePullSecrets | indent 8 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.monitoringKafkaConnect.volumes }}
+{{ toYaml .Values.monitoringKafkaConnect.volumes | trim | indent 6 }}
+      {{- end}}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.monitoringKafkaConnect.nodeSelector "global" $.Values.global) | nindent 6 }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.monitoringKafkaConnect.tolerations "global" $.Values.global) }}
+      {{- if .Values.monitoringKafkaConnect.affinity }}
+      affinity:
+{{ toYaml .Values.monitoringKafkaConnect.affinity | indent 8 }}
+      {{- end }}
+{{- end }}

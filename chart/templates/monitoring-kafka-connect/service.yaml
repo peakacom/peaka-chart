@@ -1,0 +1,18 @@
+{{- if .Values.monitoringKafkaConnect.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+  labels:
+    app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+    chart: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - name: kafka-connect
+      port: {{ .Values.monitoringKafkaConnect.servicePort }}
+  selector:
+    app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
+    release: {{ .Release.Name }}
+{{- end }}
