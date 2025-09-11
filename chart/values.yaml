@@ -916,17 +916,6 @@ trino:
     # Annotations to add to the service account
     annotations: {}
 
-aiRest:
-  replicaCount: 1
-  image:
-    name: be-ai-rest
-    tag: v0.2.60
-    imagePullPolicy: IfNotPresent
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
-  tolerations: {}
-
 authService:
   replicaCount: 1
   image:
