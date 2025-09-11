@@ -45,20 +45,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: CONNECT_BOOTSTRAP_SERVERS
+            - name: BOOTSTRAP_SERVERS
               value: {{ printf "%s:%s" (include "peaka.kafka.fullname" . ) (include "peaka.kafka.port" . ) }}
-            - name: CONNECT_GROUP_ID
+            - name: GROUP_ID
               value: {{ template "peaka.kafka-connect.groupId" . }}
-            - name: CONNECT_CONFIG_STORAGE_TOPIC
+            - name: CONFIG_STORAGE_TOPIC
               value: {{ template "peaka.kafka-connect.fullname" . }}-config
-            - name: CONNECT_OFFSET_STORAGE_TOPIC
+            - name: OFFSET_STORAGE_TOPIC
               value: {{ template "peaka.kafka-connect.fullname" . }}-offset
-            - name: CONNECT_STATUS_STORAGE_TOPIC
+            - name: STATUS_STORAGE_TOPIC
               value: {{ template "peaka.kafka-connect.fullname" . }}-status
-            - name: CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL
-              value: {{ template "peaka.kafka-connect.cp-schema-registry.service-name" .}}
-            - name: CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL
-              value: {{ template "peaka.kafka-connect.cp-schema-registry.service-name" .}}
             - name: KAFKA_HEAP_OPTS
               value: {{ .Values.kafkaConnect.heapOptions }}
             {{- range $key, $value := .Values.kafkaConnect.configurationOverrides }}
