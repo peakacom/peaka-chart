@@ -1191,6 +1191,16 @@ scheduledFlowRunner:
     successThreshold: 1
     timeoutSeconds: 5
 
+searchService:
+  replicaCount: 1
+  image:
+    name: be-search-service
+    tag: v0.1.93
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+
 secretStoreService:
   replicaCount: 1
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"

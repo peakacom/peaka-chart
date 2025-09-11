@@ -1,0 +1,108 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-search-service-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service-routes
+      {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/service/studioapi/search`)
+      kind: Rule
+      priority: 99
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-be-search-service-auth-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-search-service
+          port: http
+          passHostHeader: true
+          sticky:
+            cookie:
+              httpOnly: true
+              name: {{ include "peaka.fullname" . }}
+              secure: true
+    - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/service/studioapi/metadata`)
+      kind: Rule
+      priority: 99
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-be-search-metadata-service-auth-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-search-service
+          port: http
+          passHostHeader: true
+          sticky:
+            cookie:
+              httpOnly: true
+              name: {{ include "peaka.fullname" . }}
+              secure: true
+    - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/service/studioapi/ai-agent`)
+      kind: Rule
+      priority: 99
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-be-ai-agent-service-auth-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-search-service
+          port: http
+          passHostHeader: true
+          sticky:
+            cookie:
+              httpOnly: true
+              name: {{ include "peaka.fullname" . }}
+              secure: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-search-service-auth-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  forwardAuth:
+    address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/search-auth-check
+    authResponseHeadersRegex: ^X-Internal-Authorization-
+    authResponseHeaders:
+      - "X-Peaka-User-Id"
+      - "X-Peaka-Api-Key"
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-search-metadata-service-auth-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  forwardAuth:
+    address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/search-metadata-auth-check
+    authResponseHeadersRegex: ^X-Internal-Authorization-
+    authResponseHeaders:
+      - "X-Peaka-User-Id"
+      - "X-Peaka-Api-Key"
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-ai-agent-service-auth-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-search-service
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  forwardAuth:
+    address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/ai-agent-auth-check
+    authResponseHeadersRegex: ^X-Internal-Authorization-
+    authResponseHeaders:
+      - "X-Peaka-User-Id"
+      - "X-Peaka-Api-Key"
