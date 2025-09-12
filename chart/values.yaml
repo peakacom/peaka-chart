@@ -1195,7 +1195,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.94
+    tag: v0.1.95
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1393,7 +1393,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.78
+    tag: v1.1.79
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
