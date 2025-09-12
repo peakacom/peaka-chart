@@ -129,7 +129,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.48
+    tag: v0.0.49
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -950,7 +950,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.69
+    tag: v0.0.74
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -980,7 +980,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.123
+    tag: v0.0.126
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1015,7 +1015,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.274
+    tag: v0.0.279
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1105,7 +1105,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.55
+    tag: v0.0.56
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1236,7 +1236,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.278
+    tag: v0.0.292
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1266,7 +1266,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.69
+    tag: v0.0.70
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1393,7 +1393,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.63
+    tag: v1.1.77
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
