@@ -67,6 +67,12 @@ spec:
               name: {{ include "peaka.fullname" . }}-pgvector
               subPath: postgres
               readOnly: false
+            - mountPath: /docker-entrypoint-initdb.d
+              name: init-sql
+      volumes:
+        - name: init-sql
+          configMap:
+            name: {{ include "peaka.fullname" . }}-pgvector-init
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.pgvector.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.pgvector.tolerations "global" $.Values.global) }}
   volumeClaimTemplates:

@@ -1,0 +1,37 @@
+{{- if .Values.pgvector.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "peaka.fullname" . }}-pgvector-init
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-pgvector
+data:
+  init.sql: |
+    CREATE EXTENSION IF NOT EXISTS vector;
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+    CREATE SCHEMA IF NOT EXISTS {{ .Values.pgvector.db.schema }};
+
+    CREATE TABLE IF NOT EXISTS {{ .Values.pgvector.db.schema }}.search_service
+    (
+        id uuid NOT NULL DEFAULT uuid_generate_v4(),
+        content text COLLATE pg_catalog."default",
+        metadata jsonb,
+        vector vector,
+        CONSTRAINT search_service_pkey PRIMARY KEY (id)
+    );
+
+    ALTER TABLE IF EXISTS {{ .Values.pgvector.db.schema }}.search_service OWNER TO {{ .Values.pgvector.db.user }};
+
+    CREATE TABLE IF NOT EXISTS {{ .Values.pgvector.db.schema }}.enriched_metadata
+    (
+        id UUID DEFAULT gen_random_uuid() NOT NULL,
+        catalog_type VARCHAR,
+        catalog_subtype VARCHAR,
+        metadata jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+        CONSTRAINT enriched_metadata_link_pkey PRIMARY KEY (id)
+    );
+{{- end }}
