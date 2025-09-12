@@ -1101,6 +1101,16 @@ metadataService:
     successThreshold: 1
     timeoutSeconds: 5
 
+monitoringService:
+  replicaCount: 1
+  image:
+    name: be-monitoring-service
+    tag: v0.0.40
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+
 permissionService:
   replicaCount: 1
   image:
