@@ -206,6 +206,8 @@ DATA_CACHE_SERVICE_URL: http://{{ include "peaka.fullname" . }}-be-data-cache.{{
 MONITORING_SERVICE_INTERNAL_URL: http://{{ include "peaka.fullname" . }}-be-monitoring-service.{{ .Release.Namespace }}.svc.cluster.local:80
 EXPRESS_WORKFLOW_WORKER_BASE_URL: http://{{ include "peaka.fullname" . }}-be-workflow-worker-express.{{ .Release.Namespace }}.svc.cluster.local:80
 SEARCH_SERVICE_URL: http://{{ include "peaka.fullname" . }}-be-search-service.{{ .Release.Namespace }}.svc.cluster.local:80
+SQL_SERVICE_URL: http://{{ include "peaka.fullname" . }}-be-sql-service.{{ .Release.Namespace }}.svc.cluster.local:80
+MONITORING_SERVICE_INTERNAL_URL: "http://{{ include "peaka.fullname" . }}-be-monitoring-service.{{ .Release.Namespace }}.svc.cluster.local:80"
 
 JEXL_ADDRESS: localhost:8080
 SIDECAR_PORT: "8080"
