@@ -1378,6 +1378,17 @@ workflowWorkerExpress:
     successThreshold: 1
     timeoutSeconds: 5
 
+sqlService:
+  replicaCount: 1
+  image:
+    name: be-sql-service
+    tag: v0.0.2
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe: {}
+
 studioWeb:
   replicaCount: 1
   image:
