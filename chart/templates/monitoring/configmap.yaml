@@ -3,83 +3,11 @@ kind: ConfigMap
 metadata:
   name: {{ include "peaka.fullname" . }}-be-monitoring-service
 data:
-  iceberg-sink-connector-config.json: |
-    {
-      "connector.class": "io.tabular.iceberg.connect.IcebergSinkConnector",
-      "tasks.max": "2",
-      "topics": "billing_metric_event",
-      "iceberg.tables": "devops.billing_metric",
-      "iceberg.catalog": "peaka_iceberg",
-      "iceberg.table.devops.billing_metric.id-columns": "id",
-      "iceberg.table.devops.billing_metric.partition-by": "month(reporttime)",
-      "iceberg.catalog.type": "hive",
-      "iceberg.catalog.uri": "thrift://hive-metastore-internal-service.{{ .Release.Namespace }}.svc.cluster.local:9083",
-      "iceberg.catalog.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
-      "iceberg.catalog.s3.path-style-access": "true",
-      "iceberg.catalog.warehouse": "s3a://peaka-devops/",
-      "iceberg.catalog.s3.endpoint": "http://minio.{{ .Release.Namespace }}.svc.cluster.local:9000",
-      "iceberg.catalog.client.region": "us-east-1",
-      "iceberg.catalog.s3.access-key-id": "{{ .Values.minio.accessKey }}",
-      "iceberg.catalog.s3.secret-access-key": "{{ .Values.minio.secretKey }}",
-      "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-      "value.converter.schemas.enable": "false",
-      "schemas.enable": "false"
-    }
-  iceberg-user-activity-sink-connector-config.json: |
-    {
-      "connector.class": "io.tabular.iceberg.connect.IcebergSinkConnector",
-      "tasks.max": "2",
-      "topics": "user_activity_log",
-      "iceberg.tables": "devops.user_activity_log",
-      "iceberg.catalog": "peaka_iceberg",
-      "iceberg.table.devops.user_activity_log.id-columns": "activity_id",
-      "iceberg.table.devops.user_activity_log.partition-by": "month(activity_time)",
-      "iceberg.catalog.type": "hive",
-      "iceberg.catalog.uri": "thrift://hive-metastore-internal-service.{{ .Release.Namespace }}.svc.cluster.local:9083",
-      "iceberg.catalog.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
-      "iceberg.catalog.s3.path-style-access": "true",
-      "iceberg.catalog.warehouse": "s3a://peaka-devops/",
-      "iceberg.catalog.s3.endpoint": "http://minio.{{ .Release.Namespace }}.svc.cluster.local:9000",
-      "iceberg.catalog.client.region": "us-east-1",
-      "iceberg.catalog.s3.access-key-id": "{{ .Values.minio.accessKey }}",
-      "iceberg.catalog.s3.secret-access-key": "{{ .Values.minio.secretKey }}",
-      "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-      "value.converter.schemas.enable": "false",
-      "schemas.enable": "false"
-    }
-
-  trino-events-mongodb-sink-connector-config.json: |
-    {
-      "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
-      "topics": "trino_query_create,trino_query_complete",
-      "connection.uri": "mongodb://mongodb.{{ .Release.Namespace }}",
-      "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-      "value.converter.schemas.enable": false,
-      "database": "trino",
-      "topic.override.trino_query_create.collection": "create_events",
-      "topic.override.trino_query_complete.collection": "complete_events",
-
-      "transforms": "extractPayload,convertDate",
-
-      "transforms.extractPayload.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
-      "transforms.extractPayload.field": "eventPayload",
-
-      "transforms.convertDate.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
-      "transforms.convertDate.field": "createTime",
-      "transforms.convertDate.target.type": "Timestamp",
-      "transforms.convertDate.format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-
-      "errors.tolerance": "all"
-    }
-
   ai-token-usage-metrics-mongodb-sink-connector-config.json: |
     {
       "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
       "topics": "ai_token_usage_metric",
-      "connection.uri": "mongodb://mongodb.{{ .Release.Namespace }}",
+      "connection.uri": "mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}",
       "key.converter": "org.apache.kafka.connect.storage.StringConverter",
       "value.converter": "org.apache.kafka.connect.json.JsonConverter",
       "value.converter.schemas.enable": false,
@@ -100,7 +28,7 @@ data:
     {
       "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
       "topics": "query_history",
-      "connection.uri": "mongodb://mongodb.{{ .Release.Namespace }}",
+      "connection.uri": "mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}",
       "key.converter": "org.apache.kafka.connect.storage.StringConverter",
       "value.converter": "org.apache.kafka.connect.json.JsonConverter",
       "value.converter.schemas.enable": false,
