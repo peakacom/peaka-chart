@@ -576,7 +576,7 @@ Create a default fully qualified kafka headless name.
 Set peaka.kafka-connect.groupId to Release Name
 */}}
 {{- define "peaka.kafka-connect.groupId" -}}
-{{- .Release.Name -}}
+{{- .Release.Name -}}-kafka-connect
 {{- end -}}
 
 {{/*
@@ -613,7 +613,7 @@ Create a default fully qualified kafka headless name.
 Set peaka.monitoring-kafka-connect.groupId to Release Name
 */}}
 {{- define "peaka.monitoring-kafka-connect.groupId" -}}
-{{- .Release.Name -}}
+{{- .Release.Name -}}-monitoring-kafka-connect
 {{- end -}}
 
 {{/*
