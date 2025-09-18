@@ -179,6 +179,7 @@ REDIS_SINGLE_SERVER_HOST_NAME: {{ include "peaka.redis-master.fullname" . }}.{{ 
 
 BOOTSTRAP_ADDRESS: {{ include "peaka.kafka.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.kafka.port" . }}
 KAFKA_CONNECT_ADDRESS: http://{{ include "peaka.kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8083
+KAFKA_CONNECT_CLUSTER_NAME: {{ include "peaka.kafka-connect.fullname" . }}
 PEAKA_KAFKA_CONNECT_ADDRESS: "http://{{ include "peaka.monitoring-kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.monitoringKafkaConnect.servicePort }}"
 
 TEMPORAL_TARGET: {{ include "peaka.temporal.frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:7233
