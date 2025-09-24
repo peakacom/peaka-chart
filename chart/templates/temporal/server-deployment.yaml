@@ -1,0 +1,186 @@
+{{- if $.Values.temporal.server.enabled }}
+{{- range $service := (list "frontend" "history" "matching" "worker") }}
+{{- $serviceValues := index $.Values.temporal.server $service -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.temporal.componentname" (list $ $service) }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}
+    helm.sh/chart: {{ include "peaka.chart" $ }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: {{ $service }}
+    app.kubernetes.io/part-of: {{ $.Chart.Name }}
+spec:
+  replicas: {{ default $.Values.temporal.server.replicaCount $serviceValues.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+      app.kubernetes.io/component: {{ $service }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}
+        helm.sh/chart: {{ include "peaka.chart" $ }}
+        app.kubernetes.io/managed-by: {{ $.Release.Service }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
+        app.kubernetes.io/version: {{ $.Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: {{ $service }}
+        app.kubernetes.io/part-of: {{ $.Chart.Name }}
+        {{- with (default $.Values.temporal.server.podLabels $serviceValues.podLabels) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/temporal/server-configmap.yaml") $ | sha256sum }}
+        {{- if (default $.Values.temporal.server.metrics.annotations.enabled $serviceValues.metrics.annotations.enabled) }}
+        prometheus.io/job: {{ $.Chart.Name }}-{{ $service }}
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9090'
+        {{- end }}
+        {{- with (default $.Values.temporal.server.podAnnotations $serviceValues.podAnnotations) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{ include "peaka.temporal.serviceAccount" $ }}
+      {{- if or $.Values.temporal.cassandra.enabled (or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external)}}
+      {{- if semverCompare ">=1.13.0" $.Chart.AppVersion}}
+      {{- with $.Values.temporal.server.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+        {{- if $.Values.temporal.cassandra.enabled }}
+        - name: check-cassandra-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup {{ include "peaka.temporal.cassandra.host" $ }}; do echo waiting for cassandra service; sleep 1; done;']
+        - name: check-cassandra
+          image: "{{ $.Values.temporal.cassandra.image.repo }}:{{ $.Values.temporal.cassandra.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.cassandra.image.pullPolicy }}
+          command: ['sh', '-c', 'until cqlsh {{ include "peaka.temporal.cassandra.host" $ }} {{ $.Values.temporal.cassandra.config.ports.cql }} -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
+        - name: check-cassandra-temporal-schema
+          image: "{{ $.Values.temporal.cassandra.image.repo }}:{{ $.Values.temporal.cassandra.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.cassandra.image.pullPolicy }}
+          command: ['sh', '-c', 'until cqlsh {{ include "peaka.temporal.cassandra.host" $ }} {{ $.Values.temporal.cassandra.config.ports.cql }} -e "SELECT keyspace_name FROM system_schema.keyspaces" | grep {{ $.Values.temporal.server.config.persistence.default.cassandra.keyspace }}$; do echo waiting for default keyspace to become ready; sleep 1; done;']
+        {{- end }}
+        {{- if or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external }}
+        - name: check-elasticsearch-index
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['sh', '-c', 'until curl --silent --fail {{- if and $.Values.temporal.elasticsearch.username $.Values.temporal.elasticsearch.password }} --user {{ $.Values.temporal.elasticsearch.username }}:{{ $.Values.temporal.elasticsearch.password }} {{- end }} {{ $.Values.temporal.elasticsearch.scheme }}://{{ $.Values.temporal.elasticsearch.host }}:{{ $.Values.temporal.elasticsearch.port }}/{{ $.Values.temporal.elasticsearch.visibilityIndex }} 2>&1 > /dev/null; do echo waiting for elasticsearch index to become ready; sleep 1; done;']
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ $.Chart.Name }}-{{ $service }}
+          image: "{{ $.Values.temporal.server.image.repository }}:{{ $.Values.temporal.server.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.server.image.pullPolicy }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENABLE_ES
+              value: "{{ or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external }}"
+            - name: ES_SEEDS
+              value: "{{ $.Values.temporal.elasticsearch.host }}"
+            - name: ES_PORT
+              value: "{{ $.Values.temporal.elasticsearch.port }}"
+            - name: ES_VERSION
+              value: "{{ $.Values.temporal.elasticsearch.version }}"
+            - name: ES_SCHEME
+              value: "{{ $.Values.temporal.elasticsearch.scheme }}"
+            - name: ES_VIS_INDEX
+              value: "{{ $.Values.temporal.elasticsearch.visibilityIndex }}"
+            - name: ES_USER
+              value: "{{ $.Values.temporal.elasticsearch.username }}"
+            - name: ES_PWD
+              value: "{{ $.Values.temporal.elasticsearch.password }}"
+            - name: SERVICES
+              value: {{ $service }}
+            - name: TEMPORAL_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.temporal.persistence.secretName" (list $ "default") }}
+                  key: {{ include "peaka.temporal.persistence.secretKey" (list $ "default") }}
+            - name: TEMPORAL_VISIBILITY_STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.temporal.persistence.secretName" (list $ "visibility") }}
+                  key: {{ include "peaka.temporal.persistence.secretKey" (list $ "visibility") }}
+          {{- if $.Values.temporal.server.versionCheckDisabled }}
+            - name: TEMPORAL_VERSION_CHECK_DISABLED
+              value: "1"
+          {{- end }}
+          {{- if or $.Values.temporal.server.additionalEnv $serviceValues.additionalEnv }}
+          {{- toYaml (default $.Values.temporal.server.additionalEnv $serviceValues.additionalEnv) | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: rpc
+              containerPort: {{ include (printf "temporal.%s.grpcPort" $service) $ }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          {{- if ne $service "worker"}}
+          livenessProbe:
+             initialDelaySeconds: 150
+             tcpSocket:
+               port: rpc
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/temporal/config/config_template.yaml
+              subPath: config_template.yaml
+            - name: dynamic-config
+              mountPath: /etc/temporal/dynamic_config
+            {{- if $.Values.temporal.server.additionalVolumeMounts }}
+            {{- toYaml $.Values.temporal.server.additionalVolumeMounts | nindent 12}}
+            {{- end }}
+          resources:
+            {{- toYaml (default $.Values.temporal.server.resources $serviceValues.resources) | nindent 12 }}
+          {{- with $serviceValues.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if $.Values.temporal.server.sidecarContainers }}
+        {{- toYaml $.Values.temporal.server.sidecarContainers | nindent 8 }}
+        {{- end }}
+      {{- with $.Values.temporal.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ include "peaka.temporal.componentname" (list $ $service) }}-config"
+        - name: dynamic-config
+          configMap:
+            name: "{{ include "peaka.temporal.fullname" $ }}-dynamic-config"
+            items:
+            - key: dynamic_config.yaml
+              path: dynamic_config.yaml
+        {{- if $.Values.temporal.server.additionalVolumes }}
+        {{- toYaml $.Values.temporal.server.additionalVolumes | nindent 8}}
+        {{- end }}
+      {{- with (default $.Values.temporal.server.nodeSelector $serviceValues.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with (default $.Values.temporal.server.affinity $serviceValues.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with (default $.Values.temporal.server.tolerations $serviceValues.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with $serviceValues.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+---
+{{- end }}
+{{- end }}

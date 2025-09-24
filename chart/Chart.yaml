@@ -35,11 +35,6 @@ dependencies:
     version: 13.4.4
     repository: https://charts.bitnami.com/bitnami
     condition: postgresqlbigtable.enabled
-  - name: temporal-operator
-    alias: temporal
-    version: 0.5.0
-    repository: https://alexandrevilain.github.io/temporal-operator
-    condition: temporal.enabled
   - name: traefik
     alias: traefik
     version: 20.8.0

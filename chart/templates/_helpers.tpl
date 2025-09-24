@@ -182,7 +182,7 @@ KAFKA_CONNECT_ADDRESS: http://{{ include "peaka.kafka-connect.fullname" . }}.{{ 
 KAFKA_CONNECT_CLUSTER_NAME: {{ include "peaka.kafka-connect.fullname" . }}
 PEAKA_KAFKA_CONNECT_ADDRESS: "http://{{ include "peaka.monitoring-kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.monitoringKafkaConnect.servicePort }}"
 
-TEMPORAL_TARGET: {{ include "peaka.temporal.frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:7233
+TEMPORAL_TARGET: {{ include "peaka.temporal.fullname" . }}-frontend.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.temporal.frontend.grpcPort" . }}
 
 STUDIODB_SCHEMA: studio
 
@@ -647,27 +647,383 @@ Create a default fully qualified schema registry name for monitoring kafka conne
 {{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
-{{- define "peaka.temporal.frontend.fullname" -}}
-{{- printf "%s-temporal-frontend" ( include "peaka.temporal.fullname" . )  -}}
-{{- end }}
+{{/*
+Expand the name of Temporal.
+*/}}
+{{- define "peaka.temporal.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 
 {{/*
-Create a default fully qualified app name.
+Create a default fully qualified app name for Temporal.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "peaka.temporal.fullname" -}}
-{{- if .Values.temporal.fullnameOverride }}
-{{- .Values.temporal.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.temporal.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- if .Values.temporal.fullnameOverride -}}
+{{- .Values.temporal.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.temporal.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create Temporal name and version as used by the chart label.
+*/}}
+{{- define "peaka.temporal.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create the name of the Temporal service account
+*/}}
+{{- define "peaka.temporal.serviceAccountName" -}}
+{{ default (include "peaka.temporal.fullname" .) .Values.temporal.serviceAccount.name }}
+{{- end -}}
+
+{{/*
+Define the Temporal service account as needed
+*/}}
+{{- define "peaka.temporal.serviceAccount" -}}
+{{- if .Values.temporal.serviceAccount.create -}}
+serviceAccountName: {{ include "peaka.temporal.serviceAccountName" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified Temporal component name from the full temporal name and a component name.
+We truncate the full name at 63 - 1 (last dash) - len(component name) chars because some Kubernetes name fields are limited to this (by the DNS naming spec)
+and we want to make sure that the component is included in the name.
+*/}}
+{{- define "peaka.temporal.componentname" -}}
+{{- $global := index . 0 -}}
+{{- $component := index . 1 | trimPrefix "-" -}}
+{{- printf "%s-%s" (include "peaka.temporal.fullname" $global | trunc (sub 62 (len $component) | int) | trimSuffix "-" ) $component | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Call nested templates.
+Source: https://stackoverflow.com/a/52024583/3027614
+*/}}
+{{- define "peaka.temporal.call-nested" }}
+{{- $dot := index . 0 }}
+{{- $subchart := index . 1 }}
+{{- $template := index . 2 }}
+{{- include $template (dict "Chart" (dict "Name" $subchart) "Values" (index $dot.Values $subchart) "Release" $dot.Release "Capabilities" $dot.Capabilities) }}
 {{- end }}
+
+{{- define "peaka.temporal.frontend.grpcPort" -}}
+{{- if $.Values.temporal.server.frontend.service.port -}}
+{{- $.Values.temporal.server.frontend.service.port -}}
+{{- else -}}
+{{- 7233 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.frontend.membershipPort" -}}
+{{- if $.Values.temporal.server.frontend.service.membershipPort -}}
+{{- $.Values.temporal.server.frontend.service.membershipPort -}}
+{{- else -}}
+{{- 6933 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.history.grpcPort" -}}
+{{- if $.Values.temporal.server.history.service.port -}}
+{{- $.Values.temporal.server.history.service.port -}}
+{{- else -}}
+{{- 7234 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.history.membershipPort" -}}
+{{- if $.Values.temporal.server.history.service.membershipPort -}}
+{{- $.Values.temporal.server.history.service.membershipPort -}}
+{{- else -}}
+{{- 6934 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.matching.grpcPort" -}}
+{{- if $.Values.temporal.server.matching.service.port -}}
+{{- $.Values.temporal.server.matching.service.port -}}
+{{- else -}}
+{{- 7235 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.matching.membershipPort" -}}
+{{- if $.Values.temporal.server.matching.service.membershipPort -}}
+{{- $.Values.temporal.server.matching.service.membershipPort -}}
+{{- else -}}
+{{- 6935 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.worker.grpcPort" -}}
+{{- if $.Values.temporal.server.worker.service.port -}}
+{{- $.Values.temporal.server.worker.service.port -}}
+{{- else -}}
+{{- 7239 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.worker.membershipPort" -}}
+{{- if $.Values.temporal.server.worker.service.membershipPort -}}
+{{- $.Values.temporal.server.worker.service.membershipPort -}}
+{{- else -}}
+{{- 6939 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.schema" -}}
+{{- if eq . "default" -}}
+{{- print "temporal" -}}
+{{- else -}}
+{{- print . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.driver" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.driver -}}
+{{- $storeConfig.driver -}}
+{{- else if $global.Values.temporal.cassandra.enabled -}}
+{{- print "cassandra" -}}
+{{- else if $global.Values.temporal.mysql.enabled -}}
+{{- print "sql" -}}
+{{- else if $global.Values.temporal.postgresql.enabled -}}
+{{- print "sql" -}}
+{{- else -}}
+{{- required (printf "Please specify persistence driver for %s store" $store) $storeConfig.driver -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.cassandra.hosts" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.cassandra.hosts -}}
+{{- $storeConfig.cassandra.hosts | join "," -}}
+{{- else if and $global.Values.temporal.cassandra.enabled (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "cassandra") -}}
+{{- include "peaka.temporal.cassandra.hosts" $global -}}
+{{- else -}}
+{{- required (printf "Please specify cassandra hosts for %s store" $store) $storeConfig.cassandra.hosts -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.cassandra.port" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.cassandra.port -}}
+{{- $storeConfig.cassandra.port -}}
+{{- else if and $global.Values.temporal.cassandra.enabled (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "cassandra") -}}
+{{- $global.Values.temporal.cassandra.config.ports.cql -}}
+{{- else -}}
+{{- required (printf "Please specify cassandra port for %s store" $store) $storeConfig.cassandra.port -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.cassandra.secretName" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.cassandra.existingSecret -}}
+{{- $storeConfig.cassandra.existingSecret -}}
+{{- else if $storeConfig.cassandra.password -}}
+{{- include "peaka.temporal.componentname" (list $global (printf "%s-store" $store)) -}}
+{{- else -}}
+{{/* Cassandra password is optional, but we will create an empty secret for it */}}
+{{- include "peaka.temporal.componentname" (list $global (printf "%s-store" $store)) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.cassandra.secretKey" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{/* Cassandra password is optional, but we will create an empty secret for it */}}
+{{- print "password" -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.database" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.database -}}
+{{- $storeConfig.sql.database -}}
+{{- else -}}
+{{- required (printf "Please specify database for %s store" $store) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.driver" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.driver -}}
+{{- $storeConfig.sql.driver -}}
+{{- else if $global.Values.temporal.mysql.enabled -}}
+{{- print "mysql" -}}
+{{- else if $global.Values.temporal.postgresql.enabled -}}
+{{- print "postgres" -}}
+{{- else -}}
+{{- required (printf "Please specify sql driver for %s store" $store) $storeConfig.sql.host -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.host" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.host -}}
+{{- $storeConfig.sql.host -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- include "peaka.temporal.mysql.host" $global -}}
+{{- else if and $global.Values.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- include "peaka.temporal.postgresql.host" $global -}}
+{{- else -}}
+{{- required (printf "Please specify sql host for %s store" $store) $storeConfig.sql.host -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.port" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.port -}}
+{{- $storeConfig.sql.port -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- $global.Values.temporal.mysql.service.port -}}
+{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- $global.Values.temporal.postgresql.service.port -}}
+{{- else -}}
+{{- required (printf "Please specify sql port for %s store" $store) $storeConfig.sql.port -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.user" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.user -}}
+{{- $storeConfig.sql.user -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- $global.Values.temporal.mysql.mysqlUser -}}
+{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- $global.Values.temporal.postgresql.postgresqlUser -}}
+{{- else -}}
+{{- required (printf "Please specify sql user for %s store" $store) $storeConfig.sql.user -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.password" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.password -}}
+{{- $storeConfig.sql.password -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- if or $global.Values.temporal.schema.setup.enabled $global.Values.temporal.schema.update.enabled -}}
+{{- required "Please specify password for MySQL chart" $global.Values.temporal.mysql.mysqlPassword -}}
+{{- else -}}
+{{- $global.Values.temporal.mysql.mysqlPassword -}}
+{{- end -}}
+{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- if or $global.Values.temporal.schema.setup.enabled $global.Values.temporal.schema.update.enabled -}}
+{{- required "Please specify password for PostgreSQL chart" $global.Values.temporal.postgresql.postgresqlPassword -}}
+{{- else -}}
+{{- $global.Values.temporal.postgresql.postgresqlPassword -}}
+{{- end -}}
+{{- else -}}
+{{- required (printf "Please specify sql password for %s store" $store) $storeConfig.sql.password -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.secretName" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if $storeConfig.sql.existingSecret -}}
+{{- $storeConfig.sql.existingSecret -}}
+{{- else if $storeConfig.sql.password -}}
+{{- include "peaka.temporal.componentname" (list $global (printf "%s-store" $store)) -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- include "peaka.temporal.call-nested" (list $global "mysql" "mysql.secretName") -}}
+{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- include "peaka.temporal.call-nested" (list $global "postgresql" "postgresql.secretName") -}}
+{{- else -}}
+{{- required (printf "Please specify sql password or existing secret for %s store" $store) $storeConfig.sql.existingSecret -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.sql.secretKey" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
+{{- if or $storeConfig.sql.existingSecret $storeConfig.sql.password -}}
+{{- print "password" -}}
+{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
+{{- print "mysql-password" -}}
+{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
+{{- print "postgresql-password" -}}
+{{- else -}}
+{{- fail (printf "Please specify sql password or existing secret for %s store" $store) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.secretName" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- include (printf "temporal.persistence.%s.secretName" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
+{{- end -}}
+
+{{- define "peaka.temporal.persistence.secretKey" -}}
+{{- $global := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- include (printf "temporal.persistence.%s.secretKey" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
+{{- end -}}
+
+{{/*
+All Temporal Cassandra hosts.
+*/}}
+{{- define "peaka.temporal.cassandra.hosts" -}}
+{{- range $i := (until (int .Values.temporal.cassandra.config.cluster_size)) }}
+{{- $cassandraName := include "peaka.temporal.call-nested" (list $ "cassandra" "cassandra.fullname") -}}
+{{- printf "%s.%s.svc.cluster.local," $cassandraName $.Release.Namespace -}}
 {{- end }}
-{{- end }}
+{{- end -}}
+
+{{/*
+The first Temporal Cassandra host in the stateful set.
+*/}}
+{{- define "peaka.temporal.cassandra.host" -}}
+{{- $cassandraName := include "peaka.temporal.call-nested" (list . "cassandra" "cassandra.fullname") -}}
+{{- printf "%s.%s.svc.cluster.local" $cassandraName .Release.Namespace -}}
+{{- end -}}
+
+{{/*
+Based on Bitnami charts method
+Renders a value that contains template.
+Usage:
+{{ include "common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "peaka.temporal.common.tplvalues.render" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (.value | toYaml) .context }}
+    {{- end }}
+{{- end -}}
+
 
 {{/*
 Define the peaka.permify.fullname template with .Release.Name and "permify"

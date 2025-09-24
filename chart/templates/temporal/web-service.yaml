@@ -1,0 +1,35 @@
+{{- if .Values.temporal.web.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.temporal.componentname" (list . "web") }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+    helm.sh/chart: {{ include "peaka.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+{{- with .Values.temporal.web.service.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  {{- with .Values.temporal.web.service.loadBalancerIP }}
+  loadBalancerIP: {{.}}
+    {{- end }}
+  type: {{ .Values.temporal.web.service.type }}
+  ports:
+    - port: {{ .Values.temporal.web.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+      {{- if hasKey .Values.temporal.web.service "nodePort" }}
+      nodePort: {{ .Values.temporal.web.service.nodePort }}
+      {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: web
+  {{- end }}

@@ -1,0 +1,422 @@
+{{- if $.Values.temporal.server.enabled }}
+{{- if .Values.temporal.schema.setup.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "peaka.temporal.componentname" (list . "schema-setup") }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+    helm.sh/chart: {{ include "peaka.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+  annotations:
+    {{- if .Values.temporal.cassandra.enabled }}
+    "helm.sh/hook": post-install
+    {{- else }}
+    "helm.sh/hook": pre-install
+    {{- end }}
+    "helm.sh/hook-weight": "0"
+    {{- if not .Values.temporal.debug }}
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.temporal.schema.setup.backoffLimit }}
+  template:
+    metadata:
+      name: {{ include "peaka.temporal.componentname" (list . "schema-setup") }}
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+        helm.sh/chart: {{ include "peaka.chart" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+    spec:
+      {{ include "peaka.temporal.serviceAccount" . }}
+      restartPolicy: "OnFailure"
+      initContainers:
+        {{- if or .Values.temporal.cassandra.enabled (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "cassandra") }}
+        {{- if .Values.temporal.cassandra.enabled }}
+        - name: check-cassandra-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup {{ include "peaka.temporal.cassandra.host" $ }}; do echo waiting for cassandra service; sleep 1; done;']
+        - name: check-cassandra
+          image: "{{ .Values.temporal.cassandra.image.repo }}:{{ .Values.temporal.cassandra.image.tag }}"
+          imagePullPolicy: {{ .Values.temporal.cassandra.image.pullPolicy }}
+          command: ['sh', '-c', 'until cqlsh {{ include "peaka.temporal.cassandra.host" $ }} {{ .Values.temporal.cassandra.config.ports.cql }} -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
+        {{- end }}
+        {{- range $store := (list "default" "visibility") }}
+        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
+        {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
+        - name: create-{{ $store }}-store
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['temporal-cassandra-tool', 'create', '-k', '{{ $storeConfig.cassandra.keyspace }}', '--replication-factor', '{{ $storeConfig.cassandra.replicationFactor }}']
+          env:
+            - name: CASSANDRA_HOST
+              value: {{ first (splitList "," (include "peaka.temporal.persistence.cassandra.hosts" (list $ $store))) }}
+            - name: CASSANDRA_PORT
+              value: {{ include "peaka.temporal.persistence.cassandra.port" (list $ $store) | quote }}
+            - name: CASSANDRA_KEYSPACE
+              value: {{ $storeConfig.cassandra.keyspace }}
+            {{- if $storeConfig.cassandra.user }}
+            - name: CASSANDRA_USER
+              value: {{ $storeConfig.cassandra.user }}
+            {{- end }}
+            {{- if (or $storeConfig.cassandra.password $storeConfig.cassandra.existingSecret) }}
+            - name: CASSANDRA_PASSWORD
+              {{- if $storeConfig.cassandra.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.cassandra.password }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- else if or (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql") (eq (include "peaka.temporal.persistence.driver" (list $ "visibility")) "sql") }}
+        {{- range $store := (list "default" "visibility") }}
+        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
+        {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql" }}
+        - name: create-{{ $store }}-store
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['temporal-sql-tool', '--database', '{{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}', 'create-database']
+          env:
+            - name: SQL_PLUGIN
+              value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
+            - name: SQL_HOST
+              value: {{ include "peaka.temporal.persistence.sql.host" (list $ $store) }}
+            - name: SQL_PORT
+              value: {{ include "peaka.temporal.persistence.sql.port" (list $ $store) | quote }}
+            {{- if $storeConfig.sql.user }}
+            - name: SQL_USER
+              value: {{ $storeConfig.sql.user }}
+            {{- end }}
+            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+            - name: SQL_PASSWORD
+              {{- if $storeConfig.sql.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.sql.password }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- else }}
+          []
+        {{- end }}
+      containers:
+        {{- range $store := (list "default" "visibility") }}
+        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
+        - name: {{ $store }}-schema
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'setup-schema', '-v', '0.0']
+          env:
+            {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
+            - name: CASSANDRA_HOST
+              value: {{ first (splitList "," (include "peaka.temporal.persistence.cassandra.hosts" (list $ $store))) }}
+            - name: CASSANDRA_PORT
+              value: {{ include "peaka.temporal.persistence.cassandra.port" (list $ $store) | quote }}
+            - name: CASSANDRA_KEYSPACE
+              value: {{ $storeConfig.cassandra.keyspace }}
+            {{- if $storeConfig.cassandra.user }}
+            - name: CASSANDRA_USER
+              value: {{ $storeConfig.cassandra.user }}
+            {{- end }}
+            {{- if (or $storeConfig.cassandra.password $storeConfig.cassandra.existingSecret) }}
+            - name: CASSANDRA_PASSWORD
+              {{- if $storeConfig.cassandra.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.cassandra.password }}
+              {{- end }}
+            {{- end }}
+            {{- else if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql" }}
+            - name: SQL_PLUGIN
+              value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
+            - name: SQL_HOST
+              value: {{ include "peaka.temporal.persistence.sql.host" (list $ $store) }}
+            - name: SQL_PORT
+              value: {{ include "peaka.temporal.persistence.sql.port" (list $ $store) | quote }}
+            - name: SQL_DATABASE
+              value: {{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}
+            {{- if $storeConfig.sql.user }}
+            - name: SQL_USER
+              value: {{ $storeConfig.sql.user }}
+            {{- end }}
+            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+            - name: SQL_PASSWORD
+              {{- if $storeConfig.sql.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.sql.password }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+        {{- end }}
+          {{- with .Values.temporal.schema.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.temporal.schema.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.temporal.schema.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.temporal.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default $.Values.temporal.server.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.server.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.server.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+{{- end }}
+{{- if .Values.temporal.schema.update.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "peaka.temporal.componentname" (list . "schema-update") }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+    helm.sh/chart: {{ include "peaka.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+  annotations:
+    {{- if .Values.temporal.cassandra.enabled }}
+    "helm.sh/hook": post-install,pre-upgrade
+    {{- else }}
+    "helm.sh/hook": pre-install,pre-upgrade
+    {{- end }}
+    "helm.sh/hook-weight": "1"
+    {{- if not .Values.temporal.debug }}
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.temporal.schema.update.backoffLimit }}
+  template:
+    metadata:
+      name: {{ include "peaka.temporal.componentname" (list . "schema-update") }}
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+        helm.sh/chart: {{ include "peaka.chart" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+    spec:
+      {{ include "peaka.temporal.serviceAccount" . }}
+      restartPolicy: "OnFailure"
+      initContainers:
+        {{- if .Values.temporal.cassandra.enabled }}
+        - name: check-cassandra-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup {{ include "peaka.temporal.cassandra.host" $ }}; do echo waiting for cassandra service; sleep 1; done;']
+        - name: check-cassandra
+          image: "{{ .Values.temporal.cassandra.image.repo }}:{{ .Values.temporal.cassandra.image.tag }}"
+          imagePullPolicy: {{ .Values.temporal.cassandra.image.pullPolicy }}
+          command: ['sh', '-c', 'until cqlsh {{ include "peaka.temporal.cassandra.host" $ }} {{ .Values.temporal.cassandra.config.ports.cql }} -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
+        {{- else }}
+          []
+        {{- end }}
+      containers:
+        {{- range $store := (list "default" "visibility") }}
+        {{- if or (eq $store "default") (eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql") }}
+        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
+        - name: {{ $store }}-schema
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
+          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/cassandra/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          {{- else if eq (include "peaka.temporal.persistence.sql.driver" (list $ $store)) "mysql8" }}
+          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/mysql/v8/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          {{- else if eq (include "peaka.temporal.persistence.sql.driver" (list $ $store)) "postgres12" }}
+          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/postgresql/v12/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          {{- end }}
+          env:
+            {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
+            - name: CASSANDRA_HOST
+              value: {{ first (splitList "," (include "peaka.temporal.persistence.cassandra.hosts" (list $ $store))) }}
+            - name: CASSANDRA_PORT
+              value: {{ include "peaka.temporal.persistence.cassandra.port" (list $ $store) | quote }}
+            - name: CASSANDRA_KEYSPACE
+              value: {{ $storeConfig.cassandra.keyspace }}
+            {{- if $storeConfig.cassandra.user }}
+            - name: CASSANDRA_USER
+              value: {{ $storeConfig.cassandra.user }}
+            {{- end }}
+            {{- if (or $storeConfig.cassandra.password $storeConfig.cassandra.existingSecret) }}
+            - name: CASSANDRA_PASSWORD
+              {{- if $storeConfig.cassandra.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.cassandra.password }}
+              {{- end }}
+            {{- end }}
+            {{- else if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql" }}
+            - name: SQL_PLUGIN
+              value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
+            - name: SQL_HOST
+              value: {{ include "peaka.temporal.persistence.sql.host" (list $ $store) }}
+            - name: SQL_PORT
+              value: {{ include "peaka.temporal.persistence.sql.port" (list $ $store) | quote }}
+            - name: SQL_DATABASE
+              value: {{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}
+            {{- if $storeConfig.sql.user }}
+            - name: SQL_USER
+              value: {{ $storeConfig.sql.user }}
+            {{- end }}
+            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+            - name: SQL_PASSWORD
+              {{- if $storeConfig.sql.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
+                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
+              {{- else }}
+              value: {{ $storeConfig.sql.password }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+          {{- with .Values.temporal.schema.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.temporal.schema.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.temporal.schema.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default $.Values.temporal.admintools.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.admintools.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.admintools.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+{{- end }}
+{{- if and (or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external) .Values.temporal.schema.setup.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "peaka.temporal.componentname" (list . "es-index-setup") }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+    helm.sh/chart: {{ include "peaka.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Chart.Name }}
+  annotations:
+    {{- if .Values.temporal.elasticsearch.external }}
+    "helm.sh/hook": pre-install
+    {{- else }}
+    "helm.sh/hook": post-install
+    {{- end }}
+    "helm.sh/hook-weight": "0"
+    {{- if not .Values.temporal.debug }}
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.temporal.schema.setup.backoffLimit }}
+  template:
+    metadata:
+      name: {{ include "peaka.temporal.componentname" (list . "es-index-setup") }}
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
+        helm.sh/chart: {{ include "peaka.chart" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: {{ .Chart.Name }}
+    spec:
+      {{ include "peaka.temporal.serviceAccount" . }}
+      restartPolicy: "OnFailure"
+      initContainers:
+        - name: check-elasticsearch
+          image: "{{ .Values.temporal.admintools.image.repository }}:{{ .Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['sh', '-c', 'until curl --silent --fail {{- if and .Values.temporal.elasticsearch.username .Values.temporal.elasticsearch.password }} --user {{ .Values.temporal.elasticsearch.username }}:{{ .Values.temporal.elasticsearch.password }} {{- end }} {{ .Values.temporal.elasticsearch.scheme }}://{{ .Values.temporal.elasticsearch.host }}:{{ .Values.temporal.elasticsearch.port }} 2>&1 > /dev/null; do echo waiting for elasticsearch to start; sleep 1; done;']
+      containers:
+        - name: create-elasticsearch-index
+          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
+          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          command: ['sh', '-c']
+          args:
+            - 'curl -X PUT --fail {{- if and .Values.temporal.elasticsearch.username .Values.temporal.elasticsearch.password }} --user {{ .Values.temporal.elasticsearch.username }}:{{ .Values.temporal.elasticsearch.password }} {{- end }} {{ .Values.temporal.elasticsearch.scheme }}://{{ .Values.temporal.elasticsearch.host }}:{{ .Values.temporal.elasticsearch.port }}/_template/temporal_visibility_v1_template -H "Content-Type: application/json" --data-binary "@schema/elasticsearch/visibility/index_template_{{ .Values.temporal.elasticsearch.version }}.json" 2>&1 &&
+              curl -X PUT --fail {{- if and .Values.temporal.elasticsearch.username .Values.temporal.elasticsearch.password }} --user {{ .Values.temporal.elasticsearch.username }}:{{ .Values.temporal.elasticsearch.password }} {{- end }} {{ .Values.temporal.elasticsearch.scheme }}://{{ .Values.temporal.elasticsearch.host }}:{{ .Values.temporal.elasticsearch.port }}/{{ .Values.temporal.elasticsearch.visibilityIndex }} 2>&1'
+          {{- with .Values.temporal.schema.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.temporal.schema.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.temporal.schema.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (default $.Values.temporal.admintools.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.admintools.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporal.admintools.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}
