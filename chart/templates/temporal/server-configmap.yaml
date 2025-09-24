@@ -19,7 +19,7 @@ data:
 
     persistence:
       defaultStore: {{ $.Values.temporal.server.config.persistence.defaultStore }}
-    {{- if or $.Values.temporal.elasticsearch.enabled $.Values.elasticsearch.external }}
+    {{- if or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external }}
       visibilityStore: es-visibility
     {{- else }}
       visibilityStore: visibility
@@ -43,29 +43,29 @@ data:
           faultInjection:
               {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql" }}
+          {{- if eq (include "peaka.temporal.persistence.driver" . ) "sql" }}
           sql:
-            pluginName: "{{ include "peaka.temporal.persistence.sql.driver" (list $ "default") }}"
-            driverName: "{{ include "peaka.temporal.persistence.sql.driver" (list $ "default") }}"
-            databaseName: "{{ $.Values.temporal.server.config.persistence.default.sql.database }}"
-            connectAddr: "{{ include "peaka.temporal.persistence.sql.host" (list $ "default") }}:{{ include "peaka.temporal.persistence.sql.port" (list $ "default") }}"
+            pluginName: "postgres12"
+            driverName: "postgres12"
+            databaseName: "temporal"
+            connectAddr: {{ include "peaka.postgresql.host" $ }}:{{ include "peaka.postgresql.port" $ }}
             connectProtocol: "tcp"
-            user: {{ include "peaka.temporal.persistence.sql.user" (list $ "default") }}
-            password: "{{ `{{ .Env.TEMPORAL_STORE_PASSWORD }}` }}"
+            user: {{ include "peaka.postgresql.user" $ }}
+            password: {{ include "peaka.postgresql.password" $ }}
             {{- with (omit $.Values.temporal.server.config.persistence.default.sql "driver" "driverName" "host" "port" "connectAddr" "connectProtocol" "database" "databaseName" "user" "password" "existingSecret") }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
         visibility:
-          {{- if eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql" }}
+          {{- if eq (include "peaka.temporal.persistence.driver" . ) "sql" }}
           sql:
-            pluginName: "{{ include "peaka.temporal.persistence.sql.driver" (list $ "visibility") }}"
-            driverName: "{{ include "peaka.temporal.persistence.sql.driver" (list $ "visibility") }}"
-            databaseName: "{{ $.Values.temporal.server.config.persistence.visibility.sql.database }}"
-            connectAddr: "{{ include "peaka.temporal.persistence.sql.host" (list $ "visibility") }}:{{ include "peaka.temporal.persistence.sql.port" (list $ "visibility") }}"
+            pluginName: "postgres12"
+            driverName: "postgres12"
+            databaseName: "temporal_visibility"
+            connectAddr: {{ include "peaka.postgresql.host" $ }}:{{ include "peaka.postgresql.port" $ }}
             connectProtocol: "tcp"
-            user: "{{ include "peaka.temporal.persistence.sql.user" (list $ "visibility") }}"
-            password: "{{ `{{ .Env.TEMPORAL_VISIBILITY_STORE_PASSWORD }}` }}"
+            user: {{ include "peaka.postgresql.user" $ }}
+            password: {{ include "peaka.postgresql.password" $ }}
             {{- with (omit $.Values.temporal.server.config.persistence.visibility.sql "driver" "driverName" "host" "port" "connectAddr" "connectProtocol" "database" "databaseName" "user" "password" "existingSecret") }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -193,7 +193,7 @@ data:
     {{- end }}
 
     publicClient:
-      hostPort: "{{ include "peaka.temporal.componentname" (list $ "frontend") }}:{{ $.Values.server.frontend.service.port }}"
+      hostPort: "{{ include "peaka.temporal.componentname" (list $ "frontend") }}:{{ $.Values.temporal.server.frontend.service.port }}"
 
     dynamicConfigClient:
       filepath: "/etc/temporal/dynamic_config/dynamic_config.yaml"

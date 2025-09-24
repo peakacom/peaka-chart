@@ -119,7 +119,7 @@ spec:
           {{- end }}
           ports:
             - name: rpc
-              containerPort: {{ include (printf "temporal.%s.grpcPort" $service) $ }}
+              containerPort: {{ include (printf "peaka.temporal.%s.grpcPort" $service) $ }}
               protocol: TCP
             - name: metrics
               containerPort: 9090

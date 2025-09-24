@@ -1,6 +1,6 @@
 {{- if $.Values.temporal.server.enabled }}
 {{- range $service := (list "frontend" "matching" "history" "worker") }}
-{{- $serviceValues := index $.Values.server $service -}}
+{{- $serviceValues := index $.Values.temporal.server $service -}}
 {{- if (default $.Values.temporal.server.metrics.serviceMonitor.enabled $serviceValues.metrics.serviceMonitor.enabled) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

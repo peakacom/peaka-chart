@@ -651,7 +651,7 @@ Create a default fully qualified schema registry name for monitoring kafka conne
 Expand the name of Temporal.
 */}}
 {{- define "peaka.temporal.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default (printf "%s-temporal" .Chart.Name) .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -663,7 +663,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.temporal.fullnameOverride -}}
 {{- .Values.temporal.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.temporal.nameOverride -}}
+{{- $name := default (printf "%s-temporal" .Chart.Name ) .Values.temporal.nameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -790,20 +790,7 @@ Source: https://stackoverflow.com/a/52024583/3027614
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.driver" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.driver -}}
-{{- $storeConfig.driver -}}
-{{- else if $global.Values.temporal.cassandra.enabled -}}
-{{- print "cassandra" -}}
-{{- else if $global.Values.temporal.mysql.enabled -}}
 {{- print "sql" -}}
-{{- else if $global.Values.temporal.postgresql.enabled -}}
-{{- print "sql" -}}
-{{- else -}}
-{{- required (printf "Please specify persistence driver for %s store" $store) $storeConfig.driver -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.cassandra.hosts" -}}
@@ -855,97 +842,29 @@ Source: https://stackoverflow.com/a/52024583/3027614
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.database" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.database -}}
-{{- $storeConfig.sql.database -}}
+{{- if eq . "default" -}}
+temporal
+{{- else if eq . "visibility" -}}
+temporal_visibility
 {{- else -}}
-{{- required (printf "Please specify database for %s store" $store) -}}
+{{- fail (printf "Unknown database type: %s" .) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.driver" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.driver -}}
-{{- $storeConfig.sql.driver -}}
-{{- else if $global.Values.temporal.mysql.enabled -}}
-{{- print "mysql" -}}
-{{- else if $global.Values.temporal.postgresql.enabled -}}
-{{- print "postgres" -}}
-{{- else -}}
-{{- required (printf "Please specify sql driver for %s store" $store) $storeConfig.sql.host -}}
-{{- end -}}
+postgres12
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.host" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.host -}}
-{{- $storeConfig.sql.host -}}
-{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
-{{- include "peaka.temporal.mysql.host" $global -}}
-{{- else if and $global.Values.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- include "peaka.temporal.postgresql.host" $global -}}
-{{- else -}}
-{{- required (printf "Please specify sql host for %s store" $store) $storeConfig.sql.host -}}
-{{- end -}}
+{{ include "peaka.postgresql.host" . }}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.port" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.port -}}
-{{- $storeConfig.sql.port -}}
-{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
-{{- $global.Values.temporal.mysql.service.port -}}
-{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- $global.Values.temporal.postgresql.service.port -}}
-{{- else -}}
-{{- required (printf "Please specify sql port for %s store" $store) $storeConfig.sql.port -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "peaka.temporal.persistence.sql.user" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.user -}}
-{{- $storeConfig.sql.user -}}
-{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
-{{- $global.Values.temporal.mysql.mysqlUser -}}
-{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- $global.Values.temporal.postgresql.postgresqlUser -}}
-{{- else -}}
-{{- required (printf "Please specify sql user for %s store" $store) $storeConfig.sql.user -}}
-{{- end -}}
+{{ include "peaka.postgresql.port" . }}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.password" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if $storeConfig.sql.password -}}
-{{- $storeConfig.sql.password -}}
-{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
-{{- if or $global.Values.temporal.schema.setup.enabled $global.Values.temporal.schema.update.enabled -}}
-{{- required "Please specify password for MySQL chart" $global.Values.temporal.mysql.mysqlPassword -}}
-{{- else -}}
-{{- $global.Values.temporal.mysql.mysqlPassword -}}
-{{- end -}}
-{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- if or $global.Values.temporal.schema.setup.enabled $global.Values.temporal.schema.update.enabled -}}
-{{- required "Please specify password for PostgreSQL chart" $global.Values.temporal.postgresql.postgresqlPassword -}}
-{{- else -}}
-{{- $global.Values.temporal.postgresql.postgresqlPassword -}}
-{{- end -}}
-{{- else -}}
-{{- required (printf "Please specify sql password for %s store" $store) $storeConfig.sql.password -}}
-{{- end -}}
+{{ include "peaka.postgresql.password" . }}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.secretName" -}}
@@ -983,13 +902,13 @@ Source: https://stackoverflow.com/a/52024583/3027614
 {{- define "peaka.temporal.persistence.secretName" -}}
 {{- $global := index . 0 -}}
 {{- $store := index . 1 -}}
-{{- include (printf "temporal.persistence.%s.secretName" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
+{{- include (printf "peaka.temporal.persistence.%s.secretName" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.secretKey" -}}
 {{- $global := index . 0 -}}
 {{- $store := index . 1 -}}
-{{- include (printf "temporal.persistence.%s.secretKey" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
+{{- include (printf "peaka.temporal.persistence.%s.secretKey" (include "peaka.temporal.persistence.driver" (list $global $store))) (list $global $store) -}}
 {{- end -}}
 
 {{/*

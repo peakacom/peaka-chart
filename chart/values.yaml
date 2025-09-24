@@ -849,7 +849,7 @@ temporal:
         additionalStores: {}
 
         default:
-          driver: "cassandra"
+          driver: "sql"
 
           cassandra:
             hosts: []
@@ -868,12 +868,12 @@ temporal:
             # maxConns: 2
 
           sql:
-            driver: "mysql"
-            host: "mysql"
-            port: 3306
+            driver: "postgres12"
+            host: "postgres12"
+            port: 5432
             database: "temporal"
-            user: "temporal"
-            password: "temporal"
+            user: "code2db"
+            password: "code2db"
             existingSecret: ""
             secretName: ""
             maxConns: 20
@@ -882,7 +882,7 @@ temporal:
             # tx_isolation: 'READ-COMMITTED'
 
         visibility:
-          driver: "cassandra"
+          driver: "sql"
 
           cassandra:
             hosts: []
@@ -901,12 +901,12 @@ temporal:
                 serialConsistency: "local_serial"
 
           sql:
-            driver: "mysql"
-            host: "mysql"
-            port: 3306
+            driver: "postgres12"
+            host: "postgres12"
+            port: 5432
             database: "temporal_visibility"
-            user: "temporal"
-            password: "temporal"
+            user: "code2db"
+            password: "code2db"
             existingSecret: ""
             secretName: ""
             maxConns: 20
@@ -1092,7 +1092,7 @@ temporal:
     securityContext: {}
 
   elasticsearch:
-    enabled: true
+    enabled: false
     replicas: 3
     persistence:
       enabled: false
@@ -1107,12 +1107,12 @@ temporal:
     visibilityIndex: "temporal_visibility_v1_dev"
 
   prometheus:
-    enabled: true
+    enabled: false
     nodeExporter:
       enabled: false
 
   grafana:
-    enabled: true
+    enabled: false
     replicas: 1
     testFramework:
       enabled: false
@@ -1169,7 +1169,7 @@ temporal:
           datasource: TemporalMetrics
 
   cassandra:
-    enabled: true
+    enabled: false
     persistence:
       enabled: false
     image:
