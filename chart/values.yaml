@@ -1004,7 +1004,7 @@ temporal:
       podDisruptionBudget: {}
 
   admintools:
-    enabled: true
+    enabled: false
     image:
       repository: temporalio/admin-tools
       tag: 1.22.4
@@ -1026,7 +1026,7 @@ temporal:
     podDisruptionBudget: {}
 
   web:
-    enabled: true
+    enabled: false
     config:
       # server/config.yml file content
       auth:
