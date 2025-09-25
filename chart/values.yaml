@@ -129,7 +129,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.49
+    tag: v0.0.51
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -771,7 +771,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.598
+    tag: v0.0.600
   initContainers: {}
   auth: {}
     # Set username and password
@@ -950,7 +950,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.74
+    tag: v0.0.75
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -980,7 +980,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.126
+    tag: v0.0.129
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1015,7 +1015,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.279
+    tag: v0.0.281
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1105,7 +1105,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v0.0.42
+    tag: v0.0.43
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1115,7 +1115,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.56
+    tag: v0.0.57
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1205,7 +1205,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.98
+    tag: v0.1.100
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1246,7 +1246,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.292
+    tag: v0.0.297
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1276,7 +1276,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.70
+    tag: v0.0.71
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1346,7 +1346,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.93
+    tag: v0.0.94
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1356,7 +1356,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.93
+    tag: v0.0.94
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1403,7 +1403,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.79
+    tag: v1.1.84
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
