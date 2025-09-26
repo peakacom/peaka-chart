@@ -863,6 +863,10 @@ postgres12
 {{ include "peaka.postgresql.port" . }}
 {{- end -}}
 
+{{- define "peaka.temporal.persistence.sql.user" -}}
+{{ include "peaka.postgresql.user" . }}
+{{- end -}}
+
 {{- define "peaka.temporal.persistence.sql.password" -}}
 {{ include "peaka.postgresql.password" . }}
 {{- end -}}
@@ -878,25 +882,14 @@ postgres12
 {{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
 {{- include "peaka.temporal.call-nested" (list $global "mysql" "mysql.secretName") -}}
 {{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- include "peaka.temporal.call-nested" (list $global "postgresql" "postgresql.secretName") -}}
+{{- include "peaka.temporal.componentname" (list $global (printf "%s-store" $store)) -}}
 {{- else -}}
 {{- required (printf "Please specify sql password or existing secret for %s store" $store) $storeConfig.sql.existingSecret -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.secretKey" -}}
-{{- $global := index . 0 -}}
-{{- $store := index . 1 -}}
-{{- $storeConfig := index $global.Values.temporal.server.config.persistence $store -}}
-{{- if or $storeConfig.sql.existingSecret $storeConfig.sql.password -}}
 {{- print "password" -}}
-{{- else if and $global.Values.temporal.mysql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "mysql8")) -}}
-{{- print "mysql-password" -}}
-{{- else if and $global.Values.temporal.postgresql.enabled (and (eq (include "peaka.temporal.persistence.driver" (list $global $store)) "sql") (eq (include "peaka.temporal.persistence.sql.driver" (list $global $store)) "postgres12")) -}}
-{{- print "postgresql-password" -}}
-{{- else -}}
-{{- fail (printf "Please specify sql password or existing secret for %s store" $store) -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.secretName" -}}

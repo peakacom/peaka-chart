@@ -90,21 +90,10 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.host" $ }}
             - name: SQL_PORT
               value: {{ include "peaka.temporal.persistence.sql.port" $  | quote }}
-            {{- if $storeConfig.sql.user }}
             - name: SQL_USER
-              value: {{ $storeConfig.sql.user }}
-            {{- end }}
-            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+              value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
-              {{- if $storeConfig.sql.existingSecret }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
-                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
-              {{- else }}
-              value: {{ $storeConfig.sql.password }}
-              {{- end }}
-            {{- end }}
+              value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
         {{- end }}
         {{- end }}
         {{- else }}
@@ -149,21 +138,10 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.port" $ | quote }}
             - name: SQL_DATABASE
               value: {{ include "peaka.temporal.persistence.sql.database" $store }}
-            {{- if $storeConfig.sql.user }}
             - name: SQL_USER
-              value: {{ $storeConfig.sql.user }}
-            {{- end }}
-            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+              value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
-              {{- if $storeConfig.sql.existingSecret }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
-                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
-              {{- else }}
-              value: {{ $storeConfig.sql.password }}
-              {{- end }}
-            {{- end }}
+              value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
             {{- end }}
         {{- end }}
           {{- with .Values.temporal.schema.resources }}
@@ -288,21 +266,10 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.port" $ | quote }}
             - name: SQL_DATABASE
               value: {{ include "peaka.temporal.persistence.sql.database" $store }}
-            {{- if $storeConfig.sql.user }}
             - name: SQL_USER
-              value: {{ $storeConfig.sql.user }}
-            {{- end }}
-            {{- if (or $storeConfig.sql.password $storeConfig.sql.existingSecret) }}
+              value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
-              {{- if $storeConfig.sql.existingSecret }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
-                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
-              {{- else }}
-              value: {{ $storeConfig.sql.password }}
-              {{- end }}
-            {{- end }}
+              value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
             {{- end }}
         {{- end }}
         {{- end }}

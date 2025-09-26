@@ -868,12 +868,12 @@ temporal:
             # maxConns: 2
 
           sql:
-            driver: "postgres12"
-            host: "postgres12"
+            driver: ""
+            host: ""
             port: 5432
-            database: "temporal"
-            user: "code2db"
-            password: "code2db"
+            database: ""
+            user: ""
+            password: ""
             existingSecret: ""
             secretName: ""
             maxConns: 20
@@ -901,12 +901,12 @@ temporal:
                 serialConsistency: "local_serial"
 
           sql:
-            driver: "postgres12"
-            host: "postgres12"
+            driver: ""
+            host: ""
             port: 5432
-            database: "temporal_visibility"
-            user: "code2db"
-            password: "code2db"
+            database: ""
+            user: ""
+            password: ""
             existingSecret: ""
             secretName: ""
             maxConns: 20
@@ -1002,6 +1002,9 @@ temporal:
       containerSecurityContext: {}
       topologySpreadConstraints: {}
       podDisruptionBudget: {}
+
+  postgresql:
+    enabled: true
 
   admintools:
     enabled: false
