@@ -1421,7 +1421,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.129
+    tag: v0.0.130
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
