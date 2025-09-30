@@ -1,3 +1,4 @@
+{{- if $.Values.temporal.enabled }}
 {{- if $.Values.temporal.server.enabled }}
 {{- range $service := (list "frontend" "history" "matching" "worker") }}
 {{- $serviceValues := index $.Values.temporal.server $service -}}
@@ -23,5 +24,6 @@ spec:
       app.kubernetes.io/component: {{ $service }}
 {{- end }}
 ---
+{{- end }}
 {{- end }}
 {{- end }}

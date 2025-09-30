@@ -1,3 +1,4 @@
+{{- if $.Values.temporal.enabled }}
 {{- if .Values.temporal.web.enabled -}}
 apiVersion: v1
 kind: ConfigMap
@@ -15,4 +16,5 @@ data:
   config.yml: |
     {{- toYaml .Values.temporal.web.config | nindent 4  }}
 
+{{- end }}
 {{- end }}

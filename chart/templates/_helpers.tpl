@@ -182,7 +182,12 @@ KAFKA_CONNECT_ADDRESS: http://{{ include "peaka.kafka-connect.fullname" . }}.{{ 
 KAFKA_CONNECT_CLUSTER_NAME: {{ include "peaka.kafka-connect.fullname" . }}
 PEAKA_KAFKA_CONNECT_ADDRESS: "http://{{ include "peaka.monitoring-kafka-connect.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.monitoringKafkaConnect.servicePort }}"
 
+{{- if .Values.temporal.enabled }}
+TEMPORAL_ENABLED: "true"
 TEMPORAL_TARGET: {{ include "peaka.temporal.fullname" . }}-frontend.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.temporal.frontend.grpcPort" . }}
+{{- else }}
+TEMPORAL_ENABLED: "false"
+{{- end }}
 
 STUDIODB_SCHEMA: studio
 

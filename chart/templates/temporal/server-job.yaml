@@ -1,3 +1,4 @@
+{{- if $.Values.temporal.enabled }}
 {{- if $.Values.temporal.server.enabled }}
 {{- if .Values.temporal.schema.setup.enabled }}
 apiVersion: batch/v1
@@ -370,5 +371,6 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

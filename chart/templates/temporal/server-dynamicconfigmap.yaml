@@ -1,3 +1,4 @@
+{{- if $.Values.temporal.enabled }}
 {{- if $.Values.temporal.server.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -15,4 +16,5 @@ data:
   {{- if $.Values.temporal.server.dynamicConfig }}
     {{- toYaml .Values.temporal.server.dynamicConfig | nindent 4 }}
   {{- end }}
+{{- end }}
 {{- end }}

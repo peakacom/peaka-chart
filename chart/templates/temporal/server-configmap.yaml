@@ -1,3 +1,4 @@
+{{- if $.Values.temporal.enabled }}
 {{- if $.Values.temporal.server.enabled }}
 {{- range $service := (list "frontend" "history" "matching" "worker") }}
 apiVersion: v1
@@ -200,5 +201,6 @@ data:
       pollInterval: "10s"
 ---
 
+{{- end }}
 {{- end }}
 {{- end }}
