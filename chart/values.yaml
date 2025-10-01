@@ -1687,7 +1687,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.301
+    tag: v0.0.302
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
