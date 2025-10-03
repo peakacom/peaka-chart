@@ -26,25 +26,23 @@ fullnameOverride: ""
 imageRegistry: ""
 
 # pull secret to fetch Peaka images
-# you will be given a secret json to authenticate to Peaka's container image registry.
-imagePullSecret:
-  name: peaka-docker-registry
-  gcpRegistryAuth:
-    # enter the json file contents given below
-    # E.g.
-    # imagePullSecret:
-    #   gcpRegistryAuth
-    #     password: |-
-    #       {
-    #       "file": "given-json-secret"
-    #       }
-    password: ""
+# you will be given a secret json to authenticate to pull Peaka images from its private repository.
+# If you're going to use your own image registry, leave this empty.
+# Example:
+# peakaContainerRegistryAccessSecret:
+#   name: peaka-docker-registry
+#   gcpRegistryAuth:
+#     password: |-
+#       {
+#       "file": "given-json-secret"
+#       }
+peakaContainerRegistryAccessSecret: {}
 
 # any additional imagePullSecrets for Peaka images
 # E.g.
-# additionalImagePullSecrets:
+# imagePullSecrets:
 #   - imageRegistrySecretName
-additionalImagePullSecrets: []
+imagePullSecrets: []
 
 # Configure the URL and port through which the services will be accessed.
 # Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.

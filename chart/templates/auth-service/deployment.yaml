@@ -20,8 +20,10 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecret.name }}
-        {{- range $_, $secret := .Values.additionalImagePullSecrets }}
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
       {{- if .Values.authService.terminationGracePeriodSeconds }}
