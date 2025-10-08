@@ -137,8 +137,6 @@ postgresql:
   enabled: true
   image:
     repository: bitnamilegacy/postgresql
-  volumePermissions:
-    enabled: true
   auth:
     username: code2db
     password: code2db
@@ -228,8 +226,6 @@ kafka:
     delete.topic.enable=true
     default.replication.factor: 1
     offsets.topic.replication.factor: 1
-  volumePermissions:
-    enabled: true
   controller:
     replicaCount: 1
     persistence:
@@ -274,8 +270,6 @@ redis:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 postgresqlbigtable:
   enabled: true
-  volumePermissions:
-    enabled: true
   image:
     repository: bitnamilegacy/postgresql
   auth:
