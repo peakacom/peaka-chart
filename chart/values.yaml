@@ -1679,7 +1679,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.310
+    tag: v0.0.311
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1836,7 +1836,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.92
+    tag: v1.1.93
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
