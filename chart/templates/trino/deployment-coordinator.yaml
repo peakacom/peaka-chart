@@ -90,6 +90,16 @@ spec:
               subPath: catalog
             - mountPath: /home/trino/.CData
               name: workdir
+            {{- if .Values.trino.accessControl }}
+            - mountPath: {{ .Values.trino.server.config.path }}/access-control.properties
+              name: config-volume
+              subPath: access-control.properties
+            {{- end }}
+            {{- range $fileName, $fileContent := .Values.trino.coordinator.additionalConfigFiles }}
+            - mountPath: {{ $.Values.trino.server.config.path }}/{{ $fileName }}
+              name: config-volume
+              subPath: {{ $fileName }}
+            {{- end }}
 
           ports:
             - name: http
