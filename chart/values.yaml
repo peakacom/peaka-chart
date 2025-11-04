@@ -1200,7 +1200,10 @@ trino:
   eventListenerProperties: {}
   additionalCatalogs: {}
   tcpRouteEnabled: true
-  accessControl: {}
+  accessControl:
+    type: properties
+    properties: |
+      access-control.name=peaka-access-control
   image:
     name: trino
     pullPolicy: IfNotPresent

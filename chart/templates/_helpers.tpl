@@ -195,6 +195,11 @@ TRINO_ADDRESS: jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.N
 TRINO_PASSWORD: {{ .Values.trino.password }}
 TRINO_USERNAME: {{ .Values.trino.username }}
 TRINO_JDBC_URL: jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/?user=trino
+{{- if .Values.trino.accessControl }}
+TRINO_ACCESS_CONTROL_ENABLED: "true"
+{{- else }}
+TRINO_ACCESS_CONTROL_ENABLED: "false"
+{{- end }}
 
 TOKEN_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-token-service.{{ .Release.Namespace }}.svc.cluster.local:80
 AUTH_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-auth-service.{{ .Release.Namespace }}.svc.cluster.local:80
