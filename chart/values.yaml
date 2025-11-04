@@ -1232,6 +1232,7 @@ trino:
       - -XX:+UnlockDiagnosticVMOptions
       - -XX:G1NumCollectionsKeepPinned=10000000
       - -XX:+EnableDynamicAgentLoading
+      - -javaagent:/usr/lib/trino/lib/trino-byte-manipulation.jar
     additionalExposedPorts: {}
 
     # persistence configuration of trino coordinator
@@ -1291,6 +1292,7 @@ trino:
       - -XX:+UnlockDiagnosticVMOptions
       - -XX:G1NumCollectionsKeepPinned=10000000
       - -XX:+EnableDynamicAgentLoading
+      - -javaagent:/usr/lib/trino/lib/trino-byte-manipulation.jar
     additionalConfigFiles: {}
     additionalExposedPorts: {}
     resources: {}
