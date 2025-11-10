@@ -1207,7 +1207,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: onpremise-1.0.7
+    tag: onpremise-1.0.8
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1453,7 +1453,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.290
+    tag: v0.0.293
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
