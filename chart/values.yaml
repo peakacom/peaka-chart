@@ -1453,7 +1453,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.293
+    tag: v0.0.294
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
