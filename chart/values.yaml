@@ -1207,7 +1207,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: onpremise-1.0.9
+    tag: onpremise-1.0.10
   initContainers: {}
   auth: {}
     # Set username and password
