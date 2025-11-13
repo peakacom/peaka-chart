@@ -1714,7 +1714,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.73
+    tag: v0.0.75
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1841,7 +1841,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.100
+    tag: v1.1.102
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
