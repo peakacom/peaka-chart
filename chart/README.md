@@ -26,6 +26,25 @@ kubectl create namespace peaka
 helm install -n peaka [RELEASE_NAME] peaka/peaka
 ```
 
+## Upgrading to v1
+
+### Install new Traefik CRDs
+```shell
+kubectl apply --server-side --force-conflicts -k https://github.com/traefik/traefik-helm-chart/traefik/crds/
+```
+
+### Upgrade Peaka
+```shell
+helm repo update
+helm upgrade peaka peaka/peaka
+```
+
+### (Optional) Delete old Traefik CRDs
+This step is optional as the upgrade will use new CRDs.
+```shell
+kubectl delete -k https://github.com/traefik/traefik-helm-chart/traefik/crds?ref=v20.8.0
+```
+
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 
