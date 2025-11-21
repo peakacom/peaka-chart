@@ -35,6 +35,10 @@ spec:
   forwardAuth:
     address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/data-rest-auth-check
     authResponseHeadersRegex: ^X-Internal-Authorization-
+    authResponseHeaders:
+      - "X-Peaka-User-Id"
+      - "X-Peaka-Api-Key"
+      - "X-Peaka-Username"
 
 ---
 apiVersion: traefik.io/v1alpha1
