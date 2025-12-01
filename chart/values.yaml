@@ -1418,7 +1418,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.133
+    tag: v0.0.134
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1453,7 +1453,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.295
+    tag: v0.0.296
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1684,7 +1684,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.324
+    tag: v0.0.326
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
