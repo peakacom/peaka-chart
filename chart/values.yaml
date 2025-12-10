@@ -1428,6 +1428,7 @@ dataCache:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  materializedViewQueryTimeout: 7200
   livenessProbe:
     failureThreshold: 3
     httpGet:
@@ -1553,7 +1554,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.62
+    tag: v0.0.63
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
