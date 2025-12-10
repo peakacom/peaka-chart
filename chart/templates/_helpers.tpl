@@ -969,7 +969,7 @@ Define the peaka.pgcat.fullname using "peaka.fullname"
 {{- end -}}
 
 {{- define "peaka.dbc.url" -}}
-{{- .Values.accessUrl.domain -}}
+{{- default .Values.accessUrl.domain .Values.accessUrl.dbcDomain -}}
 {{- end }}
 
 {{- define "peaka.dbc.port" -}}
