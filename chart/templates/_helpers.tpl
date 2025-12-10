@@ -201,7 +201,6 @@ TRINO_ACCESS_CONTROL_ENABLED: "true"
 TRINO_ACCESS_CONTROL_ENABLED: "false"
 {{- end }}
 
-TRINO_QUERY_TIMEOUT: {{ default 1200 .Values.trinoQueryTimeout | quote }}
 
 TOKEN_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-token-service.{{ .Release.Namespace }}.svc.cluster.local:80
 AUTH_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-auth-service.{{ .Release.Namespace }}.svc.cluster.local:80
@@ -247,6 +246,7 @@ APP_BASEDIR: /metadata
 GITHUB_ENABLED: "false"
 CONNECTOR_BASEDIR: /run/resource/connector
 
+MATERIALIZED_VIEW_QUERY_TIMEOUT: {{ default 7200   .Values.dataCache.materializedViewQueryTimeout | quote }}
 
 SAMPLE_DATA_APP_ID: {{ .Values.sampleDataAppId }}
 
