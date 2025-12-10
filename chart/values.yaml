@@ -58,6 +58,10 @@ accessUrl:
   # use this port for port-forwarding
   port: 8000
 
+  # set the JDBC domain through which the JDBC services will be accessed.
+  # accessUrl.domain is used if null
+  dbcDomain:
+
   # set the port through which the JDBC service will be accessed.
   dbcPort: 4567
 
@@ -68,6 +72,46 @@ rootUser:
 
 # enter your openAI api key to use built-in chatGPT.
 openAIApiKey:
+
+# configure ingress for web ui
+ingress:
+  enabled: false
+  ingressClassName:
+  labels: {}
+  annotations: {}
+  hosts: []
+  # hosts:
+  #   - host: example.com
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  #       - path: /api
+  #         pathType: Prefix
+  tls: []
+  # tls:
+  #   - secretName: example-tls
+  #     hosts:
+  #       - example.com
+
+# configure ingress for dbc connections
+dbcIngress:
+  enabled: false
+  ingressClassName:
+  labels: {}
+  annotations: {}
+  hosts: []
+  # hosts:
+  #   - host: example.com
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  #       - path: /api
+  #         pathType: Prefix
+  tls: []
+  # tls:
+  #   - secretName: example-tls
+  #     hosts:
+  #       - example.com
 
 # set default oauth clients to be used for initializing respective connections
 connector:

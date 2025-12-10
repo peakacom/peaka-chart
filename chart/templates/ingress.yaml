@@ -1,0 +1,99 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "peaka.fullname" . }}-web-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    {{- include "peaka.labels" . | nindent 4 }}
+  {{- if .Values.ingress.labels }}
+    {{- toYaml .Values.ingress.labels | nindent 4 }}
+  {{- end}}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- end }}
+
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - secretName: {{ .secretName }}
+      hosts:
+        {{- range .hosts }}
+        - {{ . }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "peaka.fullname" $ }}-traefik
+                port:
+                  number: {{ $.Values.traefik.ports.web.exposedPort }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.dbcIngress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "peaka.fullname" . }}-dbc-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    {{- include "peaka.labels" . | nindent 4 }}
+  {{- if .Values.dbcIngress.labels }}
+    {{- toYaml .Values.dbcIngress.labels | nindent 4 }}
+  {{- end}}
+  {{- with .Values.dbcIngress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.dbcIngress.ingressClassName }}
+  ingressClassName: {{ .Values.dbcIngress.ingressClassName }}
+  {{- end }}
+
+  {{- if .Values.dbcIngress.tls }}
+  tls:
+    {{- range .Values.dbcIngress.tls }}
+    - secretName: {{ .secretName }}
+      hosts:
+        {{- range .hosts }}
+        - {{ . }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+
+  rules:
+    {{- range .Values.dbcIngress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "peaka.fullname" $ }}-traefik
+                port:
+                  number: {{ $.Values.traefik.ports.dbc.exposedPort }}
+          {{- end }}
+    {{- end }}
+{{- end }}
