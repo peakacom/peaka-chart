@@ -16,7 +16,8 @@ metadata:
   annotations:
     "helm.sh/hook-weight": "0"
     {{- if not .Values.temporal.debug }}
-    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed,before-hook-creation
     {{- end }}
 spec:
   backoffLimit: {{ .Values.temporal.schema.setup.backoffLimit }}
@@ -191,7 +192,8 @@ metadata:
   annotations:
     "helm.sh/hook-weight": "1"
     {{- if not .Values.temporal.debug }}
-    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed,before-hook-creation
     {{- end }}
 spec:
   backoffLimit: {{ .Values.temporal.schema.update.backoffLimit }}
@@ -316,7 +318,8 @@ metadata:
   annotations:
     "helm.sh/hook-weight": "0"
     {{- if not .Values.temporal.debug }}
-    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed,before-hook-creation
     {{- end }}
 spec:
   backoffLimit: {{ .Values.temporal.schema.setup.backoffLimit }}
