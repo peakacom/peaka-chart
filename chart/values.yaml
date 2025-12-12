@@ -1940,7 +1940,7 @@ traefik:
   logs:
     general:
       level: DEBUG
-      format: text
+      format: json
     access:
       enabled: true
       format: json
