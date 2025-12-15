@@ -234,6 +234,8 @@ minio:
   replicas: 1
   persistence:
     size: 4Gi
+    annotations:
+      helm.sh/resource-policy: keep
 
 # database to be used for thrift store.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
@@ -1285,7 +1287,8 @@ trino:
     # persistence configuration of trino coordinator
     persistence:
       # additional annotations for trino coordinator pvc.
-      annotations: {}
+      annotations:
+        helm.sh/resource-policy: keep
       # additional labels for trino coordinator pvc.
       labels: {}
       # storage size of the trino coordinator persistent volume
@@ -1559,7 +1562,8 @@ metadataService:
   nodeSelector: {}
   affinity: {}
   persistence:
-    annotations: {}
+    annotations:
+      helm.sh/resource-policy: keep
     labels: {}
     size: 2Gi
     storageClass: ""
