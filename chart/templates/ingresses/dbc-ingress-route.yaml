@@ -12,6 +12,8 @@ spec:
     - match: PathPrefix(`/`)
       kind: Rule
       priority: 1000
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-append-trino-extra-credential-header
       services:
         - name: {{ include "peaka.fullname" . }}-be-data-rest
           port: http
@@ -20,3 +22,15 @@ spec:
   tls:
     secretName: {{ include "peaka.fullname" . }}-tls-secret
   {{- end }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-append-trino-extra-credential-header
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-dbc
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  forwardAuth:
+    address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/dbc-custom-header-handling
+    authResponseHeaders: ["X-Trino-Extra-Credential", "X-Peaka-User-Id", "X-Peaka-Api-Key"]
