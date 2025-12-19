@@ -1897,6 +1897,19 @@ studioWeb:
   affinity: {}
   readinessProbe: {}
 
+releaseState:
+  replicaCount: 1
+  image:
+    name: be-release-state
+    tag: latest
+    imagePullPolicy: IfNotPresent
+  serviceAccount:
+    create: true
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  readinessProbe: {}
+
 
 # -----------------------------------------------------------------------------
 # Service Exposure Settings
