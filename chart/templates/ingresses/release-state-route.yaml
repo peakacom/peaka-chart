@@ -1,0 +1,38 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-release-state-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-release-state-routes
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/api/release/status`)
+      kind: Rule
+      priority: 11
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-be-release-state-replace-path-middleware
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-release-state
+          port: http
+          passHostHeader: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ include "peaka.fullname" . }}-tls-secret
+  {{- end }}
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-release-state-replace-path-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-release-state
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: "^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)"
+    replacement: "/${1}"
