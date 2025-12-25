@@ -1733,7 +1733,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.329
+    tag: v0.0.330
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1843,7 +1843,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.95
+    tag: v0.0.96
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
