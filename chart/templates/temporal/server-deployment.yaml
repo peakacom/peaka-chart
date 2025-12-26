@@ -7,7 +7,7 @@ kind: Deployment
 metadata:
   name: {{ include "peaka.temporal.componentname" (list $ $service) }}
   labels:
-    app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}
+    app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}-{{ $service }}
     helm.sh/chart: {{ include "peaka.chart" $ }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
