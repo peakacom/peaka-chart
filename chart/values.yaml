@@ -1833,7 +1833,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.95
+    tag: v0.0.96
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1890,7 +1890,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.115
+    tag: v1.1.118
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
