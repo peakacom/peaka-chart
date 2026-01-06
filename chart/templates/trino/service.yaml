@@ -14,6 +14,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    {{- if eq .Values.trino.service.type "NodePort" }}
+      nodePort: {{ .Values.trino.service.nodePort }}
+    {{- end }}
     {{- range $key, $value := .Values.trino.coordinator.additionalExposedPorts }}
     - port: {{ $value.servicePort }}
       name: {{ $value.name }}
