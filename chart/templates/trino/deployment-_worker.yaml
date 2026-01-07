@@ -26,6 +26,8 @@ spec:
         component: worker
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+        checksum/worker-config: {{ include (print $.Template.BasePath "/trino/configmap-worker.yaml") . | sha256sum }}
+        checksum/catalog-config: {{ include (print $.Template.BasePath "/trino/configmap-catalog.yaml") . | sha256sum }}
     spec:
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
