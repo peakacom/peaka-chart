@@ -46,6 +46,11 @@ spec:
             name: {{ template "peaka.trino.catalog" . }}
         - name: workdir
           emptyDir: {}
+        {{- if .Values.trino.server.kerberosConfig }}
+        - name: kerberos-config
+          configMap:
+            name: {{ template "peaka.trino.kerberos" . }}
+        {{- end }}
       {{- if .Values.trino.initContainers.worker }}
       initContainers:
       {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
@@ -81,6 +86,10 @@ spec:
               subPath: iceberg.properties
             - mountPath: /home/trino/.CData
               name: workdir
+            {{- if .Values.trino.server.kerberosConfig }}
+            - mountPath: {{ .Values.trino.server.kerberosConfigPath }}
+              name: kerberos-config
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.trino.service.port }}
