@@ -34,6 +34,9 @@ data:
     -Dfile.encoding=UTF-8
     -XX:+UnlockDiagnosticVMOptions
     -XX:GCLockerRetryAllocationCount=32
+  {{- if .Values.trino.server.kerberosConfig }}
+    -Djava.security.krb5.conf={{ .Values.trino.server.kerberosConfigPath }}/krb5.conf
+  {{- end }}
   {{- range $configValue := .Values.trino.coordinator.additionalJVMConfig }}
     {{ $configValue }}
   {{- end }}

@@ -1389,6 +1389,35 @@ trino:
       pluginDir: /usr/lib/trino/plugin
     coordinatorExtraConfig: ""
     workerExtraConfig: ""
+
+    # Kerberos Configuration
+    kerberosConfig:
+      # krb5.conf: |-
+      #   [libdefaults]
+      #       default_realm = EXAMPLE.COM
+      #       dns_lookup_realm = false
+      #       dns_lookup_kdc = false
+      #   [kdcdefaults]
+      #       kdc_ports = 88
+      #       kdc_tcp_ports = 88
+      #   [realms]
+      #       EXAMPLE.COM = {
+      #           kdc = kdc-server:88
+      #           admin_server = kdc-server:749
+      #           default_domain = example.com
+      #           database_name = /var/lib/krb5kdc/principal
+      #           admin_keytab = /var/lib/krb5kdc/kadm5.keytab
+      #           acl_file = /var/lib/krb5kdc/kadm5.acl
+      #           key_stash_file = /var/lib/krb5kdc/stash
+      #       }
+      #   [domain_realm]
+      #       .example.com = EXAMPLE.COM
+      #       example.com = EXAMPLE.COM
+      #   [logging]
+      #       kdc = CONSOLE
+      #       admin_server = CONSOLE
+      #       default = CONSOLE
+    kerberosConfigPath: /etc/trino/kerberos
   service:
     type: ClusterIP
     port: 8080
