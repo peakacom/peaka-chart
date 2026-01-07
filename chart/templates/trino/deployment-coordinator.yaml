@@ -22,6 +22,8 @@ spec:
         component: coordinator
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+        checksum/coordinator-config: {{ include (print $.Template.BasePath "/trino/configmap-coordinator.yaml") . | sha256sum }}
+        checksum/catalog-config: {{ include (print $.Template.BasePath "/trino/configmap-catalog.yaml") . | sha256sum }}
     spec:
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
