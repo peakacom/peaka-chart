@@ -1464,7 +1464,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.80
+    tag: v0.0.81
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1494,7 +1494,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.136
+    tag: v0.0.137
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1530,7 +1530,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.300
+    tag: v0.0.301
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1919,7 +1919,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.119
+    tag: v1.1.120
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
