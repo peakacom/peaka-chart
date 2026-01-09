@@ -1419,6 +1419,13 @@ trino:
       #       default = CONSOLE
     kerberosConfigPath: /etc/trino/kerberos
 
+    # Kerberos keytab configuration
+    # Enter the contents of the files base64 encoded
+    # Generate base64 encoded file with `base64 -i file.keytab`
+    kerberosKeytab:
+      # example1.keytab: cGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EKcGVha2EK
+      # example2.keytab: cGVha2FydWxlcwpwZWFrYXJ1bGVzCnBlYWthcnVsZXMKcGVha2FydWxlcwpwZWFrYXJ1bGVzCg==
+
     # Hive configuration
     hiveConfig:
       # core-site.xml: |-

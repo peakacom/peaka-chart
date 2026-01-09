@@ -656,6 +656,10 @@ Create a default fully qualified schema registry name for monitoring kafka conne
 {{ template "peaka.trino.fullname" . }}-kerberos
 {{- end -}}
 
+{{- define "peaka.trino.keytab" -}}
+{{ template "peaka.trino.fullname" . }}-kerberos-keytab
+{{- end -}}
+
 {{- define "peaka.trino.worker" -}}
 {{- printf "%s-%s" .Release.Name "trino-worker" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

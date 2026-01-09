@@ -53,6 +53,11 @@ spec:
           configMap:
             name: {{ template "peaka.trino.kerberos" . }}
         {{- end }}
+        {{- if .Values.trino.server.kerberosKeytab }}
+        - name: kerberos-keytab
+          secret:
+            secretName: {{ include "peaka.trino.keytab" . }}
+        {{- end }}
       {{- if .Values.trino.initContainers.worker }}
       initContainers:
       {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
@@ -95,6 +100,11 @@ spec:
             {{- range $fileName, $fileContent := .Values.trino.server.hiveConfig }}
             - mountPath: {{ $.Values.trino.server.hiveConfigPath }}/{{ $fileName }}
               name: config-volume
+              subPath: {{ $fileName }}
+            {{- end }}
+            {{- range $fileName, $fileContent := .Values.trino.server.kerberosKeytab }}
+            - mountPath: {{ $.Values.trino.server.hiveConfigPath }}/{{ $fileName }}
+              name: kerberos-keytab
               subPath: {{ $fileName }}
             {{- end }}
           ports:
