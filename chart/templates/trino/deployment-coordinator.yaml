@@ -49,11 +49,6 @@ spec:
             name: {{ template "peaka.trino.catalog" . }}
         - name: workdir
           emptyDir: {}
-        {{- if .Values.trino.server.kerberosConfig }}
-        - name: kerberos-config
-          configMap:
-            name: {{ template "peaka.trino.kerberos" . }}
-        {{- end }}
         {{- if .Values.trino.server.kerberosKeytab }}
         - name: kerberos-keytab
           secret:
@@ -102,9 +97,10 @@ spec:
               subPath: catalog
             - mountPath: /home/trino/.CData
               name: workdir
-            {{- if .Values.trino.server.kerberosConfig }}
-            - mountPath: {{ .Values.trino.server.kerberosConfigPath }}
-              name: kerberos-config
+            {{- range $fileName, $fileContent := .Values.trino.server.kerberosConfig }}
+            - mountPath: {{ $.Values.trino.server.kerberosConfigPath }}/{{ $fileName }}
+              name: config-volume
+              subPath: {{ $fileName }}
             {{- end }}
             {{- if .Values.trino.accessControl }}
             - mountPath: {{ .Values.trino.server.config.path }}/access-control.properties

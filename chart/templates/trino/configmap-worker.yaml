@@ -80,6 +80,12 @@ data:
   {{- end }}
 {{ end }}
 
+{{- range $fileName, $fileContent := .Values.trino.server.kerberosConfig }}
+  {{ $fileName | nindent 2 }}: |
+    {{- $fileContent | nindent 4 }}
+{{- end }}
+
+
 {{- range $fileName, $fileContent := .Values.trino.server.hiveConfig }}
   {{ $fileName | nindent 2 }}: |
     {{- $fileContent | nindent 4 }}
