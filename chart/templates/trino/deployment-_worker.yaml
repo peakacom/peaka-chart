@@ -92,6 +92,11 @@ spec:
             - mountPath: {{ .Values.trino.server.kerberosConfigPath }}
               name: kerberos-config
             {{- end }}
+            {{- range $fileName, $fileContent := .Values.trino.server.hiveConfig }}
+            - mountPath: {{ $.Values.trino.server.hiveConfigPath }}/{{ $fileName }}
+              name: config-volume
+              subPath: {{ $fileName }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.trino.service.port }}

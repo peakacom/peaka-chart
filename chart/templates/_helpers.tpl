@@ -201,6 +201,7 @@ TRINO_ACCESS_CONTROL_ENABLED: "true"
 TRINO_ACCESS_CONTROL_ENABLED: "false"
 {{- end }}
 
+HIVE_CONFIG_FOLDER: {{ default "/etc/trino/hive_config" .Values.trino.server.hiveConfigPath }}
 
 TOKEN_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-token-service.{{ .Release.Namespace }}.svc.cluster.local:80
 AUTH_SERVICE_INTERNAL_ADDRESS: http://{{ include "peaka.fullname" . }}-be-auth-service.{{ .Release.Namespace }}.svc.cluster.local:80

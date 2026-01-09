@@ -1390,7 +1390,7 @@ trino:
     coordinatorExtraConfig: ""
     workerExtraConfig: ""
 
-    # Kerberos Configuration
+    # Kerberos configuration
     kerberosConfig:
       # krb5.conf: |-
       #   [libdefaults]
@@ -1418,6 +1418,38 @@ trino:
       #       admin_server = CONSOLE
       #       default = CONSOLE
     kerberosConfigPath: /etc/trino/kerberos
+
+    # Hive configuration
+    hiveConfig:
+      # core-site.xml: |-
+      #   <configuration>
+      #       <property>
+      #           <name>fs.defaultFS</name>
+      #           <value>hdfs://namenode:8020</value>
+      #       </property>
+      #       <property>
+      #           <name>hadoop.security.authentication</name>
+      #           <value>kerberos</value>
+      #       </property>
+      #       <property>
+      #           <name>hadoop.security.authorization</name>
+      #           <value>true</value>
+      #       </property>
+      #       <property>
+      #           <name>hadoop.proxyuser.hive.hosts</name>
+      #           <value>*</value>
+      #       </property>
+      #       <property>
+      #           <name>hadoop.proxyuser.hive.groups</name>
+      #           <value>*</value>
+      #       </property>
+      #       <property>
+      #           <name>hadoop.proxyuser.hive.users</name>
+      #           <value>*</value>
+      #       </property>
+      #  </configuration>
+    hiveConfigPath: /etc/trino/hive_config
+
   service:
     type: ClusterIP
     port: 8080

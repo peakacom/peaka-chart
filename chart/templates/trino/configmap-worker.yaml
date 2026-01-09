@@ -73,12 +73,17 @@ data:
     {{ $configValue }}
   {{- end }}
 
-{{ if .Values.trino.eventListenerProperties }}
+{{- if .Values.trino.eventListenerProperties }}
   event-listener.properties: |
   {{- range $configValue := .Values.trino.eventListenerProperties }}
     {{ $configValue }}
   {{- end }}
 {{ end }}
+
+{{- range $fileName, $fileContent := .Values.trino.server.hiveConfig }}
+  {{ $fileName | nindent 2 }}: |
+    {{- $fileContent | nindent 4 }}
+{{- end }}
 
 {{- range $fileName, $fileContent := .Values.trino.worker.additionalConfigFiles }}
   {{ $fileName }}: |
