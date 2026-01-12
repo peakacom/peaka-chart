@@ -1253,7 +1253,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.620
+    tag: v0.0.621
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1958,7 +1958,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.120
+    tag: v1.1.121
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
