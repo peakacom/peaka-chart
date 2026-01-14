@@ -44,9 +44,9 @@ spec:
       kind: StatefulSet
     - group: ''
       kind: ConfigMap
-    - group: traefik.containo.us
+    - group: traefik.io
       kind: IngressRoute
-    - group: traefik.containo.us
+    - group: traefik.io
       kind: Middleware
     - group: autoscaling
       kind: HorizontalPodAutoscaler
