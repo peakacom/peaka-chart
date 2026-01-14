@@ -1,4 +1,4 @@
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: {{ include "peaka.fullname" . }}-be-workflow-history-routes
@@ -24,7 +24,7 @@ spec:
     secretName: {{ include "peaka.fullname" . }}-tls-secret
   {{- end }}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "peaka.fullname" . }}-be-workflow-history-auth-middleware
@@ -36,7 +36,7 @@ spec:
     address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/workflow-history-auth-check
     authResponseHeadersRegex: ^X-Internal-Authorization-
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "peaka.fullname" . }}-be-workflow-history-replace-path-middleware
