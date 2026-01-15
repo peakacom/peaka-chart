@@ -2077,9 +2077,11 @@ traefik:
     - "--api.insecure=true"
     - "--api.dashboard=true"
     - "--log.level=DEBUG"
+  rbac:
+    enabled: true
+    namespaced: true
   ingressClass:
     enabled: false
-
   providers:
     kubernetesCRD:
       enabled: true
@@ -2090,3 +2092,5 @@ traefik:
       # labelSelector: environment=production,method=traefik
       namespaces: []
       # - "default"
+    kubernetesIngress:
+      enabled: false
