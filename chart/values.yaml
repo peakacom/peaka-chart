@@ -1253,7 +1253,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.622
+    tag: v0.0.623
   initContainers: {}
   auth: {}
     # Set username and password
