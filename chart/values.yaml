@@ -171,7 +171,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.54
+    tag: v0.0.55
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -1569,7 +1569,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.303
+    tag: v0.0.304
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1958,7 +1958,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.128
+    tag: v1.1.129
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
