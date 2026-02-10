@@ -213,12 +213,13 @@ externalPostgresql:
 hiveMetastore:
   enabled: true
   image:
-    repository: bitsondatadev/hive-metastore
-    tag: latest
+    registry:
+    name: hive-metastore
+    tag: v1.0.4
     pullPolicy: IfNotPresent
   hadoopHeapSize: 10240
   # db type to be used as metastore. One of mysql or postgres (only mysql tested)
-  metastoreType: mysql
+  metastoreType: postgres
   servicePort: 9083
   # by default, hive metastore connects to minio using default minio user. If you want to change this,
   # create a user by entering accessKey, secretKey and policy in minio.users, then change below two values accordingly.

@@ -24,24 +24,26 @@ data:
       </property>
       <property>
           <name>javax.jdo.option.ConnectionDriverName</name>
+          {{- if eq .Values.hiveMetastore.metastoreType "mysql" }}
           <value>com.mysql.cj.jdbc.Driver</value>
+          {{- else if eq .Values.hiveMetastore.metastoreType "postgres" }}
+          <value>org.postgresql.Driver</value>
+          {{- else }}
+          {{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
+          {{- end }}
       </property>
-
       <property>
           <name>javax.jdo.option.ConnectionURL</name>
-          <value>jdbc:mysql://{{ include "peaka.mariadb.fullname" . }}:{{ include "peaka.mariadb.port" . }}/{{ include "peaka.mariadb.dbName" . }}</value>
+          <value>{{ printf "jdbc:%s://%s:%s/%s" (include "peaka.metastore.connection" . ) (include "peaka.metastore.host" .) (include "peaka.metastore.port" .) (include "peaka.metastore.dbName" .) }}</value>
       </property>
-
       <property>
           <name>javax.jdo.option.ConnectionUserName</name>
-          <value>{{ include "peaka.mariadb.user" . }}</value>
+          <value>{{ include "peaka.metastore.user" . }}</value>
       </property>
-
       <property>
           <name>javax.jdo.option.ConnectionPassword</name>
-          <value>{{ include "peaka.mariadb.password" . }}</value>
+          <value>{{ include "peaka.metastore.password" . }}</value>
       </property>
-
       <property>
           <name>fs.s3a.access.key</name>
           <value>{{ include "peaka.minio.accessKey" . }}</value>
