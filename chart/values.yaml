@@ -1761,7 +1761,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.114
+    tag: v0.1.115
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
