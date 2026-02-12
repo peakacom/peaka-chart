@@ -14,18 +14,31 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hive-metastore/configmap.yaml") . | sha256sum }}
     spec:
+      imagePullSecrets:
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       containers:
         - name: metastore
-          image: {{ .Values.hiveMetastore.image.repository }}:{{ .Values.hiveMetastore.image.tag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry }}/{{ .Values.hiveMetastore.image.name }}:{{ .Values.hiveMetastore.image.tag }}
           imagePullPolicy: {{ .Values.hiveMetastore.image.pullPolicy | quote }}
           env:
             - name: METASTORE_DB_HOSTNAME
-              value: {{ include "peaka.mariadb.fullname" . }}
+              value: {{ include "peaka.metastore.host" . }}
+            - name: METASTORE_DB_PORT
+              value: {{ include "peaka.metastore.port" . | quote }}
             - name: HADOOP_HEAPSIZE
               value: {{ .Values.hiveMetastore.hadoopHeapSize | quote }}
             - name: METASTORE_TYPE
               value: {{ .Values.hiveMetastore.metastoreType | quote }}
+            - name: JAVA_HOME
+              value: /usr/lib/jvm/default-jvm/jre
           volumeMounts:
             - name: hive-config
               mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/

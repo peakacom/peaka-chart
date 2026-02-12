@@ -213,8 +213,9 @@ externalPostgresql:
 hiveMetastore:
   enabled: true
   image:
-    repository: bitsondatadev/hive-metastore
-    tag: latest
+    registry:
+    name: hive-metastore
+    tag: v1.0.4
     pullPolicy: IfNotPresent
   hadoopHeapSize: 10240
   # db type to be used as metastore. One of mysql or postgres (only mysql tested)
@@ -250,7 +251,7 @@ externalObjectStore:
 # database to be used for thrift store.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
 mariadb:
-  enabled: true
+  enabled: false
   image:
     repository: bitnamilegacy/mariadb-galera
     tag: 10.11.4-debian-11-r3

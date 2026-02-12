@@ -549,10 +549,17 @@ Define the peaka.mariadb.fullname template with .Release.Name and "mariadb"
 {{- end -}}
 
 {{/*
+Set mariadb hostname
+*/}}
+{{- define "peaka.mariadb.host" -}}
+{{ include "peaka.mariadb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
+
+{{/*
 Set mariadb user
 */}}
 {{- define "peaka.mariadb.user" }}
-{{- default "peaka"  .Values.mariadb.db.user }}
+{{- default "peaka" .Values.mariadb.db.user }}
 {{- end }}
 
 {{/*
@@ -566,15 +573,91 @@ Set mariadb password
 Set mariadb db name
 */}}
 {{- define "peaka.mariadb.dbName" }}
-{{- default "metastore_db"  .Values.mariadb.db.name }}
+{{- default "metastore_db" .Values.mariadb.db.name }}
 {{- end }}
 
 {{/*
 Set mariadb port
 */}}
 {{- define "peaka.mariadb.port" }}
-{{- default 3306  .Values.mariadb.service.ports.mysql }}
+{{- default 3306 .Values.mariadb.service.ports.mysql }}
 {{- end }}
+
+{{/*
+Set metastore name
+*/}}
+{{- define "peaka.metastore.host" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+{{ include "peaka.mariadb.host" . -}}
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+{{- include "peaka.postgresql.host" . -}}
+{{- else -}}
+{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set metastore db name
+*/}}
+{{- define "peaka.metastore.dbName" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+{{- default "metastore_db" .Values.mariadb.db.name -}}
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+peaka_s3_metastore
+{{- else -}}
+{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set metastore user
+*/}}
+{{- define "peaka.metastore.user" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+{{- default "peaka" .Values.mariadb.db.user -}}
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+{{- include "peaka.postgresql.user" . -}}
+{{- else }}
+{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set metastore password
+*/}}
+{{- define "peaka.metastore.password" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+{{- default "peaka" .Values.mariadb.db.password -}}
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+{{- include "peaka.postgresql.password" . -}}
+{{- else -}}
+{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set metastore port
+*/}}
+{{- define "peaka.metastore.port" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+{{- default 3306 .Values.mariadb.service.ports.mysql -}}
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+{{- include "peaka.postgresql.port" . -}}
+{{- else -}}
+{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set metastore connection type
+*/}}
+{{- define "peaka.metastore.connection" -}}
+{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
+mysql
+{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
+postgresql
+{{- end -}}
+{{- end -}}
 
 {{/*
 Define the peaka.kafka.fullname template with .Release.Name and "kafka"
@@ -1206,6 +1289,11 @@ kind: ConfigMap
 metadata:
   name: {{ .name }}
 data:
+  {{- if and (eq .root.Values.hiveMetastore.metastoreType "postgres") .root.Values.postgresql.enabled }}
+  hive_metastore.sql: |
+    CREATE DATABASE {{ include "peaka.metastore.dbName" .root }} WITH OWNER {{ .username }}
+  {{- end }}
+
   permify.sql: |
     CREATE DATABASE permify WITH OWNER {{ .username }} ;
 
