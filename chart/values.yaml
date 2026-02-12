@@ -295,7 +295,11 @@ kafka:
     interbroker:
       protocol: PLAINTEXT
 
-# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
+# Peaka requires MongoDB to operate
+# This section is the values of a Peaka managed MongoDB distribution.
+# For the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
+# If you would like to use your own MongoDB server, disable this, enable externalMongoDB and fill in the
+# connection details under externalMongoDB.
 mongodb:
   enabled: true
   image:
@@ -308,6 +312,17 @@ mongodb:
     enabled: false
   persistence:
     size: 4Gi
+
+# If you would like to use your own MongoDB server, disable mongodb, enable this and fill in the connection
+# details below.
+externalMongoDB:
+  enabled: false
+  host:
+  port: 27017
+  auth:
+    username:
+    password:
+
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:

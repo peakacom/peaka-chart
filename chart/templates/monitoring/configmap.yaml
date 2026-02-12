@@ -7,7 +7,7 @@ data:
     {
       "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
       "topics": "ai_token_usage_metric",
-      "connection.uri": "mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}",
+      "connection.uri": "mongodb://{{ include "peaka.mongodb.host" . }}",
       "key.converter": "org.apache.kafka.connect.storage.StringConverter",
       "value.converter": "org.apache.kafka.connect.json.JsonConverter",
       "value.converter.schemas.enable": false,
@@ -28,7 +28,7 @@ data:
     {
       "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
       "topics": "query_history",
-      "connection.uri": "mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}",
+      "connection.uri": "mongodb://{{ include "peaka.mongodb.host" . }}",
       "key.converter": "org.apache.kafka.connect.storage.StringConverter",
       "value.converter": "org.apache.kafka.connect.json.JsonConverter",
       "value.converter.schemas.enable": false,

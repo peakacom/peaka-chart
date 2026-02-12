@@ -1,3 +1,4 @@
 {{- include "peaka.validate.postgresql" . }}
 {{- include "peaka.validate.metastore" . }}
 {{- include "peaka.validate.objectStore" . }}
+{{- include "peaka.validate.mongodb" . }}

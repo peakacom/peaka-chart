@@ -239,9 +239,7 @@ JWT_RSA_PRIVATE_KEY_PATH: /secrets/jwt/rsa/privatekey.pem
 JWT_RSA_PUBLIC_KEY_PATH: /secrets/jwt/rsa/publickey.pem
 PUBLIC_CERT: /secrets/jwt/rsa/publickey.pem
 
-MONGODB_ARCHITECTURE: {{ .Values.mongodb.architecture }}
-SHAREDB_MONGO: mongodb://{{ include "peaka.mongodb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-
+SHAREDB_MONGO: mongodb://{{ include "peaka.mongodb.host" . }}
 
 APP_BASEDIR: /metadata
 GITHUB_ENABLED: "false"
@@ -674,10 +672,47 @@ Set kafka port
 {{- end }}
 
 {{/*
-Define the peaka.mongodb.fullname template with .Release.Name and "mongodb"
+Set peaka.mongodb.host
 */}}
-{{- define "peaka.mongodb.fullname" -}}
-{{- printf "%s-%s" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
+{{- define "peaka.mongodb.host" -}}
+{{- if .Values.externalMongoDB.enabled -}}
+{{ .Values.externalMongoDB.host }}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set peaka.mongodb.port
+*/}}
+{{- define "peaka.mongodb.port" -}}
+{{- if .Values.externalMongoDB.enabled -}}
+{{ default 27017 .Values.externalMongoDB.port }}
+{{- else -}}
+{{ default 27017 .Values.mongodb.service.ports.mongodb }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set peaka.mongodb.username
+*/}}
+{{- define "peaka.mongodb.username" -}}
+{{- if .Values.externalMongoDB.enabled -}}
+{{ .Values.externalMongoDB.auth.username }}
+{{- else -}}
+{{ .Values.mongodb.auth.username }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Set peaka.mongodb.password
+*/}}
+{{- define "peaka.mongodb.password" -}}
+{{- if .Values.externalMongoDB.enabled -}}
+{{ .Values.externalMongoDB.auth.password }}
+{{- else -}}
+{{ .Values.mongodb.auth.password }}
+{{- end -}}
 {{- end -}}
 
 {{/*
