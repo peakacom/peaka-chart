@@ -448,6 +448,72 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 {{- end -}}
 
 {{/*
+Define peaka.objectStore.host
+*/}}
+{{- define "peaka.objectStore.host" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- .Values.externalObjectStore.host }}
+{{- else -}}
+{{- include "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define peaka.objectStore.port
+*/}}
+{{- define "peaka.objectStore.port" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- default 9000 .Values.externalObjectStore.port }}
+{{- else -}}
+{{- include "peaka.minio.port" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define peaka.objectStore.accessKey
+*/}}
+{{- define "peaka.objectStore.accessKey" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- .Values.externalObjectStore.accessKey }}
+{{- else -}}
+{{- include "peaka.minio.accessKey" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define peaka.objectStore.secretKey
+*/}}
+{{- define "peaka.objectStore.secretKey" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- .Values.externalObjectStore.secretKey }}
+{{- else -}}
+{{- include "peaka.minio.secretKey" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define peaka.objectStore.scheme
+*/}}
+{{- define "peaka.objectStore.scheme" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- ternary "https" "http" .Values.externalObjectStore.useTLS }}
+{{- else -}}
+http
+{{- end -}}
+{{- end -}}
+
+{{/*
+Define peaka.objectStore.endpoint
+*/}}
+{{- define "peaka.objectStore.endpoint" -}}
+{{- printf "%s://%s:%d"
+  (include "peaka.objectStore.scheme" .)
+  (include "peaka.objectStore.host" .)
+  (include "peaka.objectStore.port" . | int)
+}}
+{{- end -}}
+
+{{/*
 Define the peaka.minio.fullname template with .Release.Name and "minio"
 */}}
 {{- define "peaka.minio.fullname" -}}
