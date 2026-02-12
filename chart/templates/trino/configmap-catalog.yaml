@@ -27,9 +27,9 @@ data:
     hive.metastore.uri=thrift://{{ template "peaka.hive.name" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.hive.port" . }}
     fs.native-s3.enabled=true
     s3.path-style-access=true
-    s3.endpoint=http://{{ template "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.minio.port" . }}
-    s3.aws-secret-key={{ template "peaka.minio.secretKey" . }}
-    s3.aws-access-key={{ template "peaka.minio.accessKey" . }}
+    s3.endpoint={{ include "peaka.objectStore.endpoint" . }}
+    s3.aws-secret-key={{ template "peaka.objectStore.secretKey" . }}
+    s3.aws-access-key={{ template "peaka.objectStore.accessKey" . }}
     s3.region=us-east-1
     hive.metastore-cache-maximum-size=100000
     iceberg.expire_snapshots.min-retention=30s

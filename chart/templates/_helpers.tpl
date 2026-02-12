@@ -133,9 +133,9 @@ Return the proper tolerations
 Environment variables injected into Peaka services
 */}}
 {{- define "peaka.common.envVars" -}}
-MINIO_ADDRESS: http://{{ include "peaka.minio.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ include "peaka.minio.port" . }}
-MINIO_ACCESS_KEY: {{ include "peaka.minio.accessKey" . | quote }}
-MINIO_SECRET_KEY: {{ include "peaka.minio.secretKey" .  | quote }}
+MINIO_ADDRESS: {{ include "peaka.objectStore.endpoint" . | quote }}
+MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
+MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
 
 STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.host" . }}:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
 DB_HOST: {{ include "peaka.postgresql.host" . }}
