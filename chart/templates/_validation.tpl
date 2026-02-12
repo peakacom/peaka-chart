@@ -17,3 +17,13 @@
 {{- fail "You set hiveMetastore.metastoreType to \"mysql\" but mariadb.enabled is false. Enable mariadb to use MySQL as your metastore." }}
 {{- end }}
 {{- end }}
+
+{{- define "peaka.validate.objectStore" }}
+{{- if and .Values.minio.enabled .Values.externalObjectStore.enabled -}}
+{{- fail "You cannot enable both minio.enabled and externalObjectStore.enabled at the same time." }}
+{{- end }}
+
+{{- if and (not .Values.minio.enabled) (not .Values.externalObjectStore.enabled) -}}
+{{- fail "You must enable either minio.enabled or externalObjectStore.enabled." }}
+{{- end }}
+{{- end }}
