@@ -745,10 +745,10 @@ Format: mongodb://[username:password@]host[:port]/[database][?options]
 
 {{- $tlsParam := "" -}}
 {{- if eq $tls "true" -}}
-  {{- $tlsParam = "?tls=true" -}}
+  {{- $tlsParam = "/?tls=true" -}}
 {{- end -}}
 
-{{- printf "mongodb://%s%s:%s/%s" $auth $host $port $tlsParam -}}
+{{- printf "mongodb://%s%s:%s%s" $auth $host $port $tlsParam -}}
 {{- end -}}
 
 {{/*
