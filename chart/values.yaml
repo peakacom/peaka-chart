@@ -319,6 +319,8 @@ externalMongoDB:
   enabled: false
   host:
   port: 27017
+  tls:
+    enabled: false
   auth:
     username:
     password:

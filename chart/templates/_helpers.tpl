@@ -716,6 +716,18 @@ Set peaka.mongodb.password
 {{- end -}}
 
 {{/*
+Set peaka.mongodb.tls
+Determine if TLS is enabled
+*/}}
+{{- define "peaka.mongodb.tls" -}}
+{{- if .Values.externalMongoDB.enabled -}}
+{{ .Values.externalMongoDB.tls.enabled | default false }}
+{{- else -}}
+{{ .Values.mongodb.tls.enabled | default false }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Define the peaka.redis.fullname template with .Release.Name and "redis"
 */}}
 {{- define "peaka.redis.fullname" -}}
