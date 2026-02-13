@@ -1281,7 +1281,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v0.0.627
+    tag: v0.0.628
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1597,7 +1597,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.307
+    tag: v0.0.308
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1788,7 +1788,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.115
+    tag: v0.1.116
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1986,7 +1986,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.135
+    tag: v1.1.139
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
