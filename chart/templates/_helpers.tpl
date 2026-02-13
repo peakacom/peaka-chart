@@ -239,7 +239,7 @@ JWT_RSA_PRIVATE_KEY_PATH: /secrets/jwt/rsa/privatekey.pem
 JWT_RSA_PUBLIC_KEY_PATH: /secrets/jwt/rsa/publickey.pem
 PUBLIC_CERT: /secrets/jwt/rsa/publickey.pem
 
-SHAREDB_MONGO: mongodb://{{ include "peaka.mongodb.host" . }}
+SHAREDB_MONGO: {{ include "peaka.mongodb.url" . }}
 
 APP_BASEDIR: /metadata
 GITHUB_ENABLED: "false"
@@ -725,6 +725,30 @@ Determine if TLS is enabled
 {{- else -}}
 {{ .Values.mongodb.tls.enabled | default false }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Set peaka.mongodb.url
+Format: mongodb://[username:password@]host[:port]/[database][?options]
+*/}}
+{{- define "peaka.mongodb.url" -}}
+{{- $user := include "peaka.mongodb.username" . -}}
+{{- $pass := include "peaka.mongodb.password" . -}}
+{{- $host := include "peaka.mongodb.host" . -}}
+{{- $port := include "peaka.mongodb.port" . -}}
+{{- $tls  := include "peaka.mongodb.tls" . -}}
+
+{{- $auth := "" -}}
+{{- if and $user $pass -}}
+  {{- $auth = printf "%s:%s@" $user $pass -}}
+{{- end -}}
+
+{{- $tlsParam := "" -}}
+{{- if eq $tls "true" -}}
+  {{- $tlsParam = "?tls=true" -}}
+{{- end -}}
+
+{{- printf "mongodb://%s%s:%s/%s" $auth $host $port $tlsParam -}}
 {{- end -}}
 
 {{/*
