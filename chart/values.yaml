@@ -244,6 +244,7 @@ externalObjectStore:
   host:
   port: 9000
   bucket:
+  region:
   useTLS: false
 
   accessKey: ""

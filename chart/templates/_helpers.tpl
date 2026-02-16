@@ -462,6 +462,17 @@ Define peaka.objectStore.host
 {{- end -}}
 
 {{/*
+Define peaka.objectStore.region
+*/}}
+{{- define "peaka.objectStore.region" -}}
+{{- if .Values.externalObjectStore.enabled -}}
+{{- .Values.externalObjectStore.region }}
+{{- else -}}
+us-east-1
+{{- end -}}
+{{- end -}}
+
+{{/*
 Define peaka.objectStore.port
 */}}
 {{- define "peaka.objectStore.port" -}}
