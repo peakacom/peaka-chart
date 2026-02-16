@@ -1367,7 +1367,7 @@ metadata:
 data:
   {{- if and (eq .root.Values.hiveMetastore.metastoreType "postgres") .root.Values.postgresql.enabled }}
   hive_metastore.sql: |
-    CREATE DATABASE {{ include "peaka.metastore.dbName" .root }} WITH OWNER {{ .username }}
+    CREATE DATABASE {{ include "peaka.metastore.dbName" .root }} WITH OWNER {{ .username }} ;
   {{- end }}
 
   permify.sql: |
