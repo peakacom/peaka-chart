@@ -391,6 +391,7 @@ permify:
       engine: postgres
       uri_secret: permify-postgresql-uri-secret
       name: permify
+      uri_secret: peaka-permify-postgresql-uri-secret
       auto_migrate: true
       max_open_connections: 20
       max_idle_connections: 20
