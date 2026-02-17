@@ -506,7 +506,7 @@ pgcat:
       tcp_keepalives_interval: 5
     pools:
       [ {
-        name: "permify",
+        # gets pool name from permify.app.database.name
         pool_mode: "session",
         query_parser_enabled: "true",
         query_parser_read_write_splitting: "true",
