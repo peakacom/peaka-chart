@@ -1382,7 +1382,7 @@ data:
   {{- end }}
 
   permify.sql: |
-    CREATE DATABASE permify WITH OWNER {{ .username }} ;
+    CREATE DATABASE {{ .root.Values.permify.app.database.name }} WITH OWNER {{ .username }} ;
 
   studio.sql: |
     CREATE SCHEMA IF NOT EXISTS studio;

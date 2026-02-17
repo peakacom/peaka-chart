@@ -389,9 +389,8 @@ permify:
           max_cost: 2048MiB
     database:
       engine: postgres
-      uri_secret: permify-postgresql-uri-secret
-      name: permify
       uri_secret: peaka-permify-postgresql-uri-secret
+      name: peaka_permify
       auto_migrate: true
       max_open_connections: 20
       max_idle_connections: 20
