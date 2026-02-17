@@ -245,6 +245,7 @@ externalObjectStore:
   port: 9000
   bucket:
   region:
+  singleBucketMode: false
   useTLS: false
 
   accessKey: ""

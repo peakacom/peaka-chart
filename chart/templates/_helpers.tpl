@@ -137,8 +137,8 @@ MINIO_ADDRESS: {{ include "peaka.objectStore.endpoint" . | quote }}
 MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
 
-S3_SINGLE_BUCKET_MODE: "true"
 {{- if .Values.externalObjectStore.enabled }}
+S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" }}
 S3_BUCKET_NAME: {{ .Values.externalObjectStore.bucket | quote }}
 {{- end }}
 
