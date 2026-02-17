@@ -1523,7 +1523,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v0.0.81
+    tag: v0.0.83
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1589,7 +1589,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.308
+    tag: v0.0.309
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1821,7 +1821,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.335
+    tag: v0.0.336
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
