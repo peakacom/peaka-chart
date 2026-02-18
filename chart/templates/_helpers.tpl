@@ -254,10 +254,10 @@ MATERIALIZED_VIEW_QUERY_TIMEOUT: {{ default 7200   .Values.dataCache.materialize
 
 SAMPLE_DATA_APP_ID: {{ .Values.sampleDataAppId }}
 
-BIGTABLE_BUFFER_DB_HOST: {{ include "peaka.bigtable.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-BIGTABLE_BUFFER_DB_PORT: {{ include "peaka.bigtable.port" . | quote }}
-BIGTABLE_BUFFER_DB_USERNAME: {{ include "peaka.bigtable.user" . }}
-BIGTABLE_BUFFER_DB_PASSWORD: {{ include "peaka.bigtable.password" . }}
+BIGTABLE_BUFFER_DB_HOST: {{ include "peaka.postgresql.host" . }}
+BIGTABLE_BUFFER_DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
+BIGTABLE_BUFFER_DB_USERNAME: {{ include "peaka.postgresql.user" . }}
+BIGTABLE_BUFFER_DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 BIGTABLE_BUFFER_DB_NAME: {{ include "peaka.bigtable.database" .  }}
 
 PGVECTOR_DB_HOST: {{ include "peaka.fullname" . }}-pgvector.{{ .Release.Namespace }}.svc.cluster.local
@@ -781,29 +781,12 @@ Define the peaka.redis-master.fullname template with .Release.Name and "redis-ma
 {{- printf "%s-%s" .Release.Name "redis-master" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
-
-{{/*
-Define the peaka.bigtable.fullname template with .Release.Name and "bigtable"
-*/}}
-{{- define "peaka.bigtable.fullname" -}}
-{{- printf "%s-%s" .Release.Name "postgresqlbigtable" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- define "peaka.bigtable.port" -}}
-{{- default 5432 .Values.postgresqlbigtable.primary.service.ports.postgresql -}}
-{{- end -}}
-
-{{- define "peaka.bigtable.user" -}}
-{{- .Values.postgresqlbigtable.auth.username -}}
-{{- end -}}
-
 {{- define "peaka.bigtable.database" -}}
-{{- .Values.postgresqlbigtable.auth.database -}}
+{{- if .Values.externalPostgresql.enabled -}}
+{{ .Values.externalPostgresql.bigtable.database }}
+{{- else -}}
+{{ .Values.postgresql.bigtable.database }}
 {{- end -}}
-
-{{- define "peaka.bigtable.password" -}}
-{{- .Values.postgresqlbigtable.auth.password -}}
 {{- end -}}
 
 {{/*
