@@ -214,6 +214,8 @@ postgresql:
       scriptsConfigMap: peaka-postgresql-initdb-scripts
       user: postgres
       password: postgres
+  bigtable:
+    database: peaka_bigtable
 
 # @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
 # If internal postgresql is used, set externalPostgresql.enabled to false
@@ -225,8 +227,10 @@ externalPostgresql:
   tls: false
   username: code2db
   password: code2db
-  database: code2db
   postgresPassword: postgres
+  database: code2db
+  bigtable:
+    database: peaka_bigtable
 
 # metastore for internal iceberg
 hiveMetastore:
