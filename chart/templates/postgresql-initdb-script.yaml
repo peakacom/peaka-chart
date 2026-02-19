@@ -23,7 +23,7 @@ data:
 
       psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
       {{- include "peaka.postgresql.initPeaka" . | nindent 6 }}
-      EOSQL
+    EOSQL
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
@@ -55,7 +55,7 @@ data:
 
       psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
       {{- include "peaka.postgresql.initASM" . | nindent 6 }}
-      EOSQL
+    EOSQL
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
@@ -72,7 +72,7 @@ data:
 
       psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
       {{- include "peaka.postgresql.initStudio" . | nindent 6 }}
-      EOSQL
+    EOSQL
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
