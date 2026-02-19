@@ -1370,7 +1370,7 @@ CREATE DATABASE {{ .Values.permify.app.database.name }} WITH OWNER {{ include "p
 Define peaka db init script
 */}}
 {{- define "peaka.postgresql.initPeaka" -}}
-DROP DATABASE {{ include "peaka.postgresql.database" . }} ;
+DROP DATABASE IF EXISTS {{ include "peaka.postgresql.database" . }} ;
 CREATE DATABASE {{ include "peaka.postgresql.database" . }}  WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 ALTER DATABASE {{ include "peaka.postgresql.database" . }}  OWNER TO {{ include "peaka.postgresql.user" . }} ;
 {{- end -}}
@@ -1379,7 +1379,7 @@ ALTER DATABASE {{ include "peaka.postgresql.database" . }}  OWNER TO {{ include 
 Define peaka bigtable db init script
 */}}
 {{- define "peaka.postgresql.initPeakabigtable" -}}
-DROP DATABASE {{ include "peaka.bigtable.database" . }} ;
+DROP DATABASE IF EXISTS {{ include "peaka.bigtable.database" . }} ;
 CREATE DATABASE {{ include "peaka.bigtable.database" . }}  WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 ALTER DATABASE {{ include "peaka.bigtable.database" . }}  OWNER TO {{ include "peaka.postgresql.user" . }} ;
 {{- end -}}
