@@ -436,12 +436,6 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 {{- end -}}
 {{- end -}}
 
-{{- define "peaka.postgresql.passwordSecretKey" -}}
-{{- if .Values.postgresql.enabled -}}
-{{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
-{{- end -}}
-{{- end -}}
-
 {{- define "peaka.hive.name" -}}
 {{ include "peaka.fullname" . }}-hive-metastore
 {{- end -}}
