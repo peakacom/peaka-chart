@@ -1,0 +1,116 @@
+{{- if not .Values.externalPostgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "peaka.postgresql.fullname" . }}-initdb
+data:
+  01-createrole.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running role create script. Creating role {{ .Values.postgresql.auth.username }}..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+    {{- include "peaka.postgresql.initRole" . | nindent 6 }}
+    EOSQL
+
+  {{- if eq .Values.hiveMetastore.metastoreType "postgres" }}
+  02-hive-metastore.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running metastore db create script. Creating db {{ include "peaka.metastore.dbName" . }}..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+    {{- include "peaka.postgresql.initHive" . | nindent 6 }}
+    EOSQL
+  {{- end }}
+
+  03-permify.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running permify db create script. Creating db {{ .Values.permify.app.database.name }}..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+    {{- include "peaka.postgresql.initPermify" . | nindent 6 }}
+    EOSQL
+
+  04-peaka.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    run_init () {
+      DB=$1
+
+      echo "Running init script for peaka db $DB..."
+
+      psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+      {{- include "peaka.postgresql.initPeaka" . | nindent 6 }}
+    EOSQL
+    }
+
+    run_init {{ include "peaka.postgresql.database" . }}
+
+  05-peakabigtable.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    run_init () {
+    DB=$1
+
+    echo "Running init script for peaka bigtable db $DB..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+      {{- include "peaka.postgresql.initPeakabigtable" . | nindent 6 }}
+    EOSQL
+    }
+
+    run_init {{ include "peaka.bigtable.database" . }}
+
+  06-abstract_schema_mapper.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.password }}"
+
+    run_init () {
+      DB=$1
+
+      echo "Running init script for abstract schema mapper schema in db $DB..."
+
+      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<'EOSQL'
+      {{- include "peaka.postgresql.initASM" . | nindent 6 }}
+    EOSQL
+    }
+
+    run_init {{ include "peaka.postgresql.database" . }}
+
+  07-studio.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    run_init () {
+      DB=$1
+
+      echo "Running init script for studio schema in db $DB..."
+
+      psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "$DB" <<'EOSQL'
+      {{- include "peaka.postgresql.initStudio" . | nindent 6 }}
+    EOSQL
+    }
+
+    run_init {{ include "peaka.postgresql.database" . }}
+{{- end }}
