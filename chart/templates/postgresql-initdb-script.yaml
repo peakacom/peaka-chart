@@ -16,12 +16,14 @@ data:
     #!/bin/bash
     set -e
 
+    export PGPASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
     run_init () {
       DB=$1
 
       echo "Running init script for peaka db $DB..."
 
-      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
+      psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
       {{- include "peaka.postgresql.initPeaka" . | nindent 6 }}
     EOSQL
     }
@@ -32,12 +34,14 @@ data:
     #!/bin/bash
     set -e
 
+    export PGPASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
     run_init () {
     DB=$1
 
     echo "Running init script for peaka bigtable db $DB..."
 
-    psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
       {{- include "peaka.postgresql.initPeakabigtable" . | nindent 6 }}
     EOSQL
     }
@@ -48,12 +52,14 @@ data:
     #!/bin/bash
     set -e
 
+    export PGPASSWORD="{{ .Values.postgresql.auth.password }}"
+
     run_init () {
       DB=$1
 
       echo "Running init script for abstract schema mapper schema in db $DB..."
 
-      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
+      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<'EOSQL'
       {{- include "peaka.postgresql.initASM" . | nindent 6 }}
     EOSQL
     }
@@ -65,12 +71,14 @@ data:
     #!/bin/bash
     set -e
 
+    export PGPASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
     run_init () {
       DB=$1
 
       echo "Running init script for studio schema in db $DB..."
 
-      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<-'EOSQL'
+      psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "$DB" <<'EOSQL'
       {{- include "peaka.postgresql.initStudio" . | nindent 6 }}
     EOSQL
     }
