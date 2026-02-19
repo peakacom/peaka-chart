@@ -65,7 +65,6 @@ data:
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
-    run_init {{ include "peaka.bigtable.database" . }}
 
   06-studio.sh: |
     #!/bin/bash
@@ -84,5 +83,4 @@ data:
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
-    run_init {{ include "peaka.bigtable.database" . }}
 {{- end }}
