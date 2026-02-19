@@ -179,22 +179,21 @@ dataMigrator:
 postgresql:
   enabled: true
   image:
-    repository: bitnamilegacy/postgresql
+    repository: public.ecr.aws/docker/library/postgres
+    tag: 16.1-alpine3.19
   auth:
     username: code2db
     password: code2db
     database: code2db
     postgresPassword: postgres
   primary:
+    service:
+      port: 5432
+    persistence:
+      size: 4Gi
     extendedConfiguration: |-
       idle_session_timeout = 600000
       max_connections = 1000
-    persistence:
-      size: 4Gi
-    initdb:
-      scriptsConfigMap: peaka-postgresql-initdb-scripts
-      user: postgres
-      password: postgres
   bigtable:
     database: peaka_bigtable
 
