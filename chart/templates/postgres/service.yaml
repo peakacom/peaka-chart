@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.postgresql.fullname" . }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.postgresql.primary.service.port }}
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: {{ include "peaka.postgresql.fullname" . }}

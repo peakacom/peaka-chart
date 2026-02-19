@@ -1,0 +1,46 @@
+{{- if not .Values.externalPostgresql.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "peaka.postgresql.fullname" . }}
+spec:
+  serviceName: {{ include "peaka.postgresql.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "peaka.postgresql.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "peaka.postgresql.fullname" . }}
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.auth.postgresPassword | quote }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: initdb
+          configMap:
+            name: {{ include "peaka.postgresql.fullname" . }}-initdb
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.primary.persistence.size }}
+        {{- if .Values.postgresql.primary.persistence.storageClass }}
+        storageClassName: {{ .Values.postgresql.primary.persistence.storageClass }}
+        {{- end }}
+{{- end }}

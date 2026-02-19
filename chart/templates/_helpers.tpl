@@ -392,7 +392,7 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 
 {{- define "peaka.postgresql.fullname" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Release.Name "postgres" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
@@ -406,7 +406,7 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 
 {{- define "peaka.postgresql.port" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- default 5432 .Values.postgresql.primary.service.ports.postgresql -}}
+{{- default 5432 .Values.postgresql.primary.service.port -}}
 {{- else -}}
 {{- default 5432 .Values.externalPostgresql.port -}}
 {{- end -}}
@@ -1351,6 +1351,25 @@ Define hive init script
 */}}
 {{- define  "peaka.postgresql.initHive" -}}
 CREATE DATABASE {{ include "peaka.metastore.dbName" . }} WITH OWNER {{ include "peaka.postgresql.user" . }} ;
+{{- end -}}
+
+{{/*
+Define peaka role
+*/}}
+{{- define "peaka.postgresql.initRole" -}}
+DO
+$$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ .Values.postgresql.auth.username }}'
+  ) THEN
+    CREATE ROLE {{ .Values.postgresql.auth.username }}
+      WITH LOGIN
+      CREATEDB
+      PASSWORD '{{ .Values.postgresql.auth.password }}';
+  END IF;
+END
+$$;
 {{- end -}}
 
 {{/*
