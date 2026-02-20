@@ -24,6 +24,13 @@ spec:
       containers:
         - name: postgres
           image: {{ default (include "peaka.image.registry" .) .Values.postgresql.image.registry }}/{{ .Values.postgresql.image.name }}:{{ .Values.postgresql.image.tag }}
+          args:
+            - "-c"
+            - "idle_session_timeout={{ default 600000 .Values.postgresql.config.idle_session_timeout }}"
+            - "-c"
+            - "max_connections={{ default 1000 .Values.postgresql.config.max_connections }}"
+            - "-c"
+            - "listen_addresses=*"
           ports:
             - containerPort: 5432
               name: postgres
