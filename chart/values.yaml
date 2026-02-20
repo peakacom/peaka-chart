@@ -179,8 +179,9 @@ dataMigrator:
 postgresql:
   enabled: true
   image:
-    repository: public.ecr.aws/docker/library/postgres
-    tag: 16.1-alpine3.19
+    registry:
+    name: peaka-postgres
+    tag: 16.1-bullseye
   auth:
     username: code2db
     password: code2db

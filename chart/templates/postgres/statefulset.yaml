@@ -14,9 +14,16 @@ spec:
       labels:
         app: {{ include "peaka.postgresql.fullname" . }}
     spec:
+      imagePullSecrets:
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       containers:
         - name: postgres
-          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          image: {{ default (include "peaka.image.registry" .) .Values.postgresql.image.registry }}/{{ .Values.postgresql.image.name }}:{{ .Values.postgresql.image.tag }}
           ports:
             - containerPort: 5432
               name: postgres
