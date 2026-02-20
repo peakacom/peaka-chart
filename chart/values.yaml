@@ -186,9 +186,9 @@ postgresql:
     port: 5432
   persistence:
     size: 4Gi
-  extendedConfiguration: |-
-    idle_session_timeout = 600000
-    max_connections = 1000
+  config:
+    idle_session_timeout: 600000
+    max_connections: 1000
   auth:
     username: code2db
     password: code2db
