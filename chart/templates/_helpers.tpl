@@ -260,12 +260,11 @@ BIGTABLE_BUFFER_DB_USERNAME: {{ include "peaka.postgresql.user" . }}
 BIGTABLE_BUFFER_DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 BIGTABLE_BUFFER_DB_NAME: {{ include "peaka.bigtable.database" .  }}
 
-PGVECTOR_DB_HOST: {{ include "peaka.fullname" . }}-pgvector.{{ .Release.Namespace }}.svc.cluster.local
-PGVECTOR_DB_NAME: {{ .Values.pgvector.db.name }}
-PGVECTOR_DB_USER: {{ .Values.pgvector.db.user }}
-PGVECTOR_DB_PASSSWORD: {{ .Values.pgvector.db.password }}
-PGVECTOR_DB_PORT: "5432"
-PGVECTOR_DB_SCHEMA: studio
+PGVECTOR_DB_HOST: {{ include "peaka.postgresql.host" . }}
+PGVECTOR_DB_NAME: {{ include "peaka.postgresql.database" . }}
+PGVECTOR_DB_USER: {{ include "peaka.postgresql.user" . }}
+PGVECTOR_DB_PASSSWORD: {{ include "peaka.postgresql.password" . }}
+PGVECTOR_DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 
 PAYMENT_ENABLED: "false"
 USAGE_MONITORING_ENABLED: "true"
