@@ -182,19 +182,19 @@ postgresql:
     registry:
     name: peaka-postgres
     tag: 16.1-bullseye
+  service:
+    port: 5432
+  persistence:
+    size: 4Gi
+  extendedConfiguration: |-
+    idle_session_timeout = 600000
+    max_connections = 1000
   auth:
     username: code2db
     password: code2db
-    database: code2db
     postgresPassword: postgres
   primary:
-    service:
-      port: 5432
-    persistence:
-      size: 4Gi
-    extendedConfiguration: |-
-      idle_session_timeout = 600000
-      max_connections = 1000
+    database: code2db
   bigtable:
     database: peaka_bigtable
 

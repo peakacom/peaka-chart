@@ -406,7 +406,7 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 
 {{- define "peaka.postgresql.port" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- default 5432 .Values.postgresql.primary.service.port -}}
+{{- default 5432 .Values.postgresql.service.port -}}
 {{- else -}}
 {{- default 5432 .Values.externalPostgresql.port -}}
 {{- end -}}
@@ -422,7 +422,7 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 
 {{- define "peaka.postgresql.database" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- .Values.postgresql.auth.database -}}
+{{- .Values.postgresql.primary.database -}}
 {{- else -}}
 {{- .Values.externalPostgresql.database -}}
 {{- end -}}
@@ -1361,12 +1361,12 @@ DO
 $$
 BEGIN
   IF NOT EXISTS (
-    SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ .Values.postgresql.auth.username }}'
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ include "peaka.postgresql.user" . }}'
   ) THEN
-    CREATE ROLE {{ .Values.postgresql.auth.username }}
+    CREATE ROLE {{ include "peaka.postgresql.user" . }}
       WITH LOGIN
       CREATEDB
-      PASSWORD '{{ .Values.postgresql.auth.password }}';
+      PASSWORD '{{ include "peaka.postgresql.password" . }}';
   END IF;
 END
 $$;
