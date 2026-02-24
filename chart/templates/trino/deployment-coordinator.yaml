@@ -166,4 +166,4 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.trino.coordinator.tolerations "global" $.Values.global) }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.trino.coordinator.tolerations "global" $.Values.global) | nindent 6 }}

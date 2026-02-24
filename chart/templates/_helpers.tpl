@@ -88,18 +88,16 @@ Return the proper nodeSelector
 {{ include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.path.to.the.nodeSelector "global" $.Values.global) }}
 */}}
 {{- define "peaka.common.nodeSelector" -}}
-
   {{- $nodeSelector := .nodeSelector -}}
   {{- if .global -}}
       {{- if .global.nodeSelector -}}
           {{- $nodeSelector = .global.nodeSelector -}}
       {{- end -}}
   {{- end -}}
-
   {{- if $nodeSelector -}}
-    {{- printf "nodeSelector:\n  %s\n" ( toYaml $nodeSelector ) -}}
+nodeSelector:
+{{ toYaml $nodeSelector | indent 2 -}}
   {{- end -}}
-
 {{- end -}}
 
 {{/*
@@ -107,26 +105,16 @@ Return the proper tolerations
 {{ include "peaka.common.tolerations" ( dict "tolerations" .Values.path.to.the.tolerations "global" $.Values.global) }}
 */}}
 {{- define "peaka.common.tolerations" -}}
-
   {{- $tolerations := .tolerations -}}
   {{- if .global -}}
       {{- if .global.tolerations -}}
           {{- $tolerations = .global.tolerations -}}
       {{- end -}}
   {{- end -}}
-
   {{- if $tolerations -}}
-    {{- printf "tolerations:" -}}
-    {{- range $tolerations }}
-        - key: {{ .key }}
-          operator: {{ .operator }}
-          value: {{ .value | quote }}
-          {{- if .effect }}
-          effect: {{ .effect }}
-          {{- end }}
-    {{- end }}
+tolerations:
+{{ toYaml $tolerations | indent 2 -}}
   {{- end -}}
-
 {{- end -}}
 
 {{/*
