@@ -58,4 +58,4 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.dataRest.tolerations "global" $.Values.global) }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.dataRest.tolerations "global" $.Values.global) | nindent 6 }}
