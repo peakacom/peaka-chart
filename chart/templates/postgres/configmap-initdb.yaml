@@ -113,4 +113,16 @@ data:
     }
 
     run_init {{ include "peaka.postgresql.database" . }}
+
+  08-vectordb.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running vectordb extension init script..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname {{ include "peaka.postgresql.database" . }} <<'EOSQL'
+    {{- include "peaka.postgresql.initPgvector" . | nindent 6 }}
+    EOSQL
 {{- end }}

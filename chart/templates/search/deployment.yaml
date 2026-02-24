@@ -20,12 +20,21 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
-        - name: data-migrator
+        - name: data-migrator-ai-rest
           image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
           env:
             - name: SERVICE_NAME
               value: be-ai-rest
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-env-config
+        - name: data-migrator-search-service
+          image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
+          env:
+            - name: SERVICE_NAME
+              value: be-search-service
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config

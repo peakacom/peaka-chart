@@ -265,6 +265,7 @@ PGVECTOR_DB_NAME: {{ include "peaka.postgresql.database" . }}
 PGVECTOR_DB_USER: {{ include "peaka.postgresql.user" . }}
 PGVECTOR_DB_PASSSWORD: {{ include "peaka.postgresql.password" . }}
 PGVECTOR_DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
+PGVECTOR_DB_SCHEMA: "pgvector"
 
 PAYMENT_ENABLED: "false"
 USAGE_MONITORING_ENABLED: "true"
@@ -1394,6 +1395,15 @@ Define peaka bigtable db init script
 DROP DATABASE IF EXISTS {{ include "peaka.bigtable.database" . }} ;
 CREATE DATABASE {{ include "peaka.bigtable.database" . }}  WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 ALTER DATABASE {{ include "peaka.bigtable.database" . }}  OWNER TO {{ include "peaka.postgresql.user" . }} ;
+{{- end -}}
+
+{{/*
+Define vector extension init script
+*/}}
+{{- define "peaka.postgresql.initPgvector" -}}
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 {{- end -}}
 
 {{/*
