@@ -2026,7 +2026,7 @@ traefik:
       port: 8000
       # hostPort: 8000
       expose:
-        default: false
+        default: true
       exposedPort: 80
       # The port protocol (TCP/UDP)
       #nodePort: 30080
@@ -2037,7 +2037,7 @@ traefik:
       port: 8443
       # hostPort: 8443
       expose:
-        default: false
+        default: true
       #nodePort: 30443
       exposedPort: 443
       # The port protocol (TCP/UDP)
@@ -2047,7 +2047,7 @@ traefik:
     dbc:
       port: 4567
       expose:
-        default: false
+        default: true
       exposedPort: 4567
       #nodePort: 30567
       protocol: TCP
