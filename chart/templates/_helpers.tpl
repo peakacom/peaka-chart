@@ -597,7 +597,7 @@ Set metastore db name
 {{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
 {{- default "metastore_db" .Values.mariadb.db.name -}}
 {{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
-peaka_s3_metastore
+peaka_metastore_db
 {{- else -}}
 {{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
 {{- end -}}
