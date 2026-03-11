@@ -34,7 +34,6 @@ data:
     -Djdk.nio.maxCachedBufferSize=2000000
     -Dfile.encoding=UTF-8
     -XX:+UnlockDiagnosticVMOptions
-    -XX:GCLockerRetryAllocationCount=32
   {{- if .Values.trino.server.kerberosConfig }}
     -Djava.security.krb5.conf={{ .Values.trino.server.kerberosConfigPath }}/krb5.conf
   {{- end }}
