@@ -48,7 +48,7 @@ data:
           sql:
             pluginName: "postgres12"
             driverName: "postgres12"
-            databaseName: "temporal"
+            databaseName: {{ include "peaka.temporal.persistence.sql.database" (list $ "default") }}
             connectAddr: {{ include "peaka.postgresql.host" $ }}:{{ include "peaka.postgresql.port" $ }}
             connectProtocol: "tcp"
             user: {{ include "peaka.postgresql.user" $ }}
@@ -62,7 +62,7 @@ data:
           sql:
             pluginName: "postgres12"
             driverName: "postgres12"
-            databaseName: "temporal_visibility"
+            databaseName: {{ include "peaka.temporal.persistence.sql.database" (list $ "visibility") }}
             connectAddr: {{ include "peaka.postgresql.host" $ }}:{{ include "peaka.postgresql.port" $ }}
             connectProtocol: "tcp"
             user: {{ include "peaka.postgresql.user" $ }}

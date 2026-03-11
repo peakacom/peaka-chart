@@ -929,7 +929,7 @@ temporal:
             driver: ""
             host: ""
             port: 5432
-            database: ""
+            database: peaka_temporal
             user: ""
             password: ""
             existingSecret: ""
@@ -962,7 +962,7 @@ temporal:
             driver: ""
             host: ""
             port: 5432
-            database: ""
+            database: peaka_temporal_visibility
             user: ""
             password: ""
             existingSecret: ""

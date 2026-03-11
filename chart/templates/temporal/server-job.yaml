@@ -84,7 +84,7 @@ spec:
         - name: create-{{ $store }}-store
           image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
           imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
-          command: ['temporal-sql-tool', '--database', '{{ include "peaka.temporal.persistence.sql.database" $store }}', 'create-database']
+          command: ['temporal-sql-tool', '--database', '{{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}', 'create-database']
           env:
             - name: SQL_PLUGIN
               value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
@@ -139,7 +139,7 @@ spec:
             - name: SQL_PORT
               value: {{ include "peaka.temporal.persistence.sql.port" $ | quote }}
             - name: SQL_DATABASE
-              value: {{ include "peaka.temporal.persistence.sql.database" $store }}
+              value: {{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}
             - name: SQL_USER
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
@@ -268,7 +268,7 @@ spec:
             - name: SQL_PORT
               value: {{ include "peaka.temporal.persistence.sql.port" $ | quote }}
             - name: SQL_DATABASE
-              value: {{ include "peaka.temporal.persistence.sql.database" $store }}
+              value: {{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}
             - name: SQL_USER
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD

@@ -1083,12 +1083,14 @@ Source: https://stackoverflow.com/a/52024583/3027614
 {{- end -}}
 
 {{- define "peaka.temporal.persistence.sql.database" -}}
-{{- if eq . "default" -}}
-temporal
-{{- else if eq . "visibility" -}}
-temporal_visibility
+{{- $root := index . 0 -}}
+{{- $store := index . 1 -}}
+{{- if eq $store "default" -}}
+{{- $root.Values.temporal.server.config.persistence.default.sql.database }}
+{{- else if eq $store "visibility" -}}
+{{- $root.Values.temporal.server.config.persistence.visibility.sql.database }}
 {{- else -}}
-{{- fail (printf "Unknown database type: %s" .) -}}
+{{- fail (printf "Unknown database type: %s" $store) -}}
 {{- end -}}
 {{- end -}}
 
