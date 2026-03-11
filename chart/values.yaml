@@ -208,11 +208,11 @@ postgresql:
     idle_session_timeout: 600000
     max_connections: 1000
   auth:
-    username: code2db
-    password: code2db
+    username: peakadb
+    password: peakadb
     postgresPassword: postgres
   primary:
-    database: code2db
+    database: peaka_db
   bigtable:
     database: peaka_bigtable
 
@@ -397,7 +397,7 @@ permify:
     database:
       engine: postgres
       uri_secret: peaka-permify-postgresql-uri-secret
-      name: permify
+      name: peaka_permify
       auto_migrate: true
       max_open_connections: 20
       max_idle_connections: 20
