@@ -736,6 +736,9 @@ Set peaka.mongodb.url
 Format: mongodb://[username:password@]host[:port]/[database][?options]
 */}}
 {{- define "peaka.mongodb.url" -}}
+{{- if and .Values.externalMongoDB.enabled .Values.externalMongoDB.auth.connection_uri -}}
+{{- .Values.externalMongoDB.auth.connection_uri -}}
+{{- else -}}
 {{- $user := include "peaka.mongodb.username" . -}}
 {{- $pass := include "peaka.mongodb.password" . -}}
 {{- $host := include "peaka.mongodb.host" . -}}
@@ -753,6 +756,7 @@ Format: mongodb://[username:password@]host[:port]/[database][?options]
 {{- end -}}
 
 {{- printf "mongodb://%s%s:%s%s" $auth $host $port $tlsParam -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

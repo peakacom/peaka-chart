@@ -327,6 +327,7 @@ externalMongoDB:
   auth:
     username:
     password:
+    connection_uri:
 
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
