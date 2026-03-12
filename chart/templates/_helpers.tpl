@@ -732,18 +732,34 @@ Determine if TLS is enabled
 {{- end -}}
 
 {{/*
+Set peaka.mongodb.scheme
+Returns mongodb+srv if srv is enabled, otherwise mongodb
+*/}}
+{{- define "peaka.mongodb.scheme" -}}
+{{- if and .Values.externalMongoDB.enabled .Values.externalMongoDB.srv -}}
+{{- printf "mongodb+srv" -}}
+{{- else -}}
+{{- printf "mongodb" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set peaka.mongodb.url
-Format: mongodb://[username:password@]host[:port]/[database][?options]
+Format: mongodb[+srv]://[username:password@]host[:port]/[?options]
+If externalMongoDB.auth.connection_uri is set, it takes precedence over all other parameters.
+If externalMongoDB.srv is true, mongodb+srv scheme is used and port is omitted.
 */}}
 {{- define "peaka.mongodb.url" -}}
 {{- if and .Values.externalMongoDB.enabled .Values.externalMongoDB.auth.connection_uri -}}
 {{- .Values.externalMongoDB.auth.connection_uri -}}
 {{- else -}}
+{{- $scheme := include "peaka.mongodb.scheme" . -}}
 {{- $user := include "peaka.mongodb.username" . -}}
 {{- $pass := include "peaka.mongodb.password" . -}}
 {{- $host := include "peaka.mongodb.host" . -}}
 {{- $port := include "peaka.mongodb.port" . -}}
 {{- $tls  := include "peaka.mongodb.tls" . -}}
+{{- $srv    := and .Values.externalMongoDB.enabled .Values.externalMongoDB.srv -}}
 
 {{- $auth := "" -}}
 {{- if and $user $pass -}}
@@ -751,11 +767,15 @@ Format: mongodb://[username:password@]host[:port]/[database][?options]
 {{- end -}}
 
 {{- $tlsParam := "" -}}
-{{- if eq $tls "true" -}}
+{{- if and (not $srv) (eq $tls "true") -}}
   {{- $tlsParam = "/?tls=true" -}}
 {{- end -}}
 
-{{- printf "mongodb://%s%s:%s%s" $auth $host $port $tlsParam -}}
+{{- if $srv -}}
+  {{- printf "%s://%s%s%s" $scheme $auth $host $tlsParam -}}
+{{- else -}}
+  {{- printf "%s://%s%s:%s%s" $scheme $auth $host $port $tlsParam -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

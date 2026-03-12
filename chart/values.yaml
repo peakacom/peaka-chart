@@ -322,12 +322,13 @@ externalMongoDB:
   enabled: false
   host:
   port: 27017
+  srv: false            # If true, uses mongodb+srv:// scheme (port is ignored, TLS is implicit)
   tls:
     enabled: false
   auth:
     username:
     password:
-    connection_uri:
+    connection_uri:     # If set, supersedes all other connection parameters
 
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
