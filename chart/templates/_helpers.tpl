@@ -126,7 +126,7 @@ MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
 
 {{- if .Values.externalObjectStore.enabled }}
-S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" }}
+S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" | quote }}
 S3_BUCKET_NAME: {{ .Values.externalObjectStore.bucket | quote }}
 {{- end }}
 
