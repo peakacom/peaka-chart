@@ -185,8 +185,6 @@ TEMPORAL_ENABLED: "false"
 STUDIODB_SCHEMA: studio
 
 TRINO_ADDRESS: jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080
-TRINO_PASSWORD: {{ .Values.trino.password }}
-TRINO_USERNAME: {{ .Values.trino.username }}
 TRINO_JDBC_URL: jdbc:trino://{{ include "peaka.trino.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/?user=trino
 {{- if .Values.trino.accessControl }}
 TRINO_ACCESS_CONTROL_ENABLED: "true"
