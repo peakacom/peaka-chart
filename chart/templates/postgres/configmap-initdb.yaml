@@ -125,4 +125,28 @@ data:
     psql -v ON_ERROR_STOP=1 --username "postgres" --dbname {{ include "peaka.postgresql.database" . }} <<'EOSQL'
     {{- include "peaka.postgresql.initPgvector" . | nindent 6 }}
     EOSQL
+
+  09-temporal.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running temporal database init script..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+    {{- include "peaka.postgresql.initTemporal" . | nindent 6 }}
+    EOSQL
+
+  10-temporal_visibility.sh: |
+    #!/bin/bash
+    set -e
+
+    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.postgresPassword }}"
+
+    echo "Running temporal visibility database init script..."
+
+    psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
+    {{- include "peaka.postgresql.initTemporalVisibility" . | nindent 6 }}
+    EOSQL
 {{- end }}
