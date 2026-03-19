@@ -113,6 +113,9 @@ dbcIngress:
   #     hosts:
   #       - example.com
 
+# Additional parameters for ingressRoute resources
+ingressRoute:
+
 # set default oauth clients to be used for initializing respective connections
 connector:
   credentials:
