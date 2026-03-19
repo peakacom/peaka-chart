@@ -33,74 +33,8 @@ spec:
         app.kubernetes.io/component: database
         app.kubernetes.io/part-of: {{ .Chart.Name }}
     spec:
-      {{ include "peaka.temporal.serviceAccount" . }}
+      {{- include "peaka.temporal.serviceAccount" . }}
       restartPolicy: "OnFailure"
-      initContainers:
-        {{- if or .Values.temporal.cassandra.enabled (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "cassandra") }}
-        {{- if .Values.temporal.cassandra.enabled }}
-        - name: check-cassandra-service
-          image: busybox
-          command: ['sh', '-c', 'until nslookup {{ include "peaka.temporal.cassandra.host" $ }}; do echo waiting for cassandra service; sleep 1; done;']
-        - name: check-cassandra
-          image: "{{ .Values.temporal.cassandra.image.repo }}:{{ .Values.temporal.cassandra.image.tag }}"
-          imagePullPolicy: {{ .Values.temporal.cassandra.image.pullPolicy }}
-          command: ['sh', '-c', 'until cqlsh {{ include "peaka.temporal.cassandra.host" $ }} {{ .Values.temporal.cassandra.config.ports.cql }} -e "SHOW VERSION"; do echo waiting for cassandra to start; sleep 1; done;']
-        {{- end }}
-        {{- range $store := (list "default" "visibility") }}
-        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
-        {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
-        - name: create-{{ $store }}-store
-          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
-          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
-          command: ['temporal-cassandra-tool', 'create', '-k', '{{ $storeConfig.cassandra.keyspace }}', '--replication-factor', '{{ $storeConfig.cassandra.replicationFactor }}']
-          env:
-            - name: CASSANDRA_HOST
-              value: {{ first (splitList "," (include "peaka.temporal.persistence.cassandra.hosts" (list $ $store))) }}
-            - name: CASSANDRA_PORT
-              value: {{ include "peaka.temporal.persistence.cassandra.port" (list $ $store) | quote }}
-            - name: CASSANDRA_KEYSPACE
-              value: {{ $storeConfig.cassandra.keyspace }}
-            {{- if $storeConfig.cassandra.user }}
-            - name: CASSANDRA_USER
-              value: {{ $storeConfig.cassandra.user }}
-            {{- end }}
-            {{- if (or $storeConfig.cassandra.password $storeConfig.cassandra.existingSecret) }}
-            - name: CASSANDRA_PASSWORD
-              {{- if $storeConfig.cassandra.existingSecret }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "temporal.persistence.secretName" (list $ $store) }}
-                  key: {{ include "temporal.persistence.secretKey" (list $ $store) }}
-              {{- else }}
-              value: {{ $storeConfig.cassandra.password }}
-              {{- end }}
-            {{- end }}
-        {{- end }}
-        {{- end }}
-        {{- else if or (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql") (eq (include "peaka.temporal.persistence.driver" (list $ "visibility")) "sql") }}
-        {{- range $store := (list "default" "visibility") }}
-        {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
-        {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql" }}
-        - name: create-{{ $store }}-store
-          image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
-          imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
-          command: ['temporal-sql-tool', '--database', '{{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}', 'create-database']
-          env:
-            - name: SQL_PLUGIN
-              value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
-            - name: SQL_HOST
-              value: {{ include "peaka.temporal.persistence.sql.host" $ }}
-            - name: SQL_PORT
-              value: {{ include "peaka.temporal.persistence.sql.port" $  | quote }}
-            - name: SQL_USER
-              value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
-            - name: SQL_PASSWORD
-              value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
-        {{- end }}
-        {{- end }}
-        {{- else }}
-          []
-        {{- end }}
       containers:
         {{- range $store := (list "default" "visibility") }}
         {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
