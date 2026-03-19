@@ -1519,6 +1519,22 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 {{- end -}}
 
 {{/*
+Define temporal database init script
+*/}}
+{{- define "peaka.postgresql.initTemporal" -}}
+CREATE DATABASE {{ include "peaka.temporal.persistence.sql.database" (list $ "default") }} WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
+ALTER DATABASE {{ include "peaka.temporal.persistence.sql.database" (list $ "default") }} OWNER TO {{ include "peaka.postgresql.user" . }};
+{{- end -}}
+
+{{/*
+Define temporal visibility database init script
+*/}}
+{{- define "peaka.postgresql.initTemporalVisibility" -}}
+CREATE DATABASE {{ include "peaka.temporal.persistence.sql.database" (list $ "visibility") }} WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
+ALTER DATABASE {{ include "peaka.temporal.persistence.sql.database" (list $ "visibility") }} OWNER TO {{ include "peaka.postgresql.user" . }};
+{{- end -}}
+
+{{/*
 Define studio schema init script
 */}}
 {{- define "peaka.postgresql.initStudio" -}}
