@@ -24,7 +24,7 @@ spec:
           passHostHeader: true
   {{- if .Values.tls.enabled }}
   tls:
-    secretName: {{ include "peaka.fullname" . }}-tls-secret
+    secretName: {{ .Values.tls.secretName | default (printf "%s-tls-secret" (include "peaka.fullname" .)) }}
   {{- end }}
 ---
 apiVersion: traefik.io/v1alpha1

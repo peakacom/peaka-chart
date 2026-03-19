@@ -167,7 +167,11 @@ connector:
 # TLS settings
 tls:
   enabled: false
+  # Name of an existing TLS secret in the namespace. If set, cert and key are ignored
+  secretName: ""
+  # TLS certificate value. Required if secretName is not set
   cert: ""
+  # TLS private key value. Required if secretName is not set
   key: ""
 
 # service for database migrations
