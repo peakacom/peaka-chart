@@ -61,12 +61,17 @@ spec:
             - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
+            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            - mountPath: /secrets/certs
+              name: minio-tls-cert
+              readOnly: true
+            {{- end }}
           {{- with .Values.studioApi.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.studioApi.livenessProbe }}
-          livenessProbe:
+          livenessPro be:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.studioApi.readinessProbe }}
@@ -77,6 +82,11 @@ spec:
         - name: jwt-rsa-secret
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
+        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+        - name: minio-tls-cert
+          configMap:
+            name: {{ include "peaka.fullname" . }}-objectstore-ca
+        {{- end }}
       {{- if .Values.studioApi.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.studioApi.terminationGracePeriodSeconds }}
       {{- end }}

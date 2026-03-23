@@ -253,7 +253,9 @@ externalObjectStore:
   bucket:
   region:
   singleBucketMode: false
-  useTLS: false
+  tls:
+    enabled: false
+    cert: ""
 
   accessKey: ""
   secretKey: ""

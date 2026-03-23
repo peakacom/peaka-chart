@@ -40,6 +40,18 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          volumeMounts:
+            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            - mountPath: /secrets/certs
+              name: minio-tls-cert
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+        - name: minio-tls-cert
+          configMap:
+            name: { { include "peaka.fullname" . } }-objectstore-ca
+        {{- end }}
       {{- if .Values.cloudGateway.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
       {{- end }}
