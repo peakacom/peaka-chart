@@ -24,6 +24,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+      initContainers:
+        {{- include "peaka.objectStore.tls.initContainer" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry) .Values.hiveMetastore.image.name .Values.hiveMetastore.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: metastore
           image: {{ default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry }}/{{ .Values.hiveMetastore.image.name }}:{{ .Values.hiveMetastore.image.tag }}
@@ -39,12 +43,28 @@ spec:
               value: {{ .Values.hiveMetastore.metastoreType | quote }}
             - name: JAVA_HOME
               value: /usr/lib/jvm/default-jvm/jre
+            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            - name: HADOOP_OPTS
+              value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
+            {{- end }}
           volumeMounts:
             - name: hive-config
               mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/
+            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            - name: objectstore-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
       volumes:
         - name: hive-config
           configMap:
             name: {{ template "peaka.hive.name" . }}
+        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+        - name: objectstore-cert
+          configMap:
+            name: {{ include "peaka.fullname" . }}-objectstore-ca
+        - name: objectstore-truststore
+          emptyDir: {}
+        {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.hiveMetastore.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.hiveMetastore.tolerations "global" $.Values.global) | nindent 6 }}

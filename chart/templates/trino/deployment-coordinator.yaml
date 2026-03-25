@@ -54,9 +54,21 @@ spec:
           secret:
             secretName: {{ include "peaka.trino.keytab" . }}
         {{- end }}
-      {{- if .Values.trino.initContainers.worker }}
+        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+        - name: objectstore-cert
+          configMap:
+            name: {{ include "peaka.fullname" . }}-objectstore-ca
+        - name: objectstore-truststore
+          emptyDir: {}
+        {{- end }}
+      {{- if or .Values.trino.initContainers.worker (and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert) }}
       initContainers:
+      {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+        {{- include "peaka.objectStore.tls.initContainer" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.trino.initContainers.worker }}
       {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
+      {{- end }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-coordinator
@@ -121,6 +133,11 @@ spec:
             - mountPath: {{ $.Values.trino.server.config.path }}/{{ $fileName }}
               name: config-volume
               subPath: {{ $fileName }}
+            {{- end }}
+            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            - name: objectstore-truststore
+              mountPath: /truststore
+              readOnly: true
             {{- end }}
 
           ports:

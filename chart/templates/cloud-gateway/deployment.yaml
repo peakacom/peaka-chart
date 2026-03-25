@@ -50,7 +50,7 @@ spec:
         {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
         - name: minio-tls-cert
           configMap:
-            name: { { include "peaka.fullname" . } }-objectstore-ca
+            name: {{ include "peaka.fullname" . }}-objectstore-ca
         {{- end }}
       {{- if .Values.cloudGateway.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}

@@ -542,6 +542,40 @@ Set minio secretKey
 {{- end }}
 
 {{/*
+Init container that imports the object store CA certificate into the Java truststore.
+Expects a dict with key "image" (container image to use).
+The objectstore-ca ConfigMap (from objectstore-cert.yaml) must exist.
+*/}}
+{{- define "peaka.objectStore.tls.initContainer" -}}
+- name: import-objectstore-cert
+  image: {{ .image }}
+  command:
+    - sh
+    - -c
+    - |
+      CACERTS=$(find /usr/lib/jvm /usr/java /opt/java -name cacerts -path "*/security/*" 2>/dev/null | head -1)
+      if [ -z "$CACERTS" ]; then
+        echo "ERROR: could not find Java cacerts file"
+        exit 1
+      fi
+      echo "Found cacerts at: $CACERTS"
+      cp "$CACERTS" /truststore/cacerts
+      chmod 644 /truststore/cacerts
+      keytool -importcert -noprompt \
+        -alias objectstore-ca \
+        -keystore /truststore/cacerts \
+        -storepass changeit \
+        -file /certs/minio.crt
+      echo "Successfully imported object store CA certificate into truststore"
+  volumeMounts:
+    - name: objectstore-cert
+      mountPath: /certs
+      readOnly: true
+    - name: objectstore-truststore
+      mountPath: /truststore
+{{- end -}}
+
+{{/*
 Define the peaka.mariadb.fullname template with .Release.Name and "mariadb"
 */}}
 {{- define "peaka.mariadb.fullname" -}}
