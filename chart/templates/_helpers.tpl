@@ -498,7 +498,7 @@ Define peaka.objectStore.scheme
 {{- if .Values.externalObjectStore.enabled -}}
 {{- ternary "https" "http" .Values.externalObjectStore.tls.enabled }}
 {{- else -}}
-https
+http
 {{- end -}}
 {{- end -}}
 
