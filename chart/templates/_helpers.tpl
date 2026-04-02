@@ -277,6 +277,11 @@ CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 GRPC_DNS_RESOLVER: native
 
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
+
+{{- if eq (include "peaka.customCA.enabled" .) "true" }}
+JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
+NODE_EXTRA_CA_CERTS: "/custom-ca-bundle/ca-bundle.crt"
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -542,18 +547,29 @@ Set minio secretKey
 {{- end }}
 
 {{/*
-Init container that imports the object store CA certificate into the Java truststore.
-Expects a dict with key "image" (container image to use).
-The objectstore-ca ConfigMap (from objectstore-cert.yaml) must exist.
+Returns true if custom CA certificates are configured.
+Safe to call even when .Values.global is nil.
 */}}
-{{- define "peaka.objectStore.tls.initContainer" -}}
-- name: import-objectstore-cert
+{{- define "peaka.customCA.enabled" -}}
+{{- $certs := (((.Values).global).customCACertificates) -}}
+{{- if $certs -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Init container that imports all custom CA certificates into the Java truststore.
+Expects a dict with key "image" (container image with keytool available).
+Usage: include "peaka.customCA.initContainer.java" (dict "image" "registry/image:tag")
+*/}}
+{{- define "peaka.customCA.initContainer.java" -}}
+- name: import-custom-ca-certs
   image: {{ .image }}
   command:
     - sh
     - -c
     - |
-      CACERTS=$(find /usr/lib/jvm /usr/java /opt/java -name cacerts -path "*/security/*" 2>/dev/null | head -1)
+      CACERTS=$(find /usr/lib/jvm /usr/java /opt/java /etc/ssl -name cacerts -path "*/security/*" 2>/dev/null | head -1)
       if [ -z "$CACERTS" ]; then
         echo "ERROR: could not find Java cacerts file"
         exit 1
@@ -561,18 +577,45 @@ The objectstore-ca ConfigMap (from objectstore-cert.yaml) must exist.
       echo "Found cacerts at: $CACERTS"
       cp "$CACERTS" /truststore/cacerts
       chmod 644 /truststore/cacerts
-      keytool -importcert -noprompt \
-        -alias objectstore-ca \
-        -keystore /truststore/cacerts \
-        -storepass changeit \
-        -file /certs/minio.crt
-      echo "Successfully imported object store CA certificate into truststore"
+      for cert in /custom-ca-certs/*.crt; do
+        ALIAS=$(basename "$cert" .crt)
+        echo "Importing $ALIAS ..."
+        keytool -importcert -noprompt \
+          -alias "$ALIAS" \
+          -keystore /truststore/cacerts \
+          -storepass changeit \
+          -file "$cert"
+      done
+      echo "All custom CA certificates imported into truststore"
   volumeMounts:
-    - name: objectstore-cert
-      mountPath: /certs
+    - name: custom-ca-certs
+      mountPath: /custom-ca-certs
       readOnly: true
-    - name: objectstore-truststore
+    - name: custom-ca-truststore
       mountPath: /truststore
+{{- end -}}
+
+{{/*
+Init container that concatenates all custom CA certificates into a single PEM bundle
+for Node.js services (NODE_EXTRA_CA_CERTS).
+Expects a dict with key "image" (any image with sh + cat).
+Usage: include "peaka.customCA.initContainer.node" (dict "image" "registry/image:tag")
+*/}}
+{{- define "peaka.customCA.initContainer.node" -}}
+- name: import-custom-ca-certs
+  image: {{ .image }}
+  command:
+    - sh
+    - -c
+    - |
+      cat /custom-ca-certs/*.crt > /custom-ca-bundle/ca-bundle.crt
+      echo "Custom CA bundle created with $(grep -c 'BEGIN CERTIFICATE' /custom-ca-bundle/ca-bundle.crt) certificate(s)"
+  volumeMounts:
+    - name: custom-ca-certs
+      mountPath: /custom-ca-certs
+      readOnly: true
+    - name: custom-ca-bundle
+      mountPath: /custom-ca-bundle
 {{- end -}}
 
 {{/*

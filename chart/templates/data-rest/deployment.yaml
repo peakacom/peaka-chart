@@ -27,6 +27,9 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
+        {{- end }}
         - name: data-migrator
           image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
@@ -36,6 +39,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
       containers:
         - name: data-rest
           image: {{ default (include "peaka.image.registry" .) .Values.dataRest.image.registry }}/{{ .Values.dataRest.image.name }}:{{ .Values.dataRest.image.tag }}
@@ -51,16 +60,18 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-            - mountPath: /secrets/certs
-              name: minio-tls-cert
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
               readOnly: true
             {{- end }}
       volumes:
-        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        - name: minio-tls-cert
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
           configMap:
-            name: {{ include "peaka.fullname" . }}-objectstore-ca
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
         {{- end }}
       {{- if .Values.dataRest.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.dataRest.terminationGracePeriodSeconds }}

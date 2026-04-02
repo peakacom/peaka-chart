@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.cloudGateway.image.registry) .Values.cloudGateway.image.name .Values.cloudGateway.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: cloud-gateway
           image: {{ default (include "peaka.image.registry" .) .Values.cloudGateway.image.registry }}/{{ .Values.cloudGateway.image.name }}:{{ .Values.cloudGateway.image.tag }}
@@ -40,18 +44,20 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
           volumeMounts:
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-            - mountPath: /secrets/certs
-              name: minio-tls-cert
+            - name: custom-ca-truststore
+              mountPath: /truststore
               readOnly: true
-            {{- end }}
+          {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       volumes:
-        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        - name: minio-tls-cert
+        - name: custom-ca-certs
           configMap:
-            name: {{ include "peaka.fullname" . }}-objectstore-ca
-        {{- end }}
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- if .Values.cloudGateway.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}
       {{- end }}

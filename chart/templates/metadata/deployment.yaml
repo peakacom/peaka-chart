@@ -48,6 +48,9 @@ spec:
 
               cp -R /app/. /metadata/connector
 
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.metadataService.image.registry) .Values.metadataService.image.name .Values.metadataService.image.tag)) | nindent 8 }}
+        {{- end }}
       containers:
         - name: metadata-service
           image: {{ default (include "peaka.image.registry" .) .Values.metadataService.image.registry }}/{{ .Values.metadataService.image.name }}:{{ .Values.metadataService.image.tag }}
@@ -62,6 +65,11 @@ spec:
             - name: metadata-volume
               mountPath: /metadata
               readOnly: false
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
           {{- with .Values.metadataService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -78,6 +86,13 @@ spec:
         - name: metadata-volume
           persistentVolumeClaim:
             claimName: {{ include "peaka.fullname" . }}-data-be-metadata-service
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+        {{- end }}
       {{- if .Values.metadataService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.metadataService.terminationGracePeriodSeconds }}
       {{- end }}

@@ -29,6 +29,10 @@ spec:
       {{- if .Values.authService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.authService.terminationGracePeriodSeconds }}
       {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.authService.image.registry) .Values.authService.image.name .Values.authService.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: auth-service
           image: {{ default (include "peaka.image.registry" .) .Values.authService.image.registry }}/{{ .Values.authService.image.name }}:{{ .Values.authService.image.tag }}
@@ -51,6 +55,20 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.authService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.authService.affinity }}
       affinity:

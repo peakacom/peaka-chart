@@ -1,0 +1,13 @@
+{{- if eq (include "peaka.customCA.enabled" .) "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "peaka.fullname" . }}-custom-ca-certs
+  labels:
+    {{- include "peaka.labels" . | nindent 4 }}
+data:
+  {{- range .Values.global.customCACertificates }}
+  {{ .name }}.crt: |
+    {{- .cert | nindent 4 }}
+  {{- end }}
+{{- end }}

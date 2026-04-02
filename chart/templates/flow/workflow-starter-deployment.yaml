@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.workflowStarter.image.registry) .Values.workflowStarter.image.name .Values.workflowStarter.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: workflow-starter
           image: {{ default (include "peaka.image.registry" .) .Values.workflowStarter.image.registry }}/{{ .Values.workflowStarter.image.name }}:{{ .Values.workflowStarter.image.tag }}
@@ -41,8 +45,22 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
       {{- if .Values.workflowStarter.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowStarter.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
       {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.workflowStarter.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.workflowStarter.affinity }}

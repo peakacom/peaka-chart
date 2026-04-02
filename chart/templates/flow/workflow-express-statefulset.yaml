@@ -26,6 +26,11 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.image.registry) .Values.workflowWorkerExpress.image.name .Values.workflowWorkerExpress.image.tag)) | nindent 8 }}
+        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.sidecar.imageRegistry) .Values.workflowWorkerExpress.sidecar.imageName .Values.workflowWorkerExpress.sidecar.imageTag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: workflow-worker-express
           image: {{ default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.image.registry }}/{{ .Values.workflowWorkerExpress.image.name }}:{{ .Values.workflowWorkerExpress.image.tag }}
@@ -34,9 +39,16 @@ spec:
           ports:
             - name: http
               containerPort: 80
+          env:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
           {{- with .Values.workflowWorkerExpress.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -58,6 +70,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-bundle
+              mountPath: /custom-ca-bundle
+              readOnly: true
+          {{- end }}
           {{- with .Values.workflowWorkerExpress.sidecar.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -66,6 +84,16 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+        - name: custom-ca-bundle
+          emptyDir: {}
+      {{- end }}
       {{- if .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
       {{- end }}

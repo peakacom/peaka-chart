@@ -27,6 +27,9 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (include "peaka.image.registry" .) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 6 }}
+      {{- end }}
       - name: data-migrator
         image: {{ printf "%s/%s:%s" ( include "peaka.image.registry" . ) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
@@ -36,6 +39,12 @@ spec:
         envFrom:
           - configMapRef:
               name: {{ include "peaka.fullname" . }}-env-config
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        volumeMounts:
+          - name: custom-ca-truststore
+            mountPath: /truststore
+            readOnly: true
+        {{- end }}
       containers:
         - name: workflow-history
           image: {{ default (include "peaka.image.registry" .) .Values.workflowHistory.image.registry }}/{{ .Values.workflowHistory.image.name }}:{{ .Values.workflowHistory.image.tag }}
@@ -58,6 +67,20 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- if .Values.workflowHistory.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowHistory.terminationGracePeriodSeconds }}
       {{- end }}

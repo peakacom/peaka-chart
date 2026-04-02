@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dispatcherAssigner.image.registry) .Values.dispatcherAssigner.image.name .Values.dispatcherAssigner.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: dispatcher-assigner
           image: {{ default (include "peaka.image.registry" .) .Values.dispatcherAssigner.image.registry }}/{{ .Values.dispatcherAssigner.image.name }}:{{ .Values.dispatcherAssigner.image.tag }}
@@ -37,8 +41,22 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
       {{- if .Values.dispatcherAssigner.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.dispatcherAssigner.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
       {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.dispatcherAssigner.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.dispatcherAssigner.affinity }}

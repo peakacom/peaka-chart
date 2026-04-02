@@ -20,6 +20,9 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
+        {{- end }}
         - name: data-migrator
           image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
@@ -29,6 +32,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.searchService.image.registry) .Values.searchService.image.name .Values.searchService.image.tag)) | nindent 8 }}
+        {{- end }}
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
         - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
@@ -58,6 +70,22 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-bundle
+              mountPath: /custom-ca-bundle
+              readOnly: true
+          {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-bundle
+          emptyDir: {}
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- if .Values.searchService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.searchService.terminationGracePeriodSeconds }}
       {{- end }}

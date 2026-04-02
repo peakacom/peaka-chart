@@ -12,6 +12,17 @@ global:
   # Useful for running workloads on dedicated or tainted nodes.
   tolerations: []
 
+  # Custom CA certificates to trust across all services.
+  # Each entry will be imported into Java truststores and Node.js CA bundles.
+  # Example:
+  #   customCACertificates:
+  #     - name: minio-ca
+  #       cert: |
+  #         -----BEGIN CERTIFICATE-----
+  #         ...
+  #         -----END CERTIFICATE-----
+  customCACertificates: []
+
 # Override the name of the chart. Useful to avoid collisions or enforce naming conventions.
 nameOverride: ""
 
@@ -255,7 +266,6 @@ externalObjectStore:
   singleBucketMode: false
   tls:
     enabled: false
-    cert: ""
 
   accessKey: ""
   secretKey: ""

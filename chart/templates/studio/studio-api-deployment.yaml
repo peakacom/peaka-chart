@@ -27,6 +27,9 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
+        {{- end }}
         - name: data-migrator
           image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
@@ -36,6 +39,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
       containers:
         - name: studio-api
           image: {{ default (include "peaka.image.registry" .) .Values.studioApi.image.registry }}/{{ .Values.studioApi.image.name }}:{{ .Values.studioApi.image.tag }}
@@ -61,9 +70,9 @@ spec:
             - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-            - mountPath: /secrets/certs
-              name: minio-tls-cert
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
               readOnly: true
             {{- end }}
           {{- with .Values.studioApi.resources }}
@@ -71,7 +80,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.studioApi.livenessProbe }}
-          livenessPro be:
+          livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.studioApi.readinessProbe }}
@@ -82,10 +91,12 @@ spec:
         - name: jwt-rsa-secret
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
-        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        - name: minio-tls-cert
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
           configMap:
-            name: {{ include "peaka.fullname" . }}-objectstore-ca
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
         {{- end }}
       {{- if .Values.studioApi.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.studioApi.terminationGracePeriodSeconds }}

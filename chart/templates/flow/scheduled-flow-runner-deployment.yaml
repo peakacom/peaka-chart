@@ -27,6 +27,9 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
+        {{- end }}
         - name: data-migrator
           image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
@@ -36,6 +39,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
       containers:
         - name: scheduled-flow-runner
           image: {{ default (include "peaka.image.registry" .) .Values.scheduledFlowRunner.image.registry }}/{{ .Values.scheduledFlowRunner.image.name }}:{{ .Values.scheduledFlowRunner.image.tag }}
@@ -58,6 +67,20 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+          {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- if .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.scheduledFlowRunner.terminationGracePeriodSeconds }}
       {{- end }}

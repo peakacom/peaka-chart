@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.sqlService.image.registry) .Values.sqlService.image.name .Values.sqlService.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: sql-service
           image: {{ default (include "peaka.image.registry" .) .Values.sqlService.image.registry }}/{{ .Values.sqlService.image.name }}:{{ .Values.sqlService.image.tag }}
@@ -48,8 +52,22 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          volumeMounts:
+            - name: custom-ca-bundle
+              mountPath: /custom-ca-bundle
+              readOnly: true
+          {{- end }}
       {{- if .Values.sqlService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.sqlService.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      volumes:
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-bundle
+          emptyDir: {}
       {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.sqlService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.sqlService.affinity }}

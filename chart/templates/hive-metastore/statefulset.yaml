@@ -24,9 +24,9 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
-        {{- include "peaka.objectStore.tls.initContainer" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry) .Values.hiveMetastore.image.name .Values.hiveMetastore.image.tag)) | nindent 8 }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry) .Values.hiveMetastore.image.name .Values.hiveMetastore.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
         - name: metastore
@@ -43,15 +43,15 @@ spec:
               value: {{ .Values.hiveMetastore.metastoreType | quote }}
             - name: JAVA_HOME
               value: /usr/lib/jvm/default-jvm/jre
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: HADOOP_OPTS
               value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
             {{- end }}
           volumeMounts:
             - name: hive-config
               mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-            - name: objectstore-truststore
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
             {{- end }}
@@ -59,11 +59,11 @@ spec:
         - name: hive-config
           configMap:
             name: {{ template "peaka.hive.name" . }}
-        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        - name: objectstore-cert
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
           configMap:
-            name: {{ include "peaka.fullname" . }}-objectstore-ca
-        - name: objectstore-truststore
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
           emptyDir: {}
         {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.hiveMetastore.nodeSelector "global" $.Values.global) | nindent 6 }}

@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.permissionService.image.registry) .Values.permissionService.image.name .Values.permissionService.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: permission-service
           image: {{ default (include "peaka.image.registry" .) .Values.permissionService.image.registry }}/{{ .Values.permissionService.image.name }}:{{ .Values.permissionService.image.tag }}
@@ -40,6 +44,11 @@ spec:
             - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
           {{- with .Values.permissionService.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -56,6 +65,13 @@ spec:
         - name: jwt-rsa-secret
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+        {{- end }}
       {{- if .Values.permissionService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.permissionService.terminationGracePeriodSeconds }}
       {{- end }}

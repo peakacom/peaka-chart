@@ -53,17 +53,17 @@ spec:
           secret:
             secretName: {{ include "peaka.trino.keytab" . }}
         {{- end }}
-        {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        - name: objectstore-cert
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
           configMap:
-            name: {{ include "peaka.fullname" . }}-objectstore-ca
-        - name: objectstore-truststore
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
           emptyDir: {}
         {{- end }}
-      {{- if or .Values.trino.initContainers.worker (and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert) }}
+      {{- if or .Values.trino.initContainers.worker (eq (include "peaka.customCA.enabled" .) "true") }}
       initContainers:
-      {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-        {{- include "peaka.objectStore.tls.initContainer" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
       {{- end }}
       {{- if .Values.trino.initContainers.worker }}
       {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
@@ -115,8 +115,8 @@ spec:
               name: kerberos-keytab
               subPath: {{ $fileName }}
             {{- end }}
-            {{- if and .Values.externalObjectStore.tls.enabled .Values.externalObjectStore.tls.cert }}
-            - name: objectstore-truststore
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
             {{- end }}

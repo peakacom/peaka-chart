@@ -28,6 +28,26 @@ spec:
       securityContext:
         {{- toYaml .Values.pgcat.podSecurityContext | nindent 8 }}
       {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        - name: import-custom-ca-certs
+          image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
+          command:
+            - sh
+            - -c
+            - |
+              cp /etc/ssl/certs/ca-certificates.crt /custom-ca-bundle/ca-certificates.crt 2>/dev/null \
+                || cp /etc/ssl/cert.pem /custom-ca-bundle/ca-certificates.crt 2>/dev/null \
+                || touch /custom-ca-bundle/ca-certificates.crt
+              cat /custom-ca-certs/*.crt >> /custom-ca-bundle/ca-certificates.crt
+              echo "Custom CA certificates appended to system bundle"
+          volumeMounts:
+            - name: custom-ca-certs
+              mountPath: /custom-ca-certs
+              readOnly: true
+            - name: custom-ca-bundle
+              mountPath: /custom-ca-bundle
+      {{- end }}
       containers:
         - name: pgcat
           {{- if .Values.pgcat.containerSecurityContext }}
@@ -36,6 +56,11 @@ spec:
           {{- end }}
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           imagePullPolicy: {{ .Values.pgcat.image.pullPolicy | default "IfNotPresent" }}
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          env:
+            - name: SSL_CERT_FILE
+              value: "/custom-ca-bundle/ca-certificates.crt"
+          {{- end }}
           ports:
             - name: pgcat
               containerPort: {{ .Values.pgcat.configuration.general.port }}
@@ -54,6 +79,11 @@ spec:
           volumeMounts:
           - mountPath: /etc/pgcat
             name: config
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          - name: custom-ca-bundle
+            mountPath: /custom-ca-bundle
+            readOnly: true
+          {{- end }}
       {{- with .Values.pgcat.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -71,3 +101,10 @@ spec:
           defaultMode: 420
           secretName: {{ include "peaka.pgcat.fullname" . }}
         name: config
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      - name: custom-ca-certs
+        configMap:
+          name: {{ include "peaka.fullname" . }}-custom-ca-certs
+      - name: custom-ca-bundle
+        emptyDir: {}
+      {{- end }}

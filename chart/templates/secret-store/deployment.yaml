@@ -26,6 +26,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.secretStoreService.image.registry) .Values.secretStoreService.image.name .Values.secretStoreService.image.tag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: secret-store-service
           image: {{ default (include "peaka.image.registry" .) .Values.secretStoreService.image.registry }}/{{ .Values.secretStoreService.image.name }}:{{ .Values.secretStoreService.image.tag }}
@@ -49,6 +53,11 @@ spec:
             - name: connection-providers
               readOnly: true
               mountPath: /secrets
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -56,6 +65,13 @@ spec:
         - name: connection-providers
           secret:
             secretName: {{ include "peaka.fullname" . }}-connection-credentials-secret
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+        {{- end }}
       {{- if .Values.secretStoreService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.secretStoreService.terminationGracePeriodSeconds }}
       {{- end }}
