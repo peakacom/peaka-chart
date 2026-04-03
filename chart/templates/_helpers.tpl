@@ -563,7 +563,7 @@ Expects a dict with key "image" (container image with keytool available).
 Usage: include "peaka.customCA.initContainer.java" (dict "image" "registry/image:tag")
 */}}
 {{- define "peaka.customCA.initContainer.java" -}}
-- name: import-custom-ca-certs
+- name: import-custom-ca-truststore
   image: {{ .image }}
   command:
     - sh
