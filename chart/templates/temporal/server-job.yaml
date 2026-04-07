@@ -96,14 +96,18 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
+            {{- if $storeConfig.sql.tls }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
+            {{- end }}
+          {{- if $storeConfig.sql.tls }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
               subPath: ca.crt
+          {{- end }}
         {{- end }}
         {{- end }}
         {{- else }}
@@ -152,15 +156,19 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
+            {{- if $storeConfig.sql.tls }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
             {{- end }}
+            {{- end }}
+          {{- if $storeConfig.sql.tls }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
               subPath: ca.crt
+          {{- end }}
         {{- end }}
           {{- with .Values.temporal.schema.resources }}
           resources:
@@ -190,13 +198,15 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls }}
       volumes:
         - name: store-tls
           secret:
-            secretName: postgresql-tls
+            secretName: {{ (or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls).secretName }}
             items:
               - key: ca.crt
                 path: ca.crt
+      {{- end }}
 ---
 {{- end }}
 {{- if .Values.temporal.schema.update.enabled }}
@@ -296,15 +306,19 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
+            {{- if $storeConfig.sql.tls }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
             {{- end }}
+            {{- end }}
+          {{- if $storeConfig.sql.tls }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
               subPath: ca.crt
+          {{- end }}
         {{- end }}
         {{- end }}
           {{- with .Values.temporal.schema.resources }}
@@ -331,13 +345,15 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls }}
       volumes:
         - name: store-tls
           secret:
-            secretName: postgresql-tls
+            secretName: {{ (or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls).secretName }}
             items:
               - key: ca.crt
                 path: ca.crt
+      {{- end }}
 ---
 {{- end }}
 {{- if and (or $.Values.temporal.elasticsearch.enabled $.Values.temporal.elasticsearch.external) .Values.temporal.schema.setup.enabled }}

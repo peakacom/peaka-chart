@@ -965,6 +965,7 @@ temporal:
               enabled: true
               caFile: /etc/temporal/store-tls/ca.crt
               enableHostVerification: true
+              secretName: postgresql-tls
 
         visibility:
           driver: "sql"
@@ -1002,6 +1003,7 @@ temporal:
               enabled: true
               caFile: /etc/temporal/store-tls/ca.crt
               enableHostVerification: true
+              secretName: postgresql-tls
 
     frontend:
       service:
