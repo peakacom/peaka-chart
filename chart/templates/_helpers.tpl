@@ -136,6 +136,7 @@ DB_USERNAME: {{ include "peaka.postgresql.user" . }}
 DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 DB_NAME: {{ include "peaka.postgresql.database" . }}
+DB_SSL: {{ include "peaka.postgresql.ssl" . | quote }}
 
 SECRET_STORAGE_SERVICE: http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80
 
@@ -430,6 +431,14 @@ LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVND
 {{- define "peaka.postgresql.passwordSecretKey" -}}
 {{- if .Values.postgresql.enabled -}}
 {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.postgresql.ssl" -}}
+{{- if .Values.externalPostgresql.enabled -}}
+{{ .Values.externalPostgresql.tls }}
+{{- else -}}
+false
 {{- end -}}
 {{- end -}}
 

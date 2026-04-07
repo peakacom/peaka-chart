@@ -222,6 +222,7 @@ externalPostgresql:
   # The IP or DNS of the Postgresql server
   host: ""
   port: 5432
+  tls: false
   username: code2db
   password: code2db
   database: code2db
