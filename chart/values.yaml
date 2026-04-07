@@ -961,6 +961,10 @@ temporal:
             maxConnLifetime: "1h"
             # connectAttributes:
             # tx_isolation: 'READ-COMMITTED'
+            tls:
+              enabled: true
+              caFile: /etc/temporal/store-tls/ca.crt
+              enableHostVerification: true
 
         visibility:
           driver: "sql"
@@ -994,6 +998,10 @@ temporal:
             maxConnLifetime: "1h"
             # connectAttributes:
             #   tx_isolation: 'READ-COMMITTED'
+            tls:
+              enabled: true
+              caFile: /etc/temporal/store-tls/ca.crt
+              enableHostVerification: true
 
     frontend:
       service:

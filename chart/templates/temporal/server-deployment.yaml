@@ -137,6 +137,9 @@ spec:
               subPath: config_template.yaml
             - name: dynamic-config
               mountPath: /etc/temporal/dynamic_config
+            - name: store-tls
+              mountPath: /etc/temporal/store-tls/ca.crt
+              subPath: ca.crt
             {{- if $.Values.temporal.server.additionalVolumeMounts }}
             {{- toYaml $.Values.temporal.server.additionalVolumeMounts | nindent 12}}
             {{- end }}
@@ -163,6 +166,12 @@ spec:
             items:
             - key: dynamic_config.yaml
               path: dynamic_config.yaml
+        - name: store-tls
+          secret:
+            secretName: postgresql-tls
+            items:
+              - key: ca.crt
+                path: ca.crt
         {{- if $.Values.temporal.server.additionalVolumes }}
         {{- toYaml $.Values.temporal.server.additionalVolumes | nindent 8}}
         {{- end }}
