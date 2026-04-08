@@ -963,7 +963,7 @@ temporal:
             # connectAttributes:
             # tx_isolation: 'READ-COMMITTED'
             tls:
-              enabled: true
+              enabled: false
               caFile: /etc/temporal/store-tls/ca.crt
               enableHostVerification: true
               secretName: postgresql-tls
@@ -1001,7 +1001,7 @@ temporal:
             # connectAttributes:
             #   tx_isolation: 'READ-COMMITTED'
             tls:
-              enabled: true
+              enabled: false
               caFile: /etc/temporal/store-tls/ca.crt
               enableHostVerification: true
               secretName: postgresql-tls

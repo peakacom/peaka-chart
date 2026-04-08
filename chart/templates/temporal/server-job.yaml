@@ -96,13 +96,13 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
-            {{- if $storeConfig.sql.tls }}
+            {{- if $storeConfig.sql.tls.enabled }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
             {{- end }}
-          {{- if $storeConfig.sql.tls }}
+          {{- if $storeConfig.sql.tls.enabled }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
@@ -156,14 +156,14 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
-            {{- if $storeConfig.sql.tls }}
+            {{- if $storeConfig.sql.tls.enabled }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
             {{- end }}
             {{- end }}
-          {{- if $storeConfig.sql.tls }}
+          {{- if $storeConfig.sql.tls.enabled }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
@@ -198,7 +198,7 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls }}
+      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls.enabled $.Values.temporal.server.config.persistence.visibility.sql.tls.enabled }}
       volumes:
         - name: store-tls
           secret:
@@ -306,14 +306,14 @@ spec:
               value: {{ include "peaka.temporal.persistence.sql.user" $  | quote }}
             - name: SQL_PASSWORD
               value: {{ include "peaka.temporal.persistence.sql.password" $  | quote }}
-            {{- if $storeConfig.sql.tls }}
+            {{- if $storeConfig.sql.tls.enabled }}
             - name: SQL_TLS
               value: "true"
             - name: SQL_TLS_CA_FILE
               value: /etc/temporal/store-tls/ca.crt
             {{- end }}
             {{- end }}
-          {{- if $storeConfig.sql.tls }}
+          {{- if $storeConfig.sql.tls.enabled }}
           volumeMounts:
             - name: store-tls
               mountPath: /etc/temporal/store-tls/ca.crt
@@ -345,7 +345,7 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls $.Values.temporal.server.config.persistence.visibility.sql.tls }}
+      {{- if or $.Values.temporal.server.config.persistence.default.sql.tls.enabled $.Values.temporal.server.config.persistence.visibility.sql.tls.enabled }}
       volumes:
         - name: store-tls
           secret:
