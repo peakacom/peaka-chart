@@ -30,6 +30,10 @@ spec:
       {{- end }}
       {{- end }}
     spec:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s:%s" .Values.monitoringKafkaConnect.image .Values.monitoringKafkaConnect.imageTag)) | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-server
           image: {{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
@@ -69,6 +73,10 @@ spec:
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: KAFKA_OPTS
+              value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
+            {{- end }}
         {{- if .Values.monitoringKafkaConnect.customEnv.CUSTOM_SCRIPT_PATH }}
           command:
             - /bin/bash
@@ -82,9 +90,16 @@ spec:
 {{ toYaml .Values.monitoringKafkaConnect.livenessProbe | trim | indent 12 }}
           {{- end }}
         {{- end }}
-          {{- if .Values.monitoringKafkaConnect.volumeMounts }}
+          {{- if or .Values.monitoringKafkaConnect.volumeMounts (eq (include "peaka.customCA.enabled" .) "true") }}
           volumeMounts:
+          {{- if .Values.monitoringKafkaConnect.volumeMounts }}
 {{ toYaml .Values.monitoringKafkaConnect.volumeMounts | indent 10 }}
+          {{- end }}
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
           {{- end}}
       {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
       imagePullSecrets:
@@ -94,6 +109,13 @@ spec:
       {{- if .Values.monitoringKafkaConnect.volumes }}
 {{ toYaml .Values.monitoringKafkaConnect.volumes | trim | indent 6 }}
       {{- end}}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+      {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.monitoringKafkaConnect.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.monitoringKafkaConnect.tolerations "global" $.Values.global) | nindent 6 }}
       {{- if .Values.monitoringKafkaConnect.affinity }}

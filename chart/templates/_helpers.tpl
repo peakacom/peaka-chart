@@ -280,8 +280,8 @@ GRPC_DNS_RESOLVER: native
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
 
 {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
-NODE_EXTRA_CA_CERTS: "/custom-ca-bundle/ca-bundle.crt"
+JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
+NODE_EXTRA_CA_CERTS: /custom-ca-bundle/ca-bundle.crt
 {{- end }}
 {{- end -}}
 
@@ -578,13 +578,21 @@ Usage: include "peaka.customCA.initContainer.java" (dict "image" "registry/image
     - sh
     - -c
     - |
-      CACERTS=$(find /usr/lib/jvm /usr/java /opt/java /etc/ssl -name cacerts -path "*/security/*" 2>/dev/null | head -1)
-      if [ -z "$CACERTS" ]; then
-        echo "ERROR: could not find Java cacerts file"
-        exit 1
+      CACERTS=""
+      if [ -n "$JAVA_HOME" ] && [ -f "$JAVA_HOME/lib/security/cacerts" ]; then
+        CACERTS="$JAVA_HOME/lib/security/cacerts"
       fi
-      echo "Found cacerts at: $CACERTS"
-      cp "$CACERTS" /truststore/cacerts
+      if [ -z "$CACERTS" ]; then
+        CACERTS=$(find / -name cacerts -path "*/security/*" 2>/dev/null | head -1)
+      fi
+      if [ -n "$CACERTS" ]; then
+        echo "Found cacerts at: $CACERTS"
+        cp "$CACERTS" /truststore/cacerts
+      else
+        echo "No existing cacerts found, creating empty truststore"
+        keytool -genkeypair -alias temp -keystore /truststore/cacerts -storepass changeit -keypass changeit -dname "CN=temp" -keyalg RSA 2>/dev/null
+        keytool -delete -alias temp -keystore /truststore/cacerts -storepass changeit 2>/dev/null
+      fi
       chmod 644 /truststore/cacerts
       for cert in /custom-ca-certs/*.crt; do
         ALIAS=$(basename "$cert" .crt)
@@ -809,9 +817,9 @@ Determine if TLS is enabled
 */}}
 {{- define "peaka.mongodb.tls" -}}
 {{- if .Values.externalMongoDB.enabled -}}
-{{ .Values.externalMongoDB.tls.enabled | default false }}
+{{- .Values.externalMongoDB.tls.enabled | default false -}}
 {{- else -}}
-{{ .Values.mongodb.tls.enabled | default false }}
+{{- .Values.mongodb.tls.enabled | default false -}}
 {{- end -}}
 {{- end -}}
 
