@@ -54,6 +54,14 @@ spec:
           secret:
             secretName: {{ include "peaka.trino.keytab" . }}
         {{- end }}
+        {{- if or .Values.trino.auth.passwordAuth .Values.trino.auth.passwordAuthSecret }}
+        - name: file-password-authentication-volume
+          secret:
+            secretName: trino-password-authentication
+            items:
+              - key: password.db
+                path: password.db
+        {{- end }}
         {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
@@ -128,6 +136,10 @@ spec:
             - mountPath: {{ $.Values.trino.server.hiveConfigPath }}/{{ $fileName }}
               name: kerberos-keytab
               subPath: {{ $fileName }}
+            {{- end }}
+            {{- if or .Values.trino.auth.passwordAuth .Values.trino.auth.passwordAuthSecret }}
+            - mountPath: {{ .Values.trino.server.config.path }}/auth/password
+              name: file-password-authentication-volume
             {{- end }}
             {{- range $fileName, $fileContent := .Values.trino.coordinator.additionalConfigFiles }}
             - mountPath: {{ $.Values.trino.server.config.path }}/{{ $fileName }}
