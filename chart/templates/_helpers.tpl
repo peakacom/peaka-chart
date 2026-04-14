@@ -595,13 +595,31 @@ Usage: include "peaka.customCA.initContainer.java" (dict "image" "registry/image
       fi
       chmod 644 /truststore/cacerts
       for cert in /custom-ca-certs/*.crt; do
-        ALIAS=$(basename "$cert" .crt)
-        echo "Importing $ALIAS ..."
-        keytool -importcert -noprompt \
-          -alias "$ALIAS" \
-          -keystore /truststore/cacerts \
-          -storepass changeit \
-          -file "$cert"
+        BASENAME=$(basename "$cert" .crt)
+        COUNT=$(grep -c 'BEGIN CERTIFICATE' "$cert")
+        if [ "$COUNT" -le 1 ]; then
+          echo "Importing $BASENAME ..."
+          keytool -importcert -noprompt \
+            -alias "$BASENAME" \
+            -keystore /truststore/cacerts \
+            -storepass changeit \
+            -file "$cert"
+        else
+          IDX=0
+          csplit -z -f /tmp/cert- "$cert" '/-----BEGIN CERTIFICATE-----/' '{*}' 2>/dev/null
+          for part in /tmp/cert-*; do
+            if grep -q 'BEGIN CERTIFICATE' "$part"; then
+              echo "Importing ${BASENAME}-${IDX} ..."
+              keytool -importcert -noprompt \
+                -alias "${BASENAME}-${IDX}" \
+                -keystore /truststore/cacerts \
+                -storepass changeit \
+                -file "$part"
+              IDX=$((IDX + 1))
+            fi
+          done
+          rm -f /tmp/cert-*
+        fi
       done
       echo "All custom CA certificates imported into truststore"
   volumeMounts:
