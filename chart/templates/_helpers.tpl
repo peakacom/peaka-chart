@@ -855,20 +855,22 @@ Returns mongodb+srv if srv is enabled, otherwise mongodb
 
 {{/*
 Set peaka.mongodb.url
-Format: mongodb[+srv]://[username:password@]host[:port]/[?options]
+Format: mongodb[+srv]://[username:password@]host[:port][?param1&param2...]
 If externalMongoDB.auth.connection_uri is set, it takes precedence over all other parameters.
 If externalMongoDB.srv is true, mongodb+srv scheme is used and port is omitted.
+Query parameters (tls, additionalParameters) are collected into a list and
+joined with '&', then prefixed with '?' — so '?' vs '&' is handled automatically.
 */}}
 {{- define "peaka.mongodb.url" -}}
 {{- if and .Values.externalMongoDB.enabled .Values.externalMongoDB.auth.connection_uri -}}
 {{- .Values.externalMongoDB.auth.connection_uri -}}
 {{- else -}}
 {{- $scheme := include "peaka.mongodb.scheme" . -}}
-{{- $user := include "peaka.mongodb.username" . -}}
-{{- $pass := include "peaka.mongodb.password" . -}}
-{{- $host := include "peaka.mongodb.host" . -}}
-{{- $port := include "peaka.mongodb.port" . -}}
-{{- $tls  := include "peaka.mongodb.tls" . -}}
+{{- $user   := include "peaka.mongodb.username" . -}}
+{{- $pass   := include "peaka.mongodb.password" . -}}
+{{- $host   := include "peaka.mongodb.host" . -}}
+{{- $port   := include "peaka.mongodb.port" . -}}
+{{- $tls    := include "peaka.mongodb.tls" . -}}
 {{- $srv    := and .Values.externalMongoDB.enabled .Values.externalMongoDB.srv -}}
 
 {{- $auth := "" -}}
@@ -876,15 +878,30 @@ If externalMongoDB.srv is true, mongodb+srv scheme is used and port is omitted.
   {{- $auth = printf "%s:%s@" $user $pass -}}
 {{- end -}}
 
-{{- $tlsParam := "" -}}
+{{/* ── Collect all query parameters into a list ── */}}
+{{- $params := list -}}
+
+{{/* TLS param (only meaningful when not using +srv, since srv implies TLS) */}}
 {{- if and (not $srv) (eq $tls "true") -}}
-  {{- $tlsParam = "/?tls=true" -}}
+  {{- $params = append $params "tls=true" -}}
 {{- end -}}
 
+{{/* additionalParameters from values */}}
+{{- range .Values.externalMongoDB.additionalParameters -}}
+  {{- $params = append $params . -}}
+{{- end -}}
+
+{{/* Build the query string: ?p1&p2&p3 — or empty string if no params */}}
+{{- $queryString := "" -}}
+{{- if $params -}}
+  {{- $queryString = printf "?%s" (join "&" $params) -}}
+{{- end -}}
+
+{{/* Assemble final URL */}}
 {{- if $srv -}}
-  {{- printf "%s://%s%s%s" $scheme $auth $host $tlsParam -}}
+  {{- printf "%s://%s%s%s" $scheme $auth $host $queryString -}}
 {{- else -}}
-  {{- printf "%s://%s%s:%s%s" $scheme $auth $host $port $tlsParam -}}
+  {{- printf "%s://%s%s:%s%s" $scheme $auth $host $port $queryString -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

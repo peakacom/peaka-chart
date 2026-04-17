@@ -349,6 +349,11 @@ externalMongoDB:
     username:
     password:
     connection_uri:     # If set, supersedes all other connection parameters
+  additionalParameters: []
+  # e.g.:
+  # additionalParameters:
+  #   - retryWrites=false
+  #   - readPreference=secondary
 
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
