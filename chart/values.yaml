@@ -1312,7 +1312,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.0
+    tag: v1.0.1
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1592,7 +1592,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.147
+    tag: v0.0.148
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1628,7 +1628,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v0.0.328
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1819,7 +1819,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.120
+    tag: v0.1.121
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1860,7 +1860,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.347
+    tag: v0.0.348
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1890,7 +1890,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.83
+    tag: v0.0.84
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2017,7 +2017,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.155
+    tag: v1.1.157
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
