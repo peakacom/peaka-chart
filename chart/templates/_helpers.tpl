@@ -899,9 +899,9 @@ joined with '&', then prefixed with '?' — so '?' vs '&' is handled automatical
 
 {{/* Assemble final URL */}}
 {{- if $srv -}}
-  {{- printf "%s://%s%s%s" $scheme $auth $host $queryString -}}
+  {{- printf "%s://%s%s/%s" $scheme $auth $host $queryString -}}
 {{- else -}}
-  {{- printf "%s://%s%s:%s%s" $scheme $auth $host $port $queryString -}}
+  {{- printf "%s://%s%s:%s/%s" $scheme $auth $host $port $queryString -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}
