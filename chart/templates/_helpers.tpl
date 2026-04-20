@@ -250,7 +250,7 @@ BIGTABLE_BUFFER_DB_NAME: {{ include "peaka.bigtable.database" .  }}
 PGVECTOR_DB_HOST: {{ include "peaka.fullname" . }}-pgvector.{{ .Release.Namespace }}.svc.cluster.local
 PGVECTOR_DB_NAME: {{ .Values.pgvector.db.name }}
 PGVECTOR_DB_USER: {{ .Values.pgvector.db.user }}
-PGVECTOR_DB_PASSSWORD: {{ .Values.pgvector.db.password }}
+PGVECTOR_DB_PASSWORD: {{ .Values.pgvector.db.password }}
 PGVECTOR_DB_PORT: "5432"
 PGVECTOR_DB_SCHEMA: studio
 
