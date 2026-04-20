@@ -250,7 +250,7 @@ BIGTABLE_BUFFER_DB_NAME: {{ include "peaka.bigtable.database" .  }}
 PGVECTOR_DB_HOST: {{ include "peaka.postgresql.host" . }}
 PGVECTOR_DB_NAME: {{ include "peaka.postgresql.database" . }}
 PGVECTOR_DB_USER: {{ include "peaka.postgresql.user" . }}
-PGVECTOR_DB_PASSSWORD: {{ include "peaka.postgresql.password" . }}
+PGVECTOR_DB_PASSWORD: {{ include "peaka.postgresql.password" . }}
 PGVECTOR_DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 PGVECTOR_DB_SCHEMA: "pgvector"
 
