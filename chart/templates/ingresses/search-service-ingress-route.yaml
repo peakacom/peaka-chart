@@ -59,11 +59,9 @@ spec:
               name: {{ include "peaka.fullname" . }}
               secure: true
     {{- if .Values.searchService.bullDashboardEnabled }}
-    - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/admin/queues`)
+    - match: PathPrefix(`/admin/queues`)
       kind: Rule
       priority: 100
-      middlewares:
-        - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
