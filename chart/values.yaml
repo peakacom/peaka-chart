@@ -1784,6 +1784,7 @@ searchService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  bullDashboardEnabled: false
 
 secretStoreService:
   replicaCount: 1
