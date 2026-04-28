@@ -3,16 +3,23 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "peaka.postgresql.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+    {{- include "peaka.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "peaka.postgresql.fullname" . }}
   replicas: 1
   selector:
     matchLabels:
       app: {{ include "peaka.postgresql.fullname" . }}
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ include "peaka.postgresql.fullname" . }}
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+        {{- include "peaka.labels" . | nindent 8 }}
     spec:
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
