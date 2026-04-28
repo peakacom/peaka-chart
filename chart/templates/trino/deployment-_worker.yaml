@@ -9,6 +9,8 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: worker
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-trino-worker
+    {{- include "peaka.labels" . | nindent 4 }}
 spec:
   strategy:
     type: "Recreate"
@@ -18,12 +20,16 @@ spec:
       app: {{ template "peaka.trino.fullname" . }}
       release: {{ .Release.Name }}
       component: worker
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-trino-worker
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ template "peaka.trino.fullname" . }}
         release: {{ .Release.Name }}
         component: worker
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-trino-worker
+        {{- include "peaka.labels" . | nindent 8 }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
         checksum/worker-config: {{ include (print $.Template.BasePath "/trino/configmap-worker.yaml") . | sha256sum }}
