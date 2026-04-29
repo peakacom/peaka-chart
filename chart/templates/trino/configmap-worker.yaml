@@ -52,6 +52,7 @@ data:
     query.max-memory={{ .Values.trino.server.config.query.maxMemory }}
     query.max-memory-per-node={{ .Values.trino.worker.config.query.maxMemoryPerNode }}
     query.max-length={{ .Values.trino.worker.config.query.maxLength }}
+    catalog.management=DYNAMIC
   {{- if .Values.trino.worker.config.memory.heapHeadroomPerNode }}
     memory.heap-headroom-per-node={{ .Values.trino.worker.config.memory.heapHeadroomPerNode }}
   {{- end }}

@@ -1256,9 +1256,7 @@ trino:
   nameOverride: ""
   workerNameOverride: ""
   coordinatorNameOverride: ""
-  additionalConfigProperties:
-    #    - retry-policy=QUERY
-    - catalog.management=DYNAMIC
+  additionalConfigProperties: []
   additionalNodeProperties: {}
   additionalLogProperties: {}
   additionalExchangeManagerProperties: {}
