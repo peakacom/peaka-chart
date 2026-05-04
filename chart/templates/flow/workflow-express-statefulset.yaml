@@ -38,8 +38,10 @@ spec:
           command: ["/bin/sh", "-c", "export WORKER_ORDINAL_INDEX=${HOSTNAME##*-} && java -jar run/application.jar "]
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8090
           env:
+            - name: EXPRESS_WORKER_PORT
+              value: "8090"
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
