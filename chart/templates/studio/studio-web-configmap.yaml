@@ -14,7 +14,7 @@ data:
     access_log  off;
 
     server {
-      listen       80;
+      listen       8080;
       server_name  localhost;
       root   /usr/share/nginx/html;
 
