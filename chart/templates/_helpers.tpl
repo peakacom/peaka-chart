@@ -545,14 +545,14 @@ Set minio port
 Set minio accessKey
 */}}
 {{- define "peaka.minio.accessKey" }}
-{{- default "console" .Values.hiveMetastore.minioAccessKey }}
+{{- default "peaka_minio" .Values.minio.rootUser }}
 {{- end }}
 
 {{/*
 Set minio secretKey
 */}}
 {{- define "peaka.minio.secretKey" }}
-{{- default "console123" .Values.hiveMetastore.minioSecretKey }}
+{{- default "peaka_minio123" .Values.minio.rootPassword }}
 {{- end }}
 
 {{/*
