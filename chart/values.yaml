@@ -207,6 +207,7 @@ postgresql:
   config:
     idle_session_timeout: 600000
     max_connections: 1000
+    postgresqlDataDir: /var/lib/postgresql/data/pgdata
   auth:
     username: peakadb
     password: peakadb
