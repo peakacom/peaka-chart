@@ -1269,7 +1269,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.4-onprem.1
+    tag: v1.0.4
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1519,7 +1519,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.8
+    tag: v1.0.10
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1686,7 +1686,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.66
+    tag: v0.0.67
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1776,7 +1776,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.122-onprem.1
+    tag: v0.1.122
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1975,7 +1975,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.159-onprem
+    tag: v1.1.161
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
