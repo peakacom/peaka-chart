@@ -1,0 +1,30 @@
+flowchart TB
+    subgraph DEV["DEV — engineer's laptop / kind"]
+        local_chart["chart/ working tree"]
+        local_kind[("kind / k3d cluster<br/>helm install testrun chart/")]
+        local_chart --> local_kind
+    end
+
+    subgraph CI["CI — Drone Kubernetes runner"]
+        ci_clone[git clone @ tag]
+        ci_pkg[helm package]
+        ci_publish[gsutil cp]
+        ci_clone --> ci_pkg --> ci_publish
+    end
+
+    subgraph DIST["Distribution — Peaka-controlled"]
+        gcs_bucket[("gs://peaka-chart/charts/<br/>index.yaml + .tgz files<br/>public read")]
+        gcr_registry[("europe-west3-docker.pkg.dev<br/>private images<br/>per-customer pull secret")]
+    end
+
+    subgraph CUST["CUSTOMER — their cluster"]
+        cust_helm["helm install <br/>-f their/values.yaml"]
+        cust_pods["~70 pods running"]
+        cust_helm --> cust_pods
+    end
+
+    local_chart -->|"git tag vX.Y.Z<br/>git push --tags"| ci_clone
+    ci_publish -->|"chart .tgz"| gcs_bucket
+    DEV -.images built elsewhere.-> gcr_registry
+    gcs_bucket -->|helm repo update| cust_helm
+    gcr_registry -->|imagePullSecret| cust_pods

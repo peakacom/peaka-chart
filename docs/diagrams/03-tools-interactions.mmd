@@ -1,0 +1,20 @@
+flowchart LR
+    helm[Helm 3 CLI]
+    kubectl[kubectl]
+    drone[Drone CI]
+    gcs["gcs CLI<br/>+ gsutil"]
+    git["git + GitHub/GitLab"]
+    yq[yq]
+
+    git -->|"git tag vX.Y.Z<br/>triggers build"| drone
+    drone -->|"helm dependency update<br/>helm package"| helm
+    drone -->|"gsutil cp index.yaml + .tgz<br/>to gs://peaka-chart/"| gcs
+    helm -.uses for subcharts.-> bitnami_repos[("bitnami / minio / traefik / permify Helm repos")]
+
+    customer["Customer operator"]
+    customer -->|"helm repo add peaka <gcs-url><br/>helm install peaka/peaka"| helm
+    customer -->|"kubectl apply -k traefik-crds<br/>kubectl get pods, etc."| kubectl
+    helm -->|"helm install renders + applies"| kubectl
+    helm -->|"--set-file<br/>imagePullSecret JSON"| customer
+
+    yq -.recommended for.-> values_edits["values.yaml edits<br/>(image bumps)"]

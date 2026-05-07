@@ -1,0 +1,7 @@
+flowchart LR
+    clone[clone] --> vc[version-check]
+    vc --> pkg[helm-package]
+    vc --> get[get-index-file]
+    pkg --> upd[update-index-file]
+    get --> upd
+    upd --> push[push]
