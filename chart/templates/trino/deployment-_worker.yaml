@@ -42,8 +42,10 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
+      {{- if .Values.trino.podSecurityContext.enabled }}
       securityContext:
-        fsGroup: 1001
+        {{- toYaml .Values.trino.securityContext | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}
       volumes:
         - name: config-volume

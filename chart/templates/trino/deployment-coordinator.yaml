@@ -39,9 +39,9 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       serviceAccountName: {{ include "peaka.trino.serviceAccountName" . }}
-      {{- with .Values.trino.securityContext }}
+      {{- if .Values.trino.podSecurityContext.enabled }}
       securityContext:
-        fsGroup: 1001
+        {{- toYaml .Values.trino.securityContext | nindent 8 }}
       {{- end }}
       volumes:
         - name: persistent-volume
