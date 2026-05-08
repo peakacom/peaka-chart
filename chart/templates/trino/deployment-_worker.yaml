@@ -68,6 +68,8 @@ spec:
         - name: custom-ca-truststore
           emptyDir: {}
         {{- end }}
+        - name: trino-var
+          emptyDir: {}
       {{- if or .Values.trino.initContainers.worker (eq (include "peaka.customCA.enabled" .) "true") }}
       initContainers:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
@@ -128,6 +130,8 @@ spec:
               mountPath: /truststore
               readOnly: true
             {{- end }}
+            - name: trino-var
+              mountPath: /data/trino
           ports:
             - name: http
               containerPort: {{ .Values.trino.service.port }}
