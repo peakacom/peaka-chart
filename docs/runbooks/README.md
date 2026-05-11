@@ -2,8 +2,11 @@
 
 What to do when things go wrong. Each file is self-contained — keep them short.
 
+> **New here?** Start with [`new-engineer-onboarding.md`](new-engineer-onboarding.md) — it sequences this directory and links the [tripwire list](../extras/gotchas_invariants.md) as required reading.
+
 | File | When to use |
 |---|---|
+| [new-engineer-onboarding.md](new-engineer-onboarding.md) | First day on the repo — read this before touching anything |
 | [install-stuck.md](install-stuck.md) | `helm install` is hanging or pods are CrashLooping on first install |
 | [upgrade-stuck.md](upgrade-stuck.md) | `helm upgrade` is failing or rolling out badly |
 | [tls-cert-issues.md](tls-cert-issues.md) | TLS handshake failures, self-signed cert errors, "PKIX" stack traces |

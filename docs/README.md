@@ -4,13 +4,9 @@ This is the operational documentation for the **`peaka-chart`** repository: the 
 
 ## How to read these docs
 
-If you are **brand new** to the project, read in this order:
+If you are **brand new** to the project, start with [`runbooks/new-engineer-onboarding.md`](runbooks/new-engineer-onboarding.md) — it sequences the rest of this directory and links the tripwire list as required reading.
 
-1. [`extras/refresher.md`](extras/refresher.md) — Helm refresher tailored to this chart.
-2. [`architecture/components.md`](architecture/components.md) — what each pod is and what it does.
-3. [`architecture/technologies/`](architecture/technologies/) — short intros to Trino, Temporal, Traefik, Permify, etc.
-4. [`diagrams/`](diagrams/) — visual maps of the system.
-5. [`questions/important-questions.md`](questions/important-questions.md) — **read this before the maintainer leaves**.
+If you are about to **edit `chart/values.yaml` or a template**, read [`extras/gotchas_invariants.md`](extras/gotchas_invariants.md) first. It's the ten things that quietly break the chart.
 
 If you are **on-call**, jump to [`runbooks/`](runbooks/).
 
@@ -47,7 +43,7 @@ peaka-chart/
 
 - **[`architecture/`](architecture/)** — how the system is built and why
   - [`components.md`](architecture/components.md), [`adrs.md`](architecture/adrs.md), [`obsolete.md`](architecture/obsolete.md), [`recommendations.md`](architecture/recommendations.md), [`pain-points.md`](architecture/pain-points.md), [`technologies/`](architecture/technologies/)
-- **[`runbooks/`](runbooks/)** — paged in the middle of the night? Start here.
+- **[`runbooks/`](runbooks/)** — paged in the middle of the night? Start here. Also hosts [`new-engineer-onboarding.md`](runbooks/new-engineer-onboarding.md).
 - **[`questions/`](questions/)** — handover material for the outgoing maintainer
 - **[`diagrams/`](diagrams/)** — Mermaid system diagrams (one file each)
-- **[`extras/`](extras/)** — Helm refresher and miscellanea
+- **[`extras/`](extras/)** — Helm refresher, glossary, and [`gotchas_invariants.md`](extras/gotchas_invariants.md) (the tripwire list)
