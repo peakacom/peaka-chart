@@ -99,6 +99,9 @@ fi
 HAS_YAMLLINT=0
 if command -v yamllint >/dev/null 2>&1; then HAS_YAMLLINT=1; fi
 
+HAS_HELM=0
+if command -v helm >/dev/null 2>&1; then HAS_HELM=1; fi
+
 [ -f "$VALUES" ] || { echo "ERROR: $VALUES not found — run from repo root" >&2; exit 2; }
 
 # ─── helpers ──────────────────────────────────────────────────────────────
@@ -283,6 +286,39 @@ check_yamllint() {
     fi
 }
 
+# helm lint — catches chart-schema errors (missing required fields, bad
+# templating) that yamllint cannot see because the file is templated.
+#
+# Loops over every directory that contains a Chart.yaml. Today this is one
+# directory (chart/), but the loop keeps adding a sibling chart cheap.
+#
+# Skips with a warning if `helm` is missing or if `chart/charts/` is empty
+# (i.e. `helm dependency build` has not been run). We don't want this
+# script to silently invoke a 60-90s dependency build — the operator
+# should decide.
+check_helm_lint() {
+    log_check "check_helm_lint"
+    if [ "$HAS_HELM" -ne 1 ]; then
+        log_warn "helm not on PATH — skipping helm lint (install: https://helm.sh)"
+        return 0
+    fi
+    local chart_yaml chart_dir
+    while IFS= read -r chart_yaml; do
+        chart_dir="$(dirname "$chart_yaml")"
+        if [ ! -d "${chart_dir}/charts" ] || [ -z "$(ls -A "${chart_dir}/charts" 2>/dev/null)" ]; then
+            log_warn "${chart_dir}: subchart deps absent — run 'helm dependency build' first; skipping helm lint"
+            continue
+        fi
+        local out
+        if out="$(helm lint "$chart_dir" 2>&1)"; then
+            log_pass "helm lint ${chart_dir} clean"
+        else
+            echo "$out" | sed 's/^/    /' >&2
+            log_fail "helm lint ${chart_dir} failed"
+        fi
+    done < <(find . -maxdepth 4 -name Chart.yaml -not -path './chart/charts/*' 2>/dev/null)
+}
+
 # Gotcha #10 — Redis NetworkPolicy disabled-by-default is deliberate.
 # Warn (don't fail) if someone flips it without adding an ingress block.
 check_redis_netpol_default() {
@@ -315,6 +351,7 @@ main() {
     check_tolerations_call_indent
     check_redis_netpol_default
     check_yamllint
+    check_helm_lint
 
     echo
     echo "summary: ${FAIL_COUNT} fail, ${WARN_COUNT} warn"
