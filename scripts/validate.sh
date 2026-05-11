@@ -93,6 +93,12 @@ if ! yq --version 2>&1 | grep -qi 'mikefarah'; then
     exit 2
 fi
 
+# yamllint is optional but recommended — if absent, the YAML-style check is
+# skipped with a warning rather than treated as a hard failure. This keeps
+# the script usable on minimal CI runners.
+HAS_YAMLLINT=0
+if command -v yamllint >/dev/null 2>&1; then HAS_YAMLLINT=1; fi
+
 [ -f "$VALUES" ] || { echo "ERROR: $VALUES not found — run from repo root" >&2; exit 2; }
 
 # ─── helpers ──────────────────────────────────────────────────────────────
@@ -250,6 +256,33 @@ check_tolerations_call_indent() {
     fi
 }
 
+# YAML style — runs yamllint against pure-YAML files. Helm templates are
+# excluded by the .yamllint `ignore` block, not here. yamllint's `truthy`
+# rule is the second half of gotcha #5; the rest is style drift defence.
+check_yamllint() {
+    log_check "check_yamllint (.yamllint + truthy rule = gotcha #5 backstop)"
+    if [ "$HAS_YAMLLINT" -ne 1 ]; then
+        log_warn "yamllint not on PATH — skipping style check (install: pip install yamllint)"
+        return 0
+    fi
+    local out
+    if out="$(yamllint -f parsable chart/values.yaml chart/Chart.yaml .drone.yml 2>&1)"; then
+        log_pass "yamllint clean"
+    else
+        # yamllint emits warning: and error: lines. Treat errors as fails,
+        # warnings as warns. This matches our two-tier model.
+        local err warn
+        err="$(echo "$out" | grep -c ':[0-9]*:[0-9]*: \[error\]' || true)"
+        warn="$(echo "$out" | grep -c ':[0-9]*:[0-9]*: \[warning\]' || true)"
+        echo "$out" | sed 's/^/    /' >&2
+        if [ "$err" -gt 0 ]; then
+            log_fail "yamllint: ${err} error(s), ${warn} warning(s)"
+        else
+            log_warn "yamllint: ${warn} warning(s) (no errors)"
+        fi
+    fi
+}
+
 # Gotcha #10 — Redis NetworkPolicy disabled-by-default is deliberate.
 # Warn (don't fail) if someone flips it without adding an ingress block.
 check_redis_netpol_default() {
@@ -281,6 +314,7 @@ main() {
     check_chart_version_format
     check_tolerations_call_indent
     check_redis_netpol_default
+    check_yamllint
 
     echo
     echo "summary: ${FAIL_COUNT} fail, ${WARN_COUNT} warn"
