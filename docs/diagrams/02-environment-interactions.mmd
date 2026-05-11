@@ -28,3 +28,13 @@ flowchart TB
     DEV -.images built elsewhere.-> gcr_registry
     gcs_bucket -->|helm repo update| cust_helm
     gcr_registry -->|imagePullSecret| cust_pods
+
+    subgraph Files["📂 Files to skim"]
+        F1[.drone.yml]
+        F2[chart/Chart.yaml]
+        F3[chart/values.yaml]
+        F4[chart/templates/image-pull-secret.yaml]
+        F5[chart/README.md]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5 files

@@ -69,3 +69,14 @@ flowchart LR
     hive --> mariadb
     trino --> minio
     trino --> pg
+
+    subgraph Files["📂 Files to skim"]
+        F1[chart/values.yaml]
+        F2[chart/templates/trino/]
+        F3[chart/templates/hive-metastore/]
+        F4[chart/templates/kafka-connect/]
+        F5[chart/templates/pgcat/]
+        F6[chart/templates/pgvector/]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5,F6 files

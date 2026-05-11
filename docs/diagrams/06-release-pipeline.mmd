@@ -36,3 +36,5 @@ sequenceDiagram
     C->>GCS: GET /charts/index.yaml
     C->>GCS: GET /charts/peaka-1.0.12.tgz
     C->>C: helm upgrade mypeaka peaka/peaka<br/>-f my-values.yaml
+
+    Note over M,C: 📂 Files to skim<br/>.drone.yml — pipeline steps<br/>chart/Chart.yaml — version, deps<br/>chart/values.yaml — what the customer overrides<br/>docs/runbooks/chart-release.md — release runbook<br/>docs/extras/gotchas_invariants.md#8 — version-tag invariant

@@ -77,3 +77,14 @@ flowchart TD
 
     others -.-> mongo
     others -.-> kafka
+
+    subgraph Files["📂 Files to skim"]
+        F1[chart/templates/ingress.yaml]
+        F2[chart/templates/dispatcher/]
+        F3[chart/templates/auth-service/]
+        F4[chart/templates/permission/]
+        F5[chart/templates/data-rest/]
+        F6[chart/templates/_helpers.tpl]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5,F6 files
