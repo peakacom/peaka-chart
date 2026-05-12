@@ -63,6 +63,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "peaka.fullname" . }}-studio-root-user-secret
                   key: password
+            - name: PREDEFINED_USERS_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.fullname" . }}-studio-predefined-users-secret
+                  key: predefined-users.json
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
