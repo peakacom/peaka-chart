@@ -75,8 +75,10 @@ steps:
         cd chart
         gcloud auth activate-service-account "${SERVICE_ACCOUNT_NAME}" --key-file /gcp/gcp-bucket-writer.json
         cat index.yaml
-        gsutil -m cp index.yaml gs://peaka-chart/charts/
-        gsutil -m cp peaka-"${DRONE_TAG#v}".tgz gs://peaka-chart/charts/
+        gsutil -m -h "Cache-Control:no-cache, max-age=0, no-transform" \
+          cp index.yaml gs://peaka-chart/charts/
+        gsutil -m -h "Cache-Control:public, max-age=31536000, immutable" \
+          cp peaka-"${DRONE_TAG#v}".tgz gs://peaka-chart/charts/
     volumes:
       - name: gcp-bucket-writer
         path: /gcp
@@ -92,6 +94,6 @@ volumes:
 
 ---
 kind: signature
-hmac: c5f62b224512aa84dafb72d316c75de8799a3c7687fd977052ca7cd691adf87e
+hmac: e6713df2dce820a307b0b7eb37a7447a3f7abbc04b4435bdf9e148c8c3e1d5e9
 
 ...
