@@ -76,10 +76,21 @@ accessUrl:
   # set the port through which the JDBC service will be accessed.
   dbcPort: 4567
 
-# initial registered user to sign in to Peaka studio
+# initial registered user to sign in to Peaka studio.
+# this user creates and owns the default organization.
 rootUser:
   email: root@onpremise.com
   password: s3cr3t
+
+# additional predefined users to sign in to Peaka studio.
+# every entry is added to the root user's default organization with the given role.
+# supported roles: owner, admin, member, guest (defaults to member when omitted).
+predefinedUsers: []
+  # - email: alice@onpremise.com
+  #   password: s3cr3t
+  #   firstName: Alice
+  #   lastName: Doe
+  #   role: admin
 
 # enter your openAI api key to use built-in chatGPT.
 openAIApiKey:
