@@ -26,8 +26,8 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.permissionService.image.registry) .Values.permissionService.image.name .Values.permissionService.image.tag)) | nindent 8 }}
       {{- end }}
       containers:

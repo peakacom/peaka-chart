@@ -26,8 +26,8 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.collabSharedb.image.registry) .Values.collabSharedb.image.name .Values.collabSharedb.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
