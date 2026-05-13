@@ -3,3 +3,4 @@ chart/charts
 chart/Chart.lock
 chart/.values*.yaml
 .claude
+tmp
