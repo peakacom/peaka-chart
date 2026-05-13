@@ -26,8 +26,8 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.emailService.image.registry) .Values.emailService.image.name .Values.emailService.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
@@ -44,8 +44,8 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
           volumeMounts:
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -53,8 +53,8 @@ spec:
       {{- if .Values.emailService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.emailService.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       volumes:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs

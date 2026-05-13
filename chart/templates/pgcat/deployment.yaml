@@ -28,8 +28,8 @@ spec:
       securityContext:
         {{- toYaml .Values.pgcat.podSecurityContext | nindent 8 }}
       {{- end }}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         - name: import-custom-ca-certs
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           command:
@@ -56,8 +56,8 @@ spec:
           {{- end }}
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           imagePullPolicy: {{ .Values.pgcat.image.pullPolicy | default "IfNotPresent" }}
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
           env:
+          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: SSL_CERT_FILE
               value: "/custom-ca-bundle/ca-certificates.crt"
           {{- end }}

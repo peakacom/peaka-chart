@@ -30,8 +30,8 @@ spec:
       {{- end }}
       {{- end }}
     spec:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       initContainers:
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s:%s" .Values.monitoringKafkaConnect.image .Values.monitoringKafkaConnect.imageTag)) | nindent 8 }}
       {{- end }}
       containers:
@@ -90,7 +90,6 @@ spec:
 {{ toYaml .Values.monitoringKafkaConnect.livenessProbe | trim | indent 12 }}
           {{- end }}
         {{- end }}
-          {{- if or .Values.monitoringKafkaConnect.volumeMounts (eq (include "peaka.customCA.enabled" .) "true") }}
           volumeMounts:
           {{- if .Values.monitoringKafkaConnect.volumeMounts }}
 {{ toYaml .Values.monitoringKafkaConnect.volumeMounts | indent 10 }}
@@ -100,7 +99,6 @@ spec:
               mountPath: /truststore
               readOnly: true
             {{- end }}
-          {{- end}}
       {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.monitoringKafkaConnect.imagePullSecrets | indent 8 }}
