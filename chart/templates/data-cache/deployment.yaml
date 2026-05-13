@@ -36,7 +36,10 @@ spec:
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.image.imagePullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8090
+          env:
+            - name: DATA_CACHE_SERVER_PORT
+              value: "8090"
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
