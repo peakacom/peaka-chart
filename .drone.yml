@@ -35,6 +35,22 @@ steps:
         helm dependency update .
         helm dependency build .
 
+        # Strip Traefik subchart CRDs
+        # Users must pre-apply the CRDs to the cluster before `helm install`
+        # We publish the bundle as a separate artifact alongside the chart.
+        apk add --no-cache tar gzip
+        mkdir -p ../release-artifacts
+        cat charts/traefik/crds/*.yaml \
+          > ../release-artifacts/traefik-crds-${DRONE_TAG#v}.yaml
+        rm -rf charts/traefik/crds
+        ( cd charts
+          tgz=$(echo traefik-*.tgz)
+          mkdir _repack && cd _repack
+          tar -xzf "../$tgz"
+          rm -rf traefik/crds
+          tar -czf "../$tgz" traefik
+          cd .. && rm -rf _repack )
+
         helm package .
     depends_on:
       - version-check
@@ -79,6 +95,9 @@ steps:
           cp index.yaml gs://peaka-chart/charts/
         gsutil -m -h "Cache-Control:public, max-age=31536000, immutable" \
           cp peaka-"${DRONE_TAG#v}".tgz gs://peaka-chart/charts/
+        gsutil -m -h "Cache-Control:public, max-age=31536000, immutable" \
+          cp ../release-artifacts/traefik-crds-"${DRONE_TAG#v}".yaml \
+          gs://peaka-chart/crds/
     volumes:
       - name: gcp-bucket-writer
         path: /gcp
@@ -94,6 +113,6 @@ volumes:
 
 ---
 kind: signature
-hmac: e6713df2dce820a307b0b7eb37a7447a3f7abbc04b4435bdf9e148c8c3e1d5e9
+hmac: 5b3dc03426483420ec04af33f20ad33e198d38aee4e6acece05ce8749a76f819
 
 ...

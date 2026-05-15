@@ -20,6 +20,27 @@ helm repo update
 kubectl create namespace peaka
 ```
 
+### Install Traefik CRDs
+Peaka uses Traefik `IngressRoute` and `Middleware` resources for routing. The
+Traefik CRDs must be applied to the cluster **before** `helm install`. Every
+chart release publishes a CRD bundle alongside it, so you can apply the bundle
+that matches whichever chart version you start from:
+
+```shell
+kubectl apply -f https://peaka-chart.storage.googleapis.com/crds/traefik-crds-<CHART_VERSION>.yaml
+```
+
+Replace `<CHART_VERSION>` with the chart version you intend to install (e.g.
+`1.1.0-beta.12`).
+
+**You do not need to re-apply the CRDs on every chart upgrade.** The contents
+of the CRD bundle only change when this chart starts depending on a new
+Traefik version. When that happens, the release notes for that chart version
+will call it out explicitly and tell you to re-run the `kubectl apply` above
+with the new bundle URL before running `helm upgrade`. As long as the release
+notes don't say so, upgrading the chart will keep working against the CRDs you
+applied at install time.
+
 ### Install
 ```shell
 helm install -n peaka [RELEASE_NAME] peaka/peaka
