@@ -29,10 +29,9 @@ spec:
     app.kubernetes.io/name: {{ include "peaka.temporal.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: frontend
-
----
 {{- range $service := (list "frontend" "matching" "history" "worker") }}
-{{- $serviceValues := index $.Values.temporal.server $service -}}
+{{- $serviceValues := index $.Values.temporal.server $service }}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -74,8 +73,6 @@ spec:
     app.kubernetes.io/name: {{ include "peaka.temporal.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/component: {{ $service }}
-
----
 {{- end }}
 {{- end }}
 {{- end }}
