@@ -57,6 +57,11 @@ imagePullSecrets: []
 
 # Configure the URL and port through which the services will be accessed.
 # Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.
+# !!! GOTCHA — see docs/extras/gotchas_invariants.md (#3)
+# These values are baked into CORS policies, JDBC URIs and frontend env vars at
+# `helm template` time. A wrong scheme (http vs https) yields a blank Studio
+# page with no obvious error. All four sub-keys (domain, scheme, port, dbcPort)
+# must be set BEFORE install. Do not change without reading the gotchas doc.
 accessUrl:
 
   # Set the common domain through which the services will be accessed.
@@ -187,6 +192,12 @@ connector:
 
 
 # TLS settings
+# !!! GOTCHA — see docs/extras/gotchas_invariants.md (#4)
+# When tls.enabled is true you MUST set either tls.secretName OR both
+# tls.cert and tls.key. chart/templates/tls-secret.yaml has `required`
+# clauses that fail render if neither path is satisfied. Prefer
+# tls.secretName — pasting a production key into version control is a
+# footgun. Do not change without reading the gotchas doc.
 tls:
   enabled: false
   # Name of an existing TLS secret in the namespace. If set, cert and key are ignored
@@ -206,6 +217,11 @@ dataMigrator:
 # peaka uses postgresql to persist some internal data.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 # If externalPostgresql is used, set postgresql.enabled to false
+# !!! GOTCHA — see docs/extras/gotchas_invariants.md (#1)
+# postgresql.enabled and externalPostgresql.enabled are mutually exclusive
+# AND one must be true. chart/templates/_validation.tpl fast-fails both
+# misconfigurations at render time. The same XOR rule applies to
+# minio/externalObjectStore and mongodb/externalMongoDB further below.
 postgresql:
   enabled: true
   image:
@@ -240,6 +256,12 @@ externalPostgresql:
   postgresPassword: postgres
 
 # metastore for internal iceberg
+# !!! GOTCHA — see docs/extras/gotchas_invariants.md (#2)
+# hiveMetastore.metastoreType is COUPLED to mariadb.enabled (defined below):
+#   - metastoreType: postgres → mariadb.enabled MUST be false
+#   - metastoreType: mysql    → mariadb.enabled MUST be true
+# chart/templates/_validation.tpl fails render if these diverge.
+# Do not change without reading the gotchas doc.
 hiveMetastore:
   enabled: true
   image:
@@ -380,6 +402,11 @@ redis:
   master:
     persistence:
       size: 4Gi
+  # !!! GOTCHA — see docs/extras/gotchas_invariants.md (#10)
+  # networkPolicy.enabled=false is a DELIBERATE workaround, not an oversight.
+  # Enabling it without first adding cross-namespace ingress rules will silently
+  # break Studio sessions and the BullMQ dashboard (commit d7907fe). If you
+  # want to harden this, scope ingressNSMatchLabels first and render-test.
   networkPolicy:
     enabled: false
 

@@ -103,6 +103,14 @@ nodeSelector:
 {{/*
 Return the proper tolerations
 {{ include "peaka.common.tolerations" ( dict "tolerations" .Values.path.to.the.tolerations "global" $.Values.global) }}
+
+!!! GOTCHA — see docs/extras/gotchas_invariants.md (#9)
+This helper EMITS its own 2-space indent (`indent 2` below). Callers must
+NOT pipe its output through `nindent`. Doing so double-indents and breaks
+YAML rendering across every service that uses it (commit e2149c0 — 30
+files, +33/-45). Pattern:
+  {{ include "peaka.common.tolerations" (dict ...) }}            # correct
+  {{ include "peaka.common.tolerations" (dict ...) | nindent 6 }} # wrong
 */}}
 {{- define "peaka.common.tolerations" -}}
   {{- $tolerations := .tolerations -}}
