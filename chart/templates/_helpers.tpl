@@ -239,7 +239,7 @@ CONNECTOR_BASEDIR: /run/resource/connector
 
 MATERIALIZED_VIEW_QUERY_TIMEOUT: {{ default 7200   .Values.dataCache.materializedViewQueryTimeout | quote }}
 
-SAMPLE_DATA_APP_ID: {{ .Values.sampleDataAppId }}
+SAMPLE_DATA_APP_ID: {{ default "" .Values.sampleDataAppId | quote }}
 
 BIGTABLE_BUFFER_DB_HOST: {{ include "peaka.postgresql.host" . }}
 BIGTABLE_BUFFER_DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
