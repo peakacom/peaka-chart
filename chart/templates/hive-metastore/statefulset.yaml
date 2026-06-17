@@ -41,15 +41,23 @@ spec:
               value: {{ .Values.hiveMetastore.hadoopHeapSize | quote }}
             - name: METASTORE_TYPE
               value: {{ .Values.hiveMetastore.metastoreType | quote }}
+            # JAVA_HOME for the UBI hive-metastore image (apache/hive on temurin).
+            # The old non-UBI image used /usr/lib/jvm/default-jvm/jre, which does
+            # not exist on the UBI base and crashed the metastore.
             - name: JAVA_HOME
-              value: /usr/lib/jvm/default-jvm/jre
+              value: {{ .Values.hiveMetastore.javaHome | default "/opt/java/openjdk" }}
             {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: HADOOP_OPTS
               value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
             {{- end }}
           volumeMounts:
             - name: hive-config
-              mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/
+              # apache/hive 4.1.0 (UBI image) reads metastore config from
+              # /opt/hive/conf; the old 3.0.0 path left the postgres connection
+              # un-applied so the metastore fell back to embedded Derby. Mount the
+              # single file via subPath so the image's other conf files are kept.
+              mountPath: /opt/hive/conf/metastore-site.xml
+              subPath: metastore-site.xml
             {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore

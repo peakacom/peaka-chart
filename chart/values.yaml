@@ -268,6 +268,8 @@ hiveMetastore:
     tag: v1.0.0-redhat_ubi
     pullPolicy: IfNotPresent
   hadoopHeapSize: 10240
+  # JAVA_HOME inside the UBI hive-metastore image (apache/hive on temurin).
+  javaHome: /opt/java/openjdk
   # db type to be used as metastore. One of mysql or postgres.
   # postgres is the Peaka default (mariadb/mysql subchart is disabled).
   metastoreType: postgres
@@ -280,7 +282,12 @@ minio:
   # UBI-wrapped MinIO; pull secret comes from global.imagePullSecrets.
   image:
     repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/minio
-    tag: RELEASE.2024-03-03T17-50-39Z-ubi.2
+    tag: RELEASE.2024-03-03T17-50-39Z-ubi.3
+  # OpenShift restricted-v2 rejects hardcoded runAsUser/fsGroup (1000); disable
+  # the chart's explicit securityContext so OpenShift assigns a UID from the
+  # namespace's allowed range.
+  securityContext:
+    enabled: false
   mode: standalone
   replicas: 1
   users: []
@@ -354,6 +361,12 @@ kafka:
     replicaCount: 1
     persistence:
       size: 4Gi
+    # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
+    # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
+    podSecurityContext:
+      fsGroup: null
+    containerSecurityContext:
+      runAsUser: null
   listeners:
     client:
       protocol: PLAINTEXT
@@ -387,6 +400,12 @@ mongodb:
     enabled: false
   persistence:
     size: 4Gi
+  # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
+  # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
+  podSecurityContext:
+    fsGroup: null
+  containerSecurityContext:
+    runAsUser: null
 
 # If you would like to use your own MongoDB server, disable mongodb, enable this and fill in the connection
 # details below.
@@ -427,6 +446,12 @@ redis:
   master:
     persistence:
       size: 4Gi
+    # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
+    # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
+    podSecurityContext:
+      fsGroup: null
+    containerSecurityContext:
+      runAsUser: null
   networkPolicy:
     enabled: false
 
@@ -1339,10 +1364,10 @@ trino:
     # passwordAuth: "username:encrypted-password-with-htpasswd"
   podSecurityContext:
     enabled: true
+  # OpenShift restricted-v2 rejects hardcoded runAsUser/runAsGroup/fsGroup;
+  # keep only runAsNonRoot so OpenShift assigns a UID from the namespace range.
   securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1001
+    runAsNonRoot: true
   coordinator:
     config:
       query:
@@ -2040,7 +2065,8 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.0.0-redhat_ubi
+    # .2 = surgically-patched image with the nginx pid → /tmp fix (arbitrary-UID).
+    tag: v1.0.0-redhat_ubi.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}

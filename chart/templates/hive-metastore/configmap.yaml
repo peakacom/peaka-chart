@@ -16,7 +16,8 @@ data:
       </property>
       <property>
           <name>metastore.task.threads.always</name>
-          <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+          <!-- MaterializationsCacheCleanerTask removed: not present in Hive 4.1.0 -->
+          <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>
       </property>
       <property>
           <name>metastore.expression.proxy</name>

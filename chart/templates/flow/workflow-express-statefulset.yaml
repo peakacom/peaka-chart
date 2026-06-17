@@ -35,7 +35,7 @@ spec:
         - name: workflow-worker-express
           image: {{ default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.image.registry }}/{{ .Values.workflowWorkerExpress.image.name }}:{{ .Values.workflowWorkerExpress.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.image.imagePullPolicy }}
-          command: ["/bin/sh", "-c", "export WORKER_ORDINAL_INDEX=${HOSTNAME##*-} && java -jar run/application.jar "]
+          command: ["/bin/sh", "-c", "export WORKER_ORDINAL_INDEX=${HOSTNAME##*-} && java -jar /run/application.jar "]
           ports:
             - name: http
               containerPort: 8090
