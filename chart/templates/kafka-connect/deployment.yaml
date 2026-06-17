@@ -86,10 +86,13 @@ spec:
           volumeMounts:
 {{ toYaml .Values.kafkaConnect.volumeMounts | indent 10 }}
           {{- end}}
-      {{- if .Values.kafkaConnect.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .Values.kafkaConnect.imagePullSecrets | indent 8 }}
-      {{- end }}
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       volumes:
       {{- if .Values.kafkaConnect.volumes }}
 {{ toYaml .Values.kafkaConnect.volumes | trim | indent 6 }}

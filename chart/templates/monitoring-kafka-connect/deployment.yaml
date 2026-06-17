@@ -99,10 +99,13 @@ spec:
               mountPath: /truststore
               readOnly: true
             {{- end }}
-      {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
       imagePullSecrets:
-{{ toYaml .Values.monitoringKafkaConnect.imagePullSecrets | indent 8 }}
-      {{- end }}
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
       volumes:
       {{- if .Values.monitoringKafkaConnect.volumes }}
 {{ toYaml .Values.monitoringKafkaConnect.volumes | trim | indent 6 }}
