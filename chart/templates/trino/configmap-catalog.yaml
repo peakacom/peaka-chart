@@ -34,3 +34,4 @@ data:
     hive.metastore-cache-maximum-size=100000
     iceberg.expire_snapshots.min-retention=30s
     iceberg.remove_orphan_files.min-retention=30s
+    iceberg.hive-catalog.locking-enabled=false
