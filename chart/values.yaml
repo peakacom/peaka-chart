@@ -1,5 +1,10 @@
 # global parameters
 global:
+  # Pull secret for the private GCP registry holding the UBI images; the minio
+  # subchart (and others) read pull secrets from global.imagePullSecrets.
+  imagePullSecrets:
+    - peaka-docker-registry
+
   # Default storage class for persistent volumes.
   # Leave empty ("") to use the cluster’s default storage class.
   storageClass: ""
@@ -48,6 +53,17 @@ imageRegistry: ""
 #       "file": "given-json-secret"
 #       }
 peakaContainerRegistryAccessSecret: {}
+
+# Pull secret for registry.redhat.io (Red Hat certified images).
+# Create a terms-based registry service account at
+# https://access.redhat.com/terms-based-registry/ and set its credentials here.
+# Example:
+# redhatRegistryAccessSecret:
+#   name: redhat-registry
+#   auth:
+#     username: "12345678|peaka"
+#     password: "<service-account-token>"
+redhatRegistryAccessSecret: {}
 
 # any additional imagePullSecrets for Peaka images
 # E.g.
@@ -200,7 +216,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.58
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -210,7 +226,7 @@ postgresql:
   image:
     registry:
     name: peaka-postgres
-    tag: 16.1-bullseye
+    tag: v1.0.0-redhat_ubi
   service:
     port: 5432
   persistence:
@@ -249,17 +265,22 @@ hiveMetastore:
   image:
     registry:
     name: hive-metastore
-    tag: v1.0.4
+    tag: v1.0.0-redhat_ubi
     pullPolicy: IfNotPresent
   hadoopHeapSize: 10240
-  # db type to be used as metastore. One of mysql or postgres
-  metastoreType: mysql
+  # db type to be used as metastore. One of mysql or postgres.
+  # postgres is the Peaka default (mariadb/mysql subchart is disabled).
+  metastoreType: postgres
   servicePort: 9083
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
 minio:
   enabled: true
+  # UBI-wrapped MinIO; pull secret comes from global.imagePullSecrets.
+  image:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/minio
+    tag: RELEASE.2024-03-03T17-50-39Z-ubi.2
   mode: standalone
   replicas: 1
   users: []
@@ -288,7 +309,7 @@ externalObjectStore:
 # database to be used for thrift store.
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
 mariadb:
-  enabled: true
+  enabled: false
   image:
     repository: bitnamilegacy/mariadb-galera
     tag: 10.11.4-debian-11-r3
@@ -309,8 +330,17 @@ mariadb:
 kafka:
   enabled: true
   nameOverride: kafka
+  # Peaka's UBI-rebased Apache Kafka image (certified). Bitnami subchart needs
+  # allowInsecureImages to accept a non-Bitnami-registry image.
+  global:
+    security:
+      allowInsecureImages: true
   image:
-    repository: bitnamilegacy/kafka
+    registry: europe-west3-docker.pkg.dev
+    repository: code2-324814/peaka-ubi-images/kafka
+    tag: 4.0.0-ubi.3
+    pullSecrets:
+      - peaka-docker-registry
   provisioning:
     numPartitions: 20
     replicationFactor: 1
@@ -339,8 +369,16 @@ kafka:
 # connection details under externalMongoDB.
 mongodb:
   enabled: true
+  # Bitnami subchart needs allowInsecureImages to accept the non-Bitnami UBI image.
+  global:
+    security:
+      allowInsecureImages: true
   image:
-    repository: bitnamilegacy/mongodb
+    registry: europe-west3-docker.pkg.dev
+    repository: code2-324814/peaka-ubi-images/mongodb
+    tag: 7.0.5-ubi.1
+    pullSecrets:
+      - peaka-docker-registry
   architecture: standalone
   useStatefulSet: true
   auth:
@@ -378,8 +416,13 @@ redis:
       allowInsecureImages: true
   auth:
     enabled: false
+  # Red Hat's own certified Redis image (terms-based registry.redhat.io).
   image:
-    repository: bitnamilegacy/redis
+    registry: registry.redhat.io
+    repository: rhel9/redis-7
+    tag: "9.8"
+    pullSecrets:
+      - redhat-registry
   architecture: standalone
   master:
     persistence:
@@ -390,7 +433,10 @@ redis:
 permify:
   enabled: true
   image:
-    tag: "v1.3.6"
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/permify
+    tag: v1.3.6-ubi.3
+  imagePullSecrets:
+    - name: peaka-docker-registry
   replicaCount: 1
   app:
     account_id: "recdK3q5xuwJdGjrh"
@@ -437,8 +483,10 @@ pgcat:
     type: ClusterIP
     port: 6432
   image:
-    repository: ghcr.io/postgresml/pgcat
-    tag: "v1.2.0"
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/pgcat
+    tag: v1.2.0-ubi.1
+    pullSecrets:
+      - name: peaka-docker-registry
   resources:
     limits: {}
     requests: {}
@@ -542,9 +590,9 @@ kafkaConnect:
   replicaCount: 1
 
   ## Image Info
-  ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
-  image: quay.io/debezium/connect
-  imageTag: 3.1
+  ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
+  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-peaka-kafka-connector
+  imageTag: v1.0.0-redhat_ubi.2
 
   ## Specify a imagePullPolicy
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -654,9 +702,9 @@ monitoringKafkaConnect:
   replicaCount: 1
 
   ## Image Info
-  ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
-  image: code2io/peaka-kafka-connect
-  imageTag: v1.0.1
+  ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
+  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-peaka-kafka-connector
+  imageTag: v1.0.0-redhat_ubi.2
 
   ## Specify a imagePullPolicy
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -779,6 +827,8 @@ monitoringKafkaConnect:
 # peaka relies on temporal for its workflow executions
 temporal:
   enabled: true
+  imagePullSecrets:
+    - name: peaka-docker-registry
   nameOverride: ""
   fullnameOverride: ""
 
@@ -799,8 +849,8 @@ temporal:
     enabled: true
     sidecarContainers: {}
     image:
-      repository: temporalio/server
-      tag: 1.22.4
+      repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/temporal-server
+      tag: 1.22.4-ubi.2
       pullPolicy: IfNotPresent
 
     # Global default settings (can be overridden per service)
@@ -1077,8 +1127,8 @@ temporal:
   admintools:
     enabled: false
     image:
-      repository: temporalio/admin-tools
-      tag: 1.22.4
+      repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/temporal-admin-tools
+      tag: 1.22.4-ubi.2
       pullPolicy: IfNotPresent
 
     service:
@@ -1109,8 +1159,8 @@ temporal:
     replicaCount: 1
 
     image:
-      repository: temporalio/ui
-      tag: 2.16.2
+      repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/temporal-ui
+      tag: 2.16.2-ubi.1
       pullPolicy: IfNotPresent
 
     service:
@@ -1281,7 +1331,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.4
+    tag: v1.0.0-redhat_ubi
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1504,7 +1554,7 @@ authService:
   replicaCount: 1
   image:
     name: be-auth-service
-    tag: v0.0.21
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1534,7 +1584,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.10
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1544,7 +1594,7 @@ collabSharedb:
   replicaCount: 1
   image:
     name: be-collab-sharedb
-    tag: v0.0.21
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1564,11 +1614,11 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.148
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
     resources: {}
   resources: {}
@@ -1600,7 +1650,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.4
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1610,7 +1660,7 @@ dispatcher:
   replicaCount: 1
   image:
     name: be-dispatcher
-    tag: v0.0.27
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1620,7 +1670,7 @@ dispatcherAssigner:
   replicaCount: 1
   image:
     name: be-dispatcher-assigner
-    tag: v0.0.13
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1630,7 +1680,7 @@ dispatcherDlq:
   replicaCount: 1
   image:
     name: be-dispatcher-dlq
-    tag: v0.0.14
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1640,7 +1690,7 @@ emailService:
   replicaCount: 1
   image:
     name: be-email-service
-    tag: v0.0.12
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1650,12 +1700,12 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v0.0.26
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
       name: be-metadata-connector
-      tag: v1.0.1
+      tag: v1.0.0-redhat_ubi
       imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1691,7 +1741,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v0.0.50
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1701,7 +1751,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.67
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1731,7 +1781,7 @@ runtimeApi:
   replicaCount: 1
   image:
     name: be-runtime-api
-    tag: v0.0.20
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1761,7 +1811,7 @@ scheduledFlowRunner:
   replicaCount: 1
   image:
     name: be-scheduled-flow-runner
-    tag: v0.0.11
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1791,7 +1841,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.122
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1803,7 +1853,7 @@ secretStoreService:
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
     name: be-secret-store-service
-    tag: v0.0.20
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1833,7 +1883,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.349
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1863,7 +1913,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.84
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1893,7 +1943,7 @@ webhookResolver:
   replicaCount: 1
   image:
     name: be-webhook-resolver
-    tag: v0.0.35
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1903,7 +1953,7 @@ workflowHistory:
   replicaCount: 1
   image:
     name: be-workflow-history
-    tag: v0.0.24
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1933,7 +1983,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.98
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1943,11 +1993,11 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.98
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
     resources: {}
     readinessProbe: {}
@@ -1979,7 +2029,7 @@ sqlService:
   replicaCount: 1
   image:
     name: be-sql-service
-    tag: v0.0.2
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1990,7 +2040,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.161
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2001,7 +2051,7 @@ releaseState:
   replicaCount: 1
   image:
     name: be-release-state
-    tag: v1.0.1
+    tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
   serviceAccount:
     create: true
@@ -2054,6 +2104,14 @@ releaseState:
 #       nodePort: 30567
 traefik:
   enabled: true
+  # UBI-wrapped Traefik image.
+  image:
+    registry: europe-west3-docker.pkg.dev
+    repository: code2-324814/peaka-ubi-images/traefik
+    tag: v3.0.1-ubi.1
+  deployment:
+    imagePullSecrets:
+      - name: peaka-docker-registry
   logs:
     general:
       level: DEBUG

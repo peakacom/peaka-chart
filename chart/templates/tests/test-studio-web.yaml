@@ -11,11 +11,12 @@ spec:
   restartPolicy: Never
   securityContext:
     runAsNonRoot: true
+    runAsUser: 1001
     seccompProfile:
       type: RuntimeDefault
   containers:
     - name: curl
-      image: curlimages/curl:8.10.1
+      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
       command: ["curl"]
       args:
         - "--fail"

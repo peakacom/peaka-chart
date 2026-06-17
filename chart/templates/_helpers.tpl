@@ -306,6 +306,19 @@ Create imagePullSecret to pull Peaka images
 {{- end -}}
 
 {{/*
+Create imagePullSecret for registry.redhat.io (terms-based registry service account)
+*/}}
+{{- define "peaka.redhatRegistry.secret" -}}
+{{- $registry := "registry.redhat.io" -}}
+{{- $username := .Values.redhatRegistryAccessSecret.auth.username -}}
+{{- $email := "not@val.id" -}}
+{{- $password := .Values.redhatRegistryAccessSecret.auth.password -}}
+{{- $auth := printf "%s:%s" $username $password | b64enc -}}
+{{- $config := dict "auths" (dict $registry (dict "username" $username "password" $password "email" $email "auth" $auth)) -}}
+{{- $config | toJson | b64enc -}}
+{{- end -}}
+
+{{/*
 Set http scheme for Peaka
 */}}
 {{- define "peaka.httpScheme" -}}
