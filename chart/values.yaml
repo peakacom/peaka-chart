@@ -2066,7 +2066,7 @@ studioWeb:
   image:
     name: fe-studio-app
     # .2 = surgically-patched image with the nginx pid → /tmp fix (arbitrary-UID).
-    tag: v1.0.0-redhat_ubi.2
+    tag: v1.0.0-redhat_ubi.3
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2135,6 +2135,13 @@ traefik:
     registry: europe-west3-docker.pkg.dev
     repository: code2-324814/peaka-ubi-images/traefik
     tag: v3.0.1-ubi.1
+  # OpenShift restricted-v2 rejects the chart's hardcoded runAsUser/runAsGroup
+  # (65532); null them so OpenShift assigns from the namespace range (keep
+  # runAsNonRoot).
+  podSecurityContext:
+    runAsUser: null
+    runAsGroup: null
+    runAsNonRoot: true
   deployment:
     imagePullSecrets:
       - name: peaka-docker-registry
