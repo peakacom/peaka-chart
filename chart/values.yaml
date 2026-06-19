@@ -616,7 +616,7 @@ kafkaConnect:
 
   ## Image Info
   ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
-  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-peaka-kafka-connector
+  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/peaka-kafka-connect
   imageTag: v1.0.0-redhat_ubi.2
 
   ## Specify a imagePullPolicy
@@ -728,7 +728,7 @@ monitoringKafkaConnect:
 
   ## Image Info
   ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
-  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/be-peaka-kafka-connector
+  image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/peaka-kafka-connect
   imageTag: v1.0.0-redhat_ubi.2
 
   ## Specify a imagePullPolicy
@@ -1938,7 +1938,8 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.0-redhat_ubi
+    # .3 = cert-published tag (base v1.0.0-redhat_ubi not published for this repo).
+    tag: v1.0.0-redhat_ubi.3
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2065,8 +2066,8 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    # .2 = surgically-patched image with the nginx pid → /tmp fix (arbitrary-UID).
-    tag: v1.0.0-redhat_ubi.3
+    # .5 = CI-built (pid→/tmp + SPA try_files), fresh digest (cert-published).
+    tag: v1.0.0-redhat_ubi.5
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
