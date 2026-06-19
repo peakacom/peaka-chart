@@ -935,12 +935,18 @@ temporal:
     nodeSelector: {}
     tolerations: []
     affinity: {}
-    additionalVolumes: []
-    additionalVolumeMounts: []
+    # OpenShift: emptyDir gives temporal a writable /etc/temporal/config under the
+    # SCC-assigned arbitrary UID (the image dir isn't writable by a non-default UID).
+    additionalVolumes:
+      - name: temporal-config-dir
+        emptyDir: {}
+    additionalVolumeMounts:
+      - name: temporal-config-dir
+        mountPath: /etc/temporal/config
     additionalEnv: []
-    securityContext:
-      fsGroup: 1000
-      runAsUser: 1000
+    # OpenShift restricted-v2 rejects hardcoded UID/fsGroup; leave empty so the
+    # namespace-assigned UID is used (consistent with the other subcharts).
+    securityContext: {}
 
     config:
       logLevel: "debug,info"
