@@ -1,5 +1,222 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Peaka chart values",
-  "type": "object"
+  "type": "object",
+  "required": [
+    "peakaContainerRegistryAccessSecret",
+    "tls",
+    "accessUrl",
+    "redhatRegistryAccessSecret"
+  ],
+  "properties": {
+    "peakaContainerRegistryAccessSecret": {
+      "type": "object",
+      "description": "Credentials used to pull the Peaka container images from the GCP Artifact Registry.",
+      "required": [
+        "gcpRegistryAuth"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of the image-pull Secret the chart creates (e.g. peaka-docker-registry)."
+        },
+        "gcpRegistryAuth": {
+          "type": "object",
+          "required": [
+            "password"
+          ],
+          "properties": {
+            "password": {
+              "type": "string",
+              "description": "Full JSON of a GCP service-account key with Artifact Registry Reader on the Peaka image repository."
+            }
+          }
+        }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "description": "TLS certificate and private key for the Peaka access domain.",
+      "required": [
+        "cert",
+        "key"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable in-chart TLS termination. Leave false when TLS is terminated by an OpenShift Route / edge."
+        },
+        "cert": {
+          "type": "string",
+          "description": "PEM-encoded TLS certificate (full chain) for the access domain."
+        },
+        "key": {
+          "type": "string",
+          "description": "PEM-encoded TLS private key matching the certificate."
+        }
+      }
+    },
+    "accessUrl": {
+      "type": "object",
+      "description": "Public URL the Peaka application is reached at (used for CORS, redirects and generated links).",
+      "required": [
+        "domain",
+        "scheme",
+        "port"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Application domain, e.g. onpremise.peaka.dev"
+        },
+        "scheme": {
+          "type": "string",
+          "enum": [
+            "http",
+            "https"
+          ],
+          "description": "URL scheme."
+        },
+        "port": {
+          "type": "integer",
+          "description": "Application port (e.g. 443)."
+        },
+        "dbcDomain": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Domain for the JDBC/DBC endpoint, e.g. onpremise-dbc.peaka.dev"
+        },
+        "dbcPort": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Port for the JDBC/DBC endpoint."
+        }
+      }
+    },
+    "redhatRegistryAccessSecret": {
+      "type": "object",
+      "description": "registry.redhat.io terms-based registry service-account credentials (used to pull the Red Hat redis image).",
+      "required": [
+        "auth"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of the registry.redhat.io pull Secret the chart creates."
+        },
+        "auth": {
+          "type": "object",
+          "required": [
+            "username",
+            "password"
+          ],
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "Registry service-account username (e.g. 12345678|image-pull-service-account)."
+            },
+            "password": {
+              "type": "string",
+              "description": "Registry service-account token."
+            }
+          }
+        }
+      }
+    },
+    "predefinedUsers": {
+      "type": "array",
+      "description": "Optional list of users seeded at install time.",
+      "items": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "openAIApiKey": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional OpenAI API key to enable AI-assisted features."
+    },
+    "sampleDataAppId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional sample-data application id to seed demo data."
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Optional Kubernetes Ingress for the web UI (alternative to an OpenShift Route).",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "ingressClassName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hosts": {
+          "type": "array"
+        },
+        "tls": {
+          "type": "array"
+        }
+      }
+    },
+    "dbcIngress": {
+      "type": "object",
+      "description": "Optional Kubernetes Ingress for the JDBC/DBC endpoint.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "ingressClassName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hosts": {
+          "type": "array"
+        },
+        "tls": {
+          "type": "array"
+        }
+      }
+    }
+  }
 }
