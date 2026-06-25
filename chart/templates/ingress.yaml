@@ -31,6 +31,7 @@ spec:
   {{- end }}
 
   rules:
+    {{- if .Values.ingress.hosts }}
     {{- range .Values.ingress.hosts }}
     - host: {{ .host }}
       http:
@@ -42,8 +43,20 @@ spec:
               service:
                 name: {{ include "peaka.fullname" $ }}-traefik
                 port:
-                  number: {{ $.Values.traefik.ports.web.exposedPort }}
+                  number: {{ include "peaka.ingress.servicePort" $ }}
           {{- end }}
+    {{- end }}
+    {{- else }}
+    - host: {{ .Values.accessUrl.domain }}
+      http:
+        paths:
+          - path: {{ include "peaka.ingress.path" . | quote }}
+            pathType: {{ include "peaka.ingress.pathType" . }}
+            backend:
+              service:
+                name: {{ include "peaka.fullname" . }}-traefik
+                port:
+                  number: {{ include "peaka.ingress.servicePort" . }}
     {{- end }}
 {{- end }}
 

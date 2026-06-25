@@ -52,7 +52,10 @@ imageRegistry: ""
 #       {
 #       "file": "given-json-secret"
 #       }
-peakaContainerRegistryAccessSecret: {}
+# name is the in-cluster pull Secret the chart creates; defaulted so users only
+# need to supply gcpRegistryAuth.password. Override only to avoid a name clash.
+peakaContainerRegistryAccessSecret:
+  name: peaka-docker-registry
 
 # Pull secret for registry.redhat.io (Red Hat certified images).
 # Create a terms-based registry service account at
@@ -205,9 +208,10 @@ connector:
 # TLS settings
 tls:
   enabled: false
-  # Name of an existing TLS secret in the namespace. If set, cert and key are ignored
+  # Name of an existing kubernetes.io/tls secret. If set, cert/key below are ignored.
+  # Recommended on OpenShift: oc create secret tls <name> --cert=fullchain.pem --key=key.pem
   secretName: ""
-  # TLS certificate value. Required if secretName is not set
+  # TLS certificate value (full chain: leaf + intermediates). Required if secretName is not set
   cert: ""
   # TLS private key value. Required if secretName is not set
   key: ""

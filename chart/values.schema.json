@@ -5,8 +5,7 @@
   "required": [
     "peakaContainerRegistryAccessSecret",
     "tls",
-    "accessUrl",
-    "redhatRegistryAccessSecret"
+    "accessUrl"
   ],
   "properties": {
     "peakaContainerRegistryAccessSecret": {
@@ -16,13 +15,6 @@
         "gcpRegistryAuth"
       ],
       "properties": {
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Name of the image-pull Secret the chart creates (e.g. peaka-docker-registry)."
-        },
         "gcpRegistryAuth": {
           "type": "object",
           "required": [
@@ -39,23 +31,26 @@
     },
     "tls": {
       "type": "object",
-      "description": "TLS certificate and private key for the Peaka access domain.",
-      "required": [
-        "cert",
-        "key"
-      ],
+      "description": "TLS for the Peaka access domain. Either reference an existing secret (secretName) or provide cert + key.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable in-chart TLS termination. Leave false when TLS is terminated by an OpenShift Route / edge."
+          "description": "Enable in-chart TLS termination (Traefik serves the certificate on its websecure entrypoint). Leave false when TLS is terminated upstream by an OpenShift Route / edge."
+        },
+        "secretName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of an existing kubernetes.io/tls secret to use instead of cert/key. Recommended on OpenShift: pre-create it with `oc create secret tls <name> --cert=fullchain.pem --key=key.pem` and set this. The catalog install form is single-line and strips PEM newlines when pasted, so referencing a pre-created secret is the reliable path."
         },
         "cert": {
           "type": "string",
-          "description": "PEM-encoded TLS certificate (full chain) for the access domain."
+          "description": "PEM-encoded TLS certificate, full chain (leaf + intermediates). Used only when secretName is not set; prefer secretName on OpenShift."
         },
         "key": {
           "type": "string",
-          "description": "PEM-encoded TLS private key matching the certificate."
+          "description": "PEM-encoded TLS private key matching the certificate. Used only when secretName is not set."
         }
       }
     },
@@ -102,18 +97,8 @@
     },
     "redhatRegistryAccessSecret": {
       "type": "object",
-      "description": "registry.redhat.io terms-based registry service-account credentials (used to pull the Red Hat redis image).",
-      "required": [
-        "auth"
-      ],
+      "description": "Optional. registry.redhat.io credentials for the Red Hat redis image. Not needed on OpenShift \u2014 the cluster's global pull secret already covers registry.redhat.io. Provide only on clusters without it.",
       "properties": {
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Name of the registry.redhat.io pull Secret the chart creates."
-        },
         "auth": {
           "type": "object",
           "required": [

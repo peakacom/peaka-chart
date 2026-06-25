@@ -347,6 +347,31 @@ Set Ingress route entry point based on TLS enabled
 {{- end }}
 {{- end }}
 
+{{/*
+Set the Traefik service port the Ingress backend targets, based on TLS enabled.
+When TLS is enabled Traefik terminates TLS on websecure, so the Ingress (e.g. a
+passthrough OpenShift Route) must target the websecure port; otherwise web (HTTP).
+*/}}
+{{- define "peaka.ingress.servicePort" -}}
+{{- if .Values.tls.enabled -}}
+{{- .Values.traefik.ports.websecure.exposedPort }}
+{{- else }}
+{{- .Values.traefik.ports.web.exposedPort }}
+{{- end }}
+{{- end }}
+
+{{/*
+Default Ingress path / pathType when derived from accessUrl. With TLS enabled the
+Ingress is meant to become a passthrough OpenShift Route, which requires an empty
+path and ImplementationSpecific pathType; otherwise a normal "/" Prefix path.
+*/}}
+{{- define "peaka.ingress.path" -}}
+{{- ternary "" "/" .Values.tls.enabled -}}
+{{- end }}
+{{- define "peaka.ingress.pathType" -}}
+{{- ternary "ImplementationSpecific" "Prefix" .Values.tls.enabled -}}
+{{- end }}
+
 
 {{- define "peaka.routes.baseUrl" -}}
 {{- if .Values.accessUrl.port -}}
