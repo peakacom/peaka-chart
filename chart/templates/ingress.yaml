@@ -62,7 +62,7 @@ spec:
 
 ---
 
-{{- if .Values.dbcIngress.enabled }}
+{{- if and .Values.dbcIngress.enabled (or .Values.dbcIngress.hosts .Values.accessUrl.dbcDomain) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -95,6 +95,7 @@ spec:
   {{- end }}
 
   rules:
+    {{- if .Values.dbcIngress.hosts }}
     {{- range .Values.dbcIngress.hosts }}
     - host: {{ .host }}
       http:
@@ -108,5 +109,17 @@ spec:
                 port:
                   number: {{ $.Values.traefik.ports.dbc.exposedPort }}
           {{- end }}
+    {{- end }}
+    {{- else if .Values.accessUrl.dbcDomain }}
+    - host: {{ .Values.accessUrl.dbcDomain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "peaka.fullname" . }}-traefik
+                port:
+                  number: {{ .Values.traefik.ports.dbc.exposedPort }}
     {{- end }}
 {{- end }}
