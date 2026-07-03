@@ -154,8 +154,26 @@ dbcIngress:
   #     hosts:
   #       - example.com
 
-# Additional parameters for ingressRoute resources
-ingressRoute:
+# How the in-cluster router (Traefik) receives its routing configuration.
+#
+#   file (default): routes and middlewares are rendered into the
+#     peaka-traefik-dynamic-config ConfigMap and mounted into the Traefik pod.
+#     No Traefik CRDs and no Kubernetes API access are needed, so the whole
+#     installation stays namespace-scoped.
+#
+#   crd: the legacy behaviour. Routes are created as IngressRoute/Middleware
+#     custom resources. Switching to this mode requires, in addition to this
+#     flag, that (a) the Traefik CRDs are already installed on the cluster and
+#     (b) the following subchart values are set (they cannot follow this flag
+#     automatically because subchart values are not templatable):
+#       traefik.providers.kubernetesCRD.enabled: true
+#       traefik.rbac.enabled: true
+#     The file-provider plumbing (traefik.additionalArguments file flags,
+#     traefik.deployment.additionalVolumes, traefik.additionalVolumeMounts) may
+#     also be cleared in crd mode, but that is optional: the chart ships an
+#     empty config file so Traefik starts fine with the mounts left in place.
+routing:
+  provider: file
 
 # set default oauth clients to be used for initializing respective connections
 connector:
@@ -2156,6 +2174,35 @@ traefik:
   deployment:
     imagePullSecrets:
       - name: peaka-docker-registry
+    # CRD-free routing: the dynamic configuration (rendered by
+    # templates/traefik-dynamic-config.yaml) and the TLS certificate are
+    # mounted as plain files. The names are fixed literals because subchart
+    # values cannot be templated. The TLS secret is optional so the pod also
+    # starts when tls.enabled=false (edge/Route termination).
+    additionalVolumes:
+      - name: peaka-dynamic-config
+        configMap:
+          name: peaka-traefik-dynamic-config
+      - name: peaka-traefik-tls
+        secret:
+          secretName: peaka-traefik-tls
+          optional: true
+  additionalVolumeMounts:
+    - name: peaka-dynamic-config
+      mountPath: /config
+      readOnly: true
+    - name: peaka-traefik-tls
+      mountPath: /certs
+      readOnly: true
+  # Load the routing configuration from the mounted file instead of the
+  # kubernetesCRD provider (no IngressRoute/Middleware CRDs required).
+  additionalArguments:
+    - "--providers.file.filename=/config/dynamic.yaml"
+    - "--providers.file.watch=true"
+  # The dashboard IngressRoute would need the CRDs; keep it off.
+  ingressRoute:
+    dashboard:
+      enabled: false
   logs:
     general:
       level: DEBUG
@@ -2211,20 +2258,14 @@ traefik:
     - "--api.insecure=true"
     - "--api.dashboard=true"
     - "--log.level=DEBUG"
+  # Routing comes from the file provider only; Traefik does not talk to the
+  # Kubernetes API at all, so no RBAC objects are needed.
   rbac:
-    enabled: true
-    namespaced: true
+    enabled: false
   ingressClass:
     enabled: false
   providers:
     kubernetesCRD:
-      enabled: true
-      allowCrossNamespace: false
-      allowExternalNameServices: false
-      allowEmptyServices: false
-      # ingressClass: traefik-internal
-      # labelSelector: environment=production,method=traefik
-      namespaces: []
-      # - "default"
+      enabled: false
     kubernetesIngress:
       enabled: false

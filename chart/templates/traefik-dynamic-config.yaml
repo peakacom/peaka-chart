@@ -1,0 +1,299 @@
+{{- /*
+CRD-free Traefik routing.
+
+This dynamic configuration replaces the former IngressRoute/Middleware custom
+resources one-to-one, so the chart no longer needs the Traefik CRDs (and the
+install stays fully namespace-scoped). Traefik loads it through its file
+provider: the ConfigMap is mounted into the Traefik pod via
+traefik.deployment.additionalVolumes and read with
+--providers.file.filename=/config/dynamic.yaml (see the traefik block in
+values.yaml).
+
+The ConfigMap name is intentionally a fixed literal (not release-scoped):
+subchart values cannot be templated, so the volume in values.yaml has to
+reference a constant name. Same applies to the TLS secret (peaka-traefik-tls).
+*/}}
+{{- if .Values.traefik.enabled }}
+{{- $fullname := include "peaka.fullname" . }}
+{{- $ep := include "peaka.ingress.entryPoint" . }}
+{{- $ns := .Release.Namespace }}
+{{- $svcPath := include "peaka.routes.servicePath" . }}
+{{- $mode := dig "provider" "file" (.Values.routing | default dict) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peaka-traefik-dynamic-config
+  labels:
+    app.kubernetes.io/name: {{ $fullname }}-traefik-dynamic-config
+    {{- include "peaka.labels" . | nindent 4 }}
+data:
+{{- if ne $mode "file" }}
+  # routing.provider is "{{ $mode }}": routing is served by the kubernetesCRD
+  # provider (IngressRoute/Middleware objects), this file stays empty on purpose.
+  dynamic.yaml: |
+    http: {}
+{{- else }}
+  dynamic.yaml: |
+    http:
+      routers:
+        api:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ include "peaka.routes.apiPath" . }}`)"
+          priority: 10
+          service: be-dispatcher
+        cloud-gateway:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ include "peaka.routes.partnerPath" . }}`)"
+          priority: 10
+          middlewares: ["strip-partner"]
+          service: be-cloud-gateway
+        collab-sharedb:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/sharedb`)"
+          priority: 10
+          middlewares: ["forwarded-proto", "strip-sharedb"]
+          service: be-collab-sharedb-websocket
+        data-cache:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/data-cache`)"
+          priority: 11
+          middlewares: ["auth-data-cache", "strip-studioapi"]
+          service: be-data-cache
+        data-rest:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/data`)"
+          priority: 10
+          middlewares: ["auth-data-rest", "strip-studioapi"]
+          service: be-data-rest
+        dispatcher:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/dispatcher`)"
+          priority: 10
+          middlewares: ["strip-dispatcher"]
+          service: be-dispatcher
+        release-state:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/api/release/status`)"
+          priority: 11
+          middlewares: ["strip-studioapi"]
+          service: be-release-state
+        runtime-api:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/runtimeapi`)"
+          priority: 10
+          middlewares: ["strip-runtimeapi"]
+          service: be-runtime-api
+        search:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/search`)"
+          priority: 99
+          middlewares: ["auth-search", "strip-studioapi"]
+          service: be-search-service
+        search-metadata:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/metadata`)"
+          priority: 99
+          middlewares: ["auth-search-metadata", "strip-studioapi"]
+          service: be-search-service
+        ai-agent:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/ai-agent`)"
+          priority: 99
+          middlewares: ["auth-ai-agent", "strip-studioapi"]
+          service: be-search-service
+        {{- if .Values.searchService.bullDashboardEnabled }}
+        bull-dashboard:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/admin/queues`)"
+          priority: 100
+          service: be-search-service
+        {{- end }}
+        studio-api:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/api`)"
+          priority: 10
+          middlewares: ["drop-internal-headers", "strip-studioapi"]
+          service: be-studio-api
+        oauth-callback:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/oauth2/callback`)"
+          priority: 101
+          middlewares: ["oauth-replace-path"]
+          service: be-studio-api
+        workflow-history:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ $svcPath }}/studioapi/history`)"
+          priority: 10
+          middlewares: ["auth-workflow-history", "strip-studioapi"]
+          service: be-workflow-history
+        fe-studio-app:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/`)"
+          priority: 1
+          service: fe-studio-app
+        dbc:
+          entryPoints: ["dbc"]
+          rule: "PathPrefix(`/`)"
+          priority: 1000
+          middlewares: ["trino-extra-credential"]
+          service: be-data-rest
+
+      middlewares:
+        # Shared path-strip middlewares (identical regexes were deduplicated
+        # from the former per-route Middleware objects).
+        strip-studioapi:
+          replacePathRegex:
+            regex: "^/{{ $svcPath }}/studioapi/(.*)"
+            replacement: "/${1}"
+        strip-dispatcher:
+          replacePathRegex:
+            regex: "^/{{ $svcPath }}/dispatcher/(.*)"
+            replacement: "/${1}"
+        strip-runtimeapi:
+          replacePathRegex:
+            regex: "^/{{ $svcPath }}/runtimeapi/(.*)"
+            replacement: "/${1}"
+        strip-sharedb:
+          replacePathRegex:
+            regex: "^/{{ $svcPath }}/sharedb/(.*)"
+            replacement: "/${1}"
+        strip-partner:
+          replacePathRegex:
+            regex: "^/{{ include "peaka.routes.partnerPath" . }}/(.*)"
+            replacement: "/${1}"
+        oauth-replace-path:
+          replacePath:
+            path: /api/connections/oauth2/callback
+        forwarded-proto:
+          headers:
+            customRequestHeaders:
+              {{- if .Values.tls.enabled }}
+              X-Forwarded-Proto: https
+              {{- else }}
+              X-Forwarded-Proto: http
+              {{- end }}
+        drop-internal-headers:
+          headers:
+            customRequestHeaders:
+              X-Peaka-User-Id: ""
+              X-Peaka-Scope: ""
+        auth-data-cache:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/data-cache-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+        auth-data-rest:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/data-rest-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+            authResponseHeaders:
+              - "X-Peaka-User-Id"
+              - "X-Peaka-Api-Key"
+              - "X-Peaka-Username"
+        auth-search:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/search-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+            authResponseHeaders:
+              - "X-Peaka-User-Id"
+              - "X-Peaka-Api-Key"
+        auth-search-metadata:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/search-metadata-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+            authResponseHeaders:
+              - "X-Peaka-User-Id"
+              - "X-Peaka-Api-Key"
+        auth-ai-agent:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/ai-agent-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+            authResponseHeaders:
+              - "X-Peaka-User-Id"
+              - "X-Peaka-Api-Key"
+        auth-workflow-history:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/workflow-history-auth-check
+            authResponseHeadersRegex: ^X-Internal-Authorization-
+        trino-extra-credential:
+          forwardAuth:
+            address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/dbc-custom-header-handling
+            authResponseHeaders:
+              - "X-Trino-Extra-Credential"
+              - "X-Peaka-User-Id"
+              - "X-Peaka-Api-Key"
+
+      services:
+        be-dispatcher:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-dispatcher:80
+        be-cloud-gateway:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-cloud-gateway:80
+        be-collab-sharedb-websocket:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-collab-sharedb-websocket:443
+        be-data-cache:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-data-cache:80
+        be-data-rest:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-data-rest:80
+        be-release-state:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-release-state:80
+        be-runtime-api:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-runtime-api:80
+        be-search-service:
+          loadBalancer:
+            passHostHeader: true
+            sticky:
+              cookie:
+                name: {{ $fullname }}
+                httpOnly: true
+                secure: true
+            servers:
+              - url: http://{{ $fullname }}-be-search-service:80
+        be-studio-api:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-studio-api:80
+        be-workflow-history:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-workflow-history:80
+        fe-studio-app:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-fe-studio-app:80
+
+    {{- if .Values.tls.enabled }}
+    tls:
+      certificates:
+        - certFile: /certs/tls.crt
+          keyFile: /certs/tls.key
+      stores:
+        default:
+          defaultCertificate:
+            certFile: /certs/tls.crt
+            keyFile: /certs/tls.key
+    {{- end }}
+{{- end }}
+{{- end }}

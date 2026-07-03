@@ -42,7 +42,7 @@
             "string",
             "null"
           ],
-          "description": "Name of an existing kubernetes.io/tls secret to use instead of cert/key. Recommended on OpenShift: pre-create it with `oc create secret tls <name> --cert=fullchain.pem --key=key.pem` and set this. The catalog install form is single-line and strips PEM newlines when pasted, so referencing a pre-created secret is the reliable path."
+          "description": "Set to 'peaka-traefik-tls' to use an existing kubernetes.io/tls secret instead of cert/key. The secret must be named exactly peaka-traefik-tls (it is mounted into the router pod under that fixed name): pre-create it with `oc create secret tls peaka-traefik-tls --cert=fullchain.pem --key=key.pem`. Recommended on OpenShift - the catalog install form is single-line and strips PEM newlines when pasted."
         },
         "cert": {
           "type": "string",
@@ -115,6 +115,20 @@
               "description": "Registry service-account token."
             }
           }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "description": "How the in-cluster router (Traefik) receives its routing configuration.",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "file",
+            "crd"
+          ],
+          "description": "file (default): routing is mounted as a plain config file; no Traefik CRDs and no cluster-scoped permissions are needed. crd: legacy IngressRoute/Middleware custom resources; requires the Traefik CRDs on the cluster plus traefik.providers.kubernetesCRD.enabled=true and traefik.rbac.enabled=true."
         }
       }
     },
