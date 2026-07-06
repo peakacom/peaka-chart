@@ -30,11 +30,11 @@
     },
     "traefikTls": {
       "type": "object",
-      "description": "TLS termination by Peaka's internal router. Leave disabled in the default setup and define TLS on the Ingress instead (ingress.tls). Enable only when the router is exposed directly, e.g. through a LoadBalancer service.",
+      "description": "TLS termination by the built-in Traefik router. Leave disabled in the default setup and define TLS on the Ingress instead (ingress.tls). Enable only when the Traefik router is exposed directly, e.g. through a LoadBalancer service.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable only when the router is exposed directly and must terminate TLS itself."
+          "description": "Enable only when the Traefik router is exposed directly and must terminate TLS itself."
         },
         "secretName": {
           "type": [
@@ -90,7 +90,7 @@
             "integer",
             "null"
           ],
-          "description": "Port JDBC clients connect to: 443 when exposed through an ingress (default), 4567 when the router is exposed directly."
+          "description": "Port JDBC clients connect to: 443 when exposed through an ingress (default), 4567 when the Traefik router is exposed directly."
         }
       }
     },
@@ -119,7 +119,7 @@
     },
     "routing": {
       "type": "object",
-      "description": "How the internal router receives its routing configuration.",
+      "description": "How the built-in Traefik router receives its routing configuration.",
       "properties": {
         "provider": {
           "type": "string",
