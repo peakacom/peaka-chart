@@ -24,8 +24,12 @@ spec:
     {{- range .Values.ingress.tls }}
     - secretName: {{ .secretName }}
       hosts:
+        {{- if .hosts }}
         {{- range .hosts }}
         - {{ . }}
+        {{- end }}
+        {{- else }}
+        - {{ $.Values.accessUrl.domain }}
         {{- end }}
     {{- end }}
   {{- end }}
@@ -88,8 +92,12 @@ spec:
     {{- range .Values.dbcIngress.tls }}
     - secretName: {{ .secretName }}
       hosts:
+        {{- if .hosts }}
         {{- range .hosts }}
         - {{ . }}
+        {{- end }}
+        {{- else }}
+        - {{ $.Values.accessUrl.dbcDomain }}
         {{- end }}
     {{- end }}
   {{- end }}

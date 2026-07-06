@@ -21,7 +21,7 @@ spec:
         - name: {{ include "peaka.fullname" . }}-fe-studio-app
           port: http
           passHostHeader: true
-  {{- if .Values.tls.enabled }}
+  {{- if (include "peaka.traefikTls.enabled" .) }}
   tls:
-    secretName: {{ .Values.tls.secretName | default "peaka-traefik-tls" }}
+    secretName: {{ include "peaka.traefikTls.secretName" . | default "peaka-traefik-tls" }}
   {{- end }}{{- end }}

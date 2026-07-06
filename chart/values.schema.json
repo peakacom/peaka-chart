@@ -4,7 +4,6 @@
   "type": "object",
   "required": [
     "peakaContainerRegistryAccessSecret",
-    "tls",
     "accessUrl"
   ],
   "properties": {
@@ -29,13 +28,13 @@
         }
       }
     },
-    "tls": {
+    "traefikTls": {
       "type": "object",
-      "description": "TLS for the Peaka access domain. Either reference an existing secret (secretName) or provide cert + key.",
+      "description": "TLS termination by Traefik itself - only for the direct LoadBalancer exposure path. In the default setup (behind your ingress controller / OpenShift Route) leave this disabled and terminate TLS at your edge (ingress.tls) instead.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable in-chart TLS termination (Traefik serves the certificate on its websecure entrypoint). Leave false when TLS is terminated upstream by an OpenShift Route / edge."
+          "description": "Enable only when Traefik is exposed directly (LoadBalancer) and must terminate TLS itself. Leave false (default) when an ingress controller or OpenShift Route in front terminates TLS."
         },
         "secretName": {
           "type": [
@@ -91,7 +90,7 @@
             "integer",
             "null"
           ],
-          "description": "Port for the JDBC/DBC endpoint."
+          "description": "Port JDBC clients connect to. Must match how DBC is exposed: 443 behind an ingress/Route (default path), 4567 when Traefik is exposed directly via LoadBalancer."
         }
       }
     },
@@ -177,7 +176,7 @@
     },
     "ingress": {
       "type": "object",
-      "description": "Optional Kubernetes Ingress for the web UI (alternative to an OpenShift Route).",
+      "description": "Ingress for the web UI - the default exposure path. The host rule is derived from accessUrl.domain when hosts is empty. Terminate TLS here (ingress.tls) with your certificate secret. On OpenShift the Ingress is converted to a Route automatically.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -192,13 +191,33 @@
           "type": "array"
         },
         "tls": {
-          "type": "array"
+          "type": "array",
+          "description": "TLS for the web Ingress - required for HTTPS in the default path (without it the OpenShift Route is HTTP-only). Reference your certificate secret here.",
+          "items": {
+            "type": "object",
+            "required": [
+              "secretName"
+            ],
+            "properties": {
+              "secretName": {
+                "type": "string",
+                "description": "Name of the kubernetes.io/tls secret holding the certificate served at the edge. Any name works here (the fixed peaka-traefik-tls name only applies to the top-level tls block)."
+              },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Hostnames this certificate covers. Leave empty to default to the derived host (accessUrl.domain / accessUrl.dbcDomain)."
+              }
+            }
+          }
         }
       }
     },
     "dbcIngress": {
       "type": "object",
-      "description": "Optional Kubernetes Ingress for the JDBC/DBC endpoint.",
+      "description": "Ingress for the JDBC/DBC endpoint - the default exposure path. Rendered only when accessUrl.dbcDomain is set (or hosts is given).",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -213,7 +232,27 @@
           "type": "array"
         },
         "tls": {
-          "type": "array"
+          "type": "array",
+          "description": "TLS for the DBC Ingress. May reference a different certificate secret than the web Ingress (e.g. when DBC is exposed on another domain).",
+          "items": {
+            "type": "object",
+            "required": [
+              "secretName"
+            ],
+            "properties": {
+              "secretName": {
+                "type": "string",
+                "description": "Name of the kubernetes.io/tls secret holding the certificate served at the edge. Any name works here (the fixed peaka-traefik-tls name only applies to the top-level tls block)."
+              },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Hostnames this certificate covers. Leave empty to default to the derived host (accessUrl.domain / accessUrl.dbcDomain)."
+              }
+            }
+          }
         }
       }
     }

@@ -337,10 +337,32 @@ Set ws scheme for Peaka
 {{- end }}
 
 {{/*
-Set Ingress route entry point based on TLS enabled
+In-router TLS termination (traefikTls). The old top-level `tls` block is still
+honoured for backward compatibility: the helpers below read traefikTls first
+and fall back to tls, so existing values files keep working while only the new
+name is documented and exposed in the form.
+*/}}
+{{- define "peaka.traefikTls.enabled" -}}
+{{- if or (dig "enabled" false (.Values.traefikTls | default dict)) (dig "enabled" false (.Values.tls | default dict)) -}}true{{- end -}}
+{{- end }}
+
+{{- define "peaka.traefikTls.secretName" -}}
+{{- default (dig "secretName" "" (.Values.tls | default dict)) (dig "secretName" "" (.Values.traefikTls | default dict)) -}}
+{{- end }}
+
+{{- define "peaka.traefikTls.cert" -}}
+{{- default (dig "cert" "" (.Values.tls | default dict)) (dig "cert" "" (.Values.traefikTls | default dict)) -}}
+{{- end }}
+
+{{- define "peaka.traefikTls.key" -}}
+{{- default (dig "key" "" (.Values.tls | default dict)) (dig "key" "" (.Values.traefikTls | default dict)) -}}
+{{- end }}
+
+{{/*
+Set Ingress route entry point based on in-router TLS termination
 */}}
 {{- define "peaka.ingress.entryPoint" -}}
-{{- if .Values.tls.enabled -}}
+{{- if (include "peaka.traefikTls.enabled" .) -}}
 {{- "websecure" }}
 {{- else }}
 {{- "web" }}
@@ -348,12 +370,12 @@ Set Ingress route entry point based on TLS enabled
 {{- end }}
 
 {{/*
-Set the Traefik service port the Ingress backend targets, based on TLS enabled.
-When TLS is enabled Traefik terminates TLS on websecure, so the Ingress (e.g. a
-passthrough OpenShift Route) must target the websecure port; otherwise web (HTTP).
+Set the Traefik service port the Ingress backend targets, based on in-router TLS.
+When Traefik terminates TLS itself, the Ingress (e.g. a passthrough OpenShift
+Route) must target the websecure port; otherwise web (HTTP).
 */}}
 {{- define "peaka.ingress.servicePort" -}}
-{{- if .Values.tls.enabled -}}
+{{- if (include "peaka.traefikTls.enabled" .) -}}
 {{- .Values.traefik.ports.websecure.exposedPort }}
 {{- else }}
 {{- .Values.traefik.ports.web.exposedPort }}
@@ -361,15 +383,15 @@ passthrough OpenShift Route) must target the websecure port; otherwise web (HTTP
 {{- end }}
 
 {{/*
-Default Ingress path / pathType when derived from accessUrl. With TLS enabled the
-Ingress is meant to become a passthrough OpenShift Route, which requires an empty
-path and ImplementationSpecific pathType; otherwise a normal "/" Prefix path.
+Default Ingress path / pathType when derived from accessUrl. With in-router TLS
+the Ingress is meant to become a passthrough OpenShift Route, which requires an
+empty path and ImplementationSpecific pathType; otherwise a normal "/" Prefix.
 */}}
 {{- define "peaka.ingress.path" -}}
-{{- ternary "" "/" .Values.tls.enabled -}}
+{{- if (include "peaka.traefikTls.enabled" .) -}}{{- "" -}}{{- else -}}/{{- end -}}
 {{- end }}
 {{- define "peaka.ingress.pathType" -}}
-{{- ternary "ImplementationSpecific" "Prefix" .Values.tls.enabled -}}
+{{- if (include "peaka.traefikTls.enabled" .) -}}ImplementationSpecific{{- else -}}Prefix{{- end -}}
 {{- end }}
 
 

@@ -76,6 +76,9 @@ imagePullSecrets: []
 
 # Configure the URL and port through which the services will be accessed.
 # Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.
+# Public URL the application is reached at, as seen by the end user (i.e. at
+# your edge). Independent of in-cluster TLS: with the default setup the edge
+# terminates TLS, so scheme https + traefikTls.enabled=false is the normal combination.
 accessUrl:
 
   # Set the common domain through which the services will be accessed.
@@ -92,7 +95,9 @@ accessUrl:
   # accessUrl.domain is used if null
   dbcDomain:
 
-  # set the port through which the JDBC service will be accessed.
+  # Port the JDBC clients connect to. Must match how DBC is exposed:
+  # 443 behind an ingress/Route, 4567 when Traefik is exposed directly
+  # via LoadBalancer.
   dbcPort: 4567
 
 # initial registered user to sign in to Peaka studio.
@@ -114,9 +119,18 @@ predefinedUsers: []
 # enter your openAI api key to use built-in chatGPT.
 openAIApiKey:
 
-# configure ingress for web ui
+# Peaka can be exposed in two ways:
+#   1) Behind your ingress controller / OpenShift Route (default): keep
+#      ingress/dbcIngress enabled and terminate TLS there (ingress.tls).
+#   2) Traefik exposed directly: set traefik.service.type=LoadBalancer,
+#      enable traefikTls, disable ingress/dbcIngress, set dbcPort to 4567.
+
+# Ingress for the web UI (used in the default setup, behind your ingress
+# controller / OpenShift Route). When hosts is empty the rule is derived from
+# accessUrl.domain. Terminate TLS here (ingress.tls) - without it the
+# OpenShift Route is created HTTP-only.
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName:
   labels: {}
   annotations: {}
@@ -134,9 +148,11 @@ ingress:
   #     hosts:
   #       - example.com
 
-# configure ingress for dbc connections
+# Ingress for the JDBC/DBC endpoint (used in the default setup). Renders only
+# when accessUrl.dbcDomain is set (or hosts is given), so leaving dbcDomain
+# empty effectively disables it.
 dbcIngress:
-  enabled: false
+  enabled: true
   ingressClassName:
   labels: {}
   annotations: {}
@@ -223,11 +239,17 @@ connector:
         clientSecret:
 
 
-# TLS settings
-tls:
+# TLS termination by Traefik itself - only needed when Traefik is exposed
+# directly (e.g. via LoadBalancer). Leave disabled in the default setup: there
+# your ingress controller / OpenShift Route terminates TLS and Traefik speaks
+# plain HTTP inside.
+# (The legacy top-level `tls` block is still honoured for backward
+# compatibility, but this is the documented name.)
+traefikTls:
   enabled: false
   # Name of an existing kubernetes.io/tls secret. If set, cert/key below are ignored.
-  # Recommended on OpenShift: oc create secret tls <name> --cert=fullchain.pem --key=key.pem
+  # Must be exactly "peaka-traefik-tls" (mounted into the Traefik pod under that
+  # fixed name): oc create secret tls peaka-traefik-tls --cert=fullchain.pem --key=key.pem
   secretName: ""
   # TLS certificate value (full chain: leaf + intermediates). Required if secretName is not set
   cert: ""
@@ -2178,7 +2200,7 @@ traefik:
     # templates/traefik-dynamic-config.yaml) and the TLS certificate are
     # mounted as plain files. The names are fixed literals because subchart
     # values cannot be templated. The TLS secret is optional so the pod also
-    # starts when tls.enabled=false (edge/Route termination).
+    # starts when traefikTls.enabled=false (edge/Route termination).
     additionalVolumes:
       - name: peaka-dynamic-config
         configMap:

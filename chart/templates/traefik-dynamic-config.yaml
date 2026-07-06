@@ -167,7 +167,7 @@ data:
         forwarded-proto:
           headers:
             customRequestHeaders:
-              {{- if .Values.tls.enabled }}
+              {{- if (include "peaka.traefikTls.enabled" .) }}
               X-Forwarded-Proto: https
               {{- else }}
               X-Forwarded-Proto: http
@@ -284,7 +284,7 @@ data:
             servers:
               - url: http://{{ $fullname }}-fe-studio-app:80
 
-    {{- if .Values.tls.enabled }}
+    {{- if (include "peaka.traefikTls.enabled" .) }}
     tls:
       certificates:
         - certFile: /certs/tls.crt

@@ -25,9 +25,9 @@ spec:
           scheme: http
           port: 443
           passHostHeader: true
-  {{- if .Values.tls.enabled }}
+  {{- if (include "peaka.traefikTls.enabled" .) }}
   tls:
-    secretName: {{ .Values.tls.secretName | default "peaka-traefik-tls" }}
+    secretName: {{ include "peaka.traefikTls.secretName" . | default "peaka-traefik-tls" }}
   {{- end }}
 ---
 apiVersion: traefik.io/v1alpha1
@@ -40,7 +40,7 @@ metadata:
 spec:
   headers:
     customRequestHeaders:
-      {{- if .Values.tls.enabled }}
+      {{- if (include "peaka.traefikTls.enabled" .) }}
       X-Forwarded-Proto: https
       {{- else }}
       X-Forwarded-Proto: http

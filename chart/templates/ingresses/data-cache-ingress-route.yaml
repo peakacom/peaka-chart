@@ -24,9 +24,9 @@ spec:
         - name: {{ include "peaka.fullname" . }}-be-data-cache
           port: http
           passHostHeader: true
-  {{- if .Values.tls.enabled }}
+  {{- if (include "peaka.traefikTls.enabled" .) }}
   tls:
-    secretName: {{ .Values.tls.secretName | default "peaka-traefik-tls" }}
+    secretName: {{ include "peaka.traefikTls.secretName" . | default "peaka-traefik-tls" }}
   {{- end }}
 ---
 apiVersion: traefik.io/v1alpha1
