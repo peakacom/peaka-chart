@@ -77,7 +77,7 @@ spec:
             {{- end }}
         {{- end }}
         {{- end }}
-        {{- else if or (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql") (eq (include "peaka.temporal.persistence.driver" (list $ "visibility")) "sql") }}
+        {{- else if and (or (eq (include "peaka.temporal.persistence.driver" (list $ "default")) "sql") (eq (include "peaka.temporal.persistence.driver" (list $ "visibility")) "sql")) (not $.Values.externalPostgresql.enabled) }}
         {{- range $store := (list "default" "visibility") }}
         {{- $storeConfig := index $.Values.temporal.server.config.persistence $store }}
         {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "sql" }}

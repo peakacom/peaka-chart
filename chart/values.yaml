@@ -204,27 +204,29 @@ dataMigrator:
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
-# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
 # If externalPostgresql is used, set postgresql.enabled to false
 postgresql:
   enabled: true
   image:
-    repository: bitnamilegacy/postgresql
+    registry:
+    name: peaka-postgres
+    tag: 16.1-bullseye
+  service:
+    port: 5432
+  persistence:
+    size: 4Gi
+  config:
+    idle_session_timeout: 600000
+    max_connections: 1000
+    postgresqlDataDir: /var/lib/postgresql/data/pgdata
   auth:
-    username: code2db
-    password: code2db
-    database: code2db
+    username: peakadb
+    password: peakadb
     postgresPassword: postgres
   primary:
-    extendedConfiguration: |-
-      idle_session_timeout = 600000
-      max_connections = 1000
-    persistence:
-      size: 4Gi
-    initdb:
-      scriptsConfigMap: peaka-postgresql-initdb-scripts
-      user: postgres
-      password: postgres
+    database: peaka_db
+  bigtable:
+    database: peaka_bigtable
 
 # @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
 # If internal postgresql is used, set externalPostgresql.enabled to false
@@ -236,8 +238,10 @@ externalPostgresql:
   tls: false
   username: code2db
   password: code2db
-  database: code2db
   postgresPassword: postgres
+  database: code2db
+  bigtable:
+    database: peaka_bigtable
 
 # metastore for internal iceberg
 hiveMetastore:
@@ -383,27 +387,6 @@ redis:
   networkPolicy:
     enabled: false
 
-# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
-postgresqlbigtable:
-  enabled: true
-  image:
-    repository: bitnamilegacy/postgresql
-  auth:
-    username: code2db
-    password: code2db
-    database: code2db
-    postgresPassword: postgres
-  primary:
-    extendedConfiguration: |-
-      idle_session_timeout = 600000
-      max_connections = 1000
-    persistence:
-      size: 4Gi
-    initdb:
-      scriptsConfigMap: peaka-postgresqlbigtable-initdb-scripts
-      user: postgres
-      password: postgres
-
 permify:
   enabled: true
   image:
@@ -430,7 +413,7 @@ permify:
     database:
       engine: postgres
       uri_secret: peaka-permify-postgresql-uri-secret
-      name: permify
+      name: peaka_permify
       auto_migrate: true
       max_open_connections: 20
       max_idle_connections: 20
@@ -792,28 +775,6 @@ monitoringKafkaConnect:
   # initialDelaySeconds: 30
   # periodSeconds: 5
   # failureThreshold: 10
-
-
-# vector db for peaka ai
-pgvector:
-  enabled: true
-  db:
-    name: vectordb
-    schema: studio
-    user: vectordb
-    password: vectordb
-  persistence:
-    size: 4Gi
-    storageClass: ""
-  image:
-    repository: ankane/pgvector
-    version: v0.5.1
-  options:
-    maxConnections: 1000
-    sharedBuffers: 1024MB
-  port: 5432
-  replicaCount: 1
-  extraEnvVars: []
 
 # peaka relies on temporal for its workflow executions
 temporal:

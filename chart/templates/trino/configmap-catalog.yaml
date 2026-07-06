@@ -17,9 +17,9 @@ data:
     case-insensitive-name-matching=true
   cat_00000000_0000_0000_0000_000000000003.properties: |
     connector.name=postgresql
-    connection-url=jdbc:postgresql://{{ template "peaka.bigtable.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ template "peaka.bigtable.port" . }}/{{ template "peaka.bigtable.database" . }}
-    connection-user={{ template "peaka.bigtable.user" . }}
-    connection-password={{ template "peaka.bigtable.password" . }}
+    connection-url=jdbc:postgresql://{{ template "peaka.postgresql.host" . }}:{{ template "peaka.postgresql.port" . }}/{{ template "peaka.bigtable.database" . }}
+    connection-user={{ template "peaka.postgresql.user" . }}
+    connection-password={{ template "peaka.postgresql.password" . }}
     case-insensitive-name-matching=true
   iceberg.properties: |
     connector.name=iceberg

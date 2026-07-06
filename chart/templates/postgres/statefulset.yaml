@@ -1,0 +1,69 @@
+{{- if not .Values.externalPostgresql.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "peaka.postgresql.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "peaka.postgresql.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "peaka.postgresql.fullname" . }}
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "peaka.postgresql.fullname" . }}
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-postgres
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
+      containers:
+        - name: postgres
+          image: {{ default (include "peaka.image.registry" .) .Values.postgresql.image.registry }}/{{ .Values.postgresql.image.name }}:{{ .Values.postgresql.image.tag }}
+          args:
+            - "-c"
+            - "idle_session_timeout={{ default 600000 .Values.postgresql.config.idle_session_timeout }}"
+            - "-c"
+            - "max_connections={{ default 1000 .Values.postgresql.config.max_connections }}"
+            - "-c"
+            - "listen_addresses=*"
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.auth.postgresPassword | quote }}
+            - name: PGDATA
+              value: {{ .Values.postgresql.config.postgresqlDataDir | quote }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: initdb
+          configMap:
+            name: {{ include "peaka.postgresql.fullname" . }}-initdb
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.persistence.size }}
+        {{- if .Values.postgresql.persistence.storageClass }}
+        storageClassName: {{ .Values.postgresql.persistence.storageClass }}
+        {{- end }}
+{{- end }}
