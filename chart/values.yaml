@@ -1,7 +1,6 @@
 # global parameters
 global:
-  # Pull secret for the private GCP registry holding the UBI images; the minio
-  # subchart (and others) read pull secrets from global.imagePullSecrets.
+  # Pull secret applied to bundled dependency images.
   imagePullSecrets:
     - peaka-docker-registry
 
@@ -41,24 +40,20 @@ fullnameOverride: ""
 # (e.g., your private registry or Docker Hub).
 imageRegistry: ""
 
-# pull secret to fetch Peaka images
-# you will be given a secret json to authenticate to pull Peaka images from its private repository.
-# If you're going to use your own image registry, leave this empty.
+# Credentials for pulling the Peaka container images. Peaka provides the JSON
+# key; set it as gcpRegistryAuth.password. Leave empty when pulling from your
+# own registry instead.
 # Example:
 # peakaContainerRegistryAccessSecret:
-#   name: peaka-docker-registry
 #   gcpRegistryAuth:
 #     password: |-
-#       {
-#       "file": "given-json-secret"
-#       }
-# name is the in-cluster pull Secret the chart creates; defaulted so users only
-# need to supply gcpRegistryAuth.password. Override only to avoid a name clash.
+#       <json-key-provided-by-peaka>
 peakaContainerRegistryAccessSecret:
+  # Name of the pull Secret the chart creates.
   name: peaka-docker-registry
 
-# Pull secret for registry.redhat.io (Red Hat certified images).
-# Create a terms-based registry service account at
+# Optional pull secret for registry.redhat.io. Not needed on OpenShift;
+# on other clusters create a registry service account at
 # https://access.redhat.com/terms-based-registry/ and set its credentials here.
 # Example:
 # redhatRegistryAccessSecret:
@@ -74,11 +69,8 @@ redhatRegistryAccessSecret: {}
 #   - imageRegistrySecretName
 imagePullSecrets: []
 
-# Configure the URL and port through which the services will be accessed.
-# Required for CORS policy execution and to ensure correct URI references in API and JDBC query responses.
-# Public URL the application is reached at, as seen by the end user (i.e. at
-# your edge). Independent of in-cluster TLS: with the default setup the edge
-# terminates TLS, so scheme https + traefikTls.enabled=false is the normal combination.
+# Public URL the application is reached at, as seen by the end user.
+# Used for CORS and for the URLs returned in API and JDBC responses.
 accessUrl:
 
   # Set the common domain through which the services will be accessed.
@@ -87,12 +79,10 @@ accessUrl:
   # Set the common URL scheme for accessing the services.
   scheme: http
 
-  # set the port through which the Studio web application will be accessed.
-  # use this port for port-forwarding
+  # Port the application is accessed through (e.g. 443).
   port: 8000
 
-  # set the JDBC domain through which the JDBC services will be accessed.
-  # accessUrl.domain is used if null
+  # Domain JDBC clients connect to. Defaults to accessUrl.domain when empty.
   dbcDomain:
 
   # Port the JDBC clients connect to. Must match how DBC is exposed:
@@ -125,10 +115,9 @@ openAIApiKey:
 #   2) Traefik exposed directly: set traefik.service.type=LoadBalancer,
 #      enable traefikTls, disable ingress/dbcIngress, set dbcPort to 4567.
 
-# Ingress for the web UI (used in the default setup, behind your ingress
-# controller / OpenShift Route). When hosts is empty the rule is derived from
-# accessUrl.domain. Terminate TLS here (ingress.tls) - without it the
-# OpenShift Route is created HTTP-only.
+# Exposes the Peaka web UI through the cluster's ingress. The host is taken
+# from accessUrl.domain. Define the TLS certificate here (ingress.tls) -
+# without it the application is served over plain HTTP.
 ingress:
   enabled: true
   ingressClassName:
@@ -144,13 +133,11 @@ ingress:
   #         pathType: Prefix
   tls: []
   # tls:
-  #   - secretName: example-tls
-  #     hosts:
-  #       - example.com
+  #   - secretName: your-cert-secret
 
-# Ingress for the JDBC/DBC endpoint (used in the default setup). Renders only
-# when accessUrl.dbcDomain is set (or hosts is given), so leaving dbcDomain
-# empty effectively disables it.
+# Exposes the JDBC/DBC endpoint through your ingress controller / OpenShift
+# Route. Requires accessUrl.dbcDomain: when dbcDomain is empty no DBC Ingress
+# is created and the JDBC endpoint is not exposed through the ingress.
 dbcIngress:
   enabled: true
   ingressClassName:
@@ -166,28 +153,15 @@ dbcIngress:
   #         pathType: Prefix
   tls: []
   # tls:
-  #   - secretName: example-tls
-  #     hosts:
-  #       - example.com
+  #   - secretName: your-cert-secret
 
-# How the in-cluster router (Traefik) receives its routing configuration.
-#
-#   file (default): routes and middlewares are rendered into the
-#     peaka-traefik-dynamic-config ConfigMap and mounted into the Traefik pod.
-#     No Traefik CRDs and no Kubernetes API access are needed, so the whole
-#     installation stays namespace-scoped.
-#
-#   crd: the legacy behaviour. Routes are created as IngressRoute/Middleware
-#     custom resources. Switching to this mode requires, in addition to this
-#     flag, that (a) the Traefik CRDs are already installed on the cluster and
-#     (b) the following subchart values are set (they cannot follow this flag
-#     automatically because subchart values are not templatable):
+# How the internal router (Traefik) receives its routing configuration.
+#   file (default): routing is mounted as a config file; no Traefik CRDs and
+#     no cluster-wide permissions are required.
+#   crd: routing is created as Traefik custom resources. Requires the Traefik
+#     CRDs on the cluster and these values:
 #       traefik.providers.kubernetesCRD.enabled: true
 #       traefik.rbac.enabled: true
-#     The file-provider plumbing (traefik.additionalArguments file flags,
-#     traefik.deployment.additionalVolumes, traefik.additionalVolumeMounts) may
-#     also be cleared in crd mode, but that is optional: the chart ships an
-#     empty config file so Traefik starts fine with the mounts left in place.
 routing:
   provider: file
 
@@ -243,8 +217,6 @@ connector:
 # directly (e.g. via LoadBalancer). Leave disabled in the default setup: there
 # your ingress controller / OpenShift Route terminates TLS and Traefik speaks
 # plain HTTP inside.
-# (The legacy top-level `tls` block is still honoured for backward
-# compatibility, but this is the documented name.)
 traefikTls:
   enabled: false
   # Name of an existing kubernetes.io/tls secret. If set, cert/key below are ignored.

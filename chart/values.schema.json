@@ -9,7 +9,7 @@
   "properties": {
     "peakaContainerRegistryAccessSecret": {
       "type": "object",
-      "description": "Credentials used to pull the Peaka container images from the GCP Artifact Registry.",
+      "description": "Credentials for pulling the Peaka container images. Provided by Peaka.",
       "required": [
         "gcpRegistryAuth"
       ],
@@ -22,7 +22,7 @@
           "properties": {
             "password": {
               "type": "string",
-              "description": "Full JSON of a GCP service-account key with Artifact Registry Reader on the Peaka image repository."
+              "description": "Registry access key provided by Peaka (JSON service-account key)."
             }
           }
         }
@@ -30,32 +30,32 @@
     },
     "traefikTls": {
       "type": "object",
-      "description": "TLS termination by Traefik itself - only for the direct LoadBalancer exposure path. In the default setup (behind your ingress controller / OpenShift Route) leave this disabled and terminate TLS at your edge (ingress.tls) instead.",
+      "description": "TLS termination by Peaka's internal router. Leave disabled in the default setup and define TLS on the Ingress instead (ingress.tls). Enable only when the router is exposed directly, e.g. through a LoadBalancer service.",
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable only when Traefik is exposed directly (LoadBalancer) and must terminate TLS itself. Leave false (default) when an ingress controller or OpenShift Route in front terminates TLS."
+          "description": "Enable only when the router is exposed directly and must terminate TLS itself."
         },
         "secretName": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Set to 'peaka-traefik-tls' to use an existing kubernetes.io/tls secret instead of cert/key. The secret must be named exactly peaka-traefik-tls (it is mounted into the router pod under that fixed name): pre-create it with `oc create secret tls peaka-traefik-tls --cert=fullchain.pem --key=key.pem`. Recommended on OpenShift - the catalog install form is single-line and strips PEM newlines when pasted."
+          "description": "To use a pre-created certificate secret instead of pasting cert/key: create it with `oc create secret tls peaka-traefik-tls --cert=fullchain.pem --key=key.pem` in the install namespace and set this field to peaka-traefik-tls. The secret must have exactly that name."
         },
         "cert": {
           "type": "string",
-          "description": "PEM-encoded TLS certificate, full chain (leaf + intermediates). Used only when secretName is not set; prefer secretName on OpenShift."
+          "description": "PEM-encoded TLS certificate (full chain). Ignored when secretName is set."
         },
         "key": {
           "type": "string",
-          "description": "PEM-encoded TLS private key matching the certificate. Used only when secretName is not set."
+          "description": "PEM-encoded TLS private key matching the certificate. Ignored when secretName is set."
         }
       }
     },
     "accessUrl": {
       "type": "object",
-      "description": "Public URL the Peaka application is reached at (used for CORS, redirects and generated links).",
+      "description": "Public URL the Peaka application is reached at.",
       "required": [
         "domain",
         "scheme",
@@ -83,20 +83,20 @@
             "string",
             "null"
           ],
-          "description": "Domain for the JDBC/DBC endpoint, e.g. onpremise-dbc.peaka.dev"
+          "description": "Domain JDBC clients connect to, e.g. dbc.example.com. Defaults to accessUrl.domain when empty."
         },
         "dbcPort": {
           "type": [
             "integer",
             "null"
           ],
-          "description": "Port JDBC clients connect to. Must match how DBC is exposed: 443 behind an ingress/Route (default path), 4567 when Traefik is exposed directly via LoadBalancer."
+          "description": "Port JDBC clients connect to: 443 when exposed through an ingress (default), 4567 when the router is exposed directly."
         }
       }
     },
     "redhatRegistryAccessSecret": {
       "type": "object",
-      "description": "Optional. registry.redhat.io credentials for the Red Hat redis image. Not needed on OpenShift \u2014 the cluster's global pull secret already covers registry.redhat.io. Provide only on clusters without it.",
+      "description": "Optional registry.redhat.io credentials. Not needed on OpenShift; provide only on other clusters.",
       "properties": {
         "auth": {
           "type": "object",
@@ -119,7 +119,7 @@
     },
     "routing": {
       "type": "object",
-      "description": "How the in-cluster router (Traefik) receives its routing configuration.",
+      "description": "How the internal router receives its routing configuration.",
       "properties": {
         "provider": {
           "type": "string",
@@ -127,7 +127,7 @@
             "file",
             "crd"
           ],
-          "description": "file (default): routing is mounted as a plain config file; no Traefik CRDs and no cluster-scoped permissions are needed. crd: legacy IngressRoute/Middleware custom resources; requires the Traefik CRDs on the cluster plus traefik.providers.kubernetesCRD.enabled=true and traefik.rbac.enabled=true."
+          "description": "file (default): no CustomResourceDefinitions and no cluster-wide permissions are required. crd: uses Traefik custom resources and requires the Traefik CRDs to be installed on the cluster beforehand."
         }
       }
     },
@@ -176,7 +176,7 @@
     },
     "ingress": {
       "type": "object",
-      "description": "Ingress for the web UI - the default exposure path. The host rule is derived from accessUrl.domain when hosts is empty. Terminate TLS here (ingress.tls) with your certificate secret. On OpenShift the Ingress is converted to a Route automatically.",
+      "description": "Exposes the Peaka web UI through the cluster's ingress. Enabled by default; the host is taken from accessUrl.domain.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -192,7 +192,7 @@
         },
         "tls": {
           "type": "array",
-          "description": "TLS for the web Ingress - required for HTTPS in the default path (without it the OpenShift Route is HTTP-only). Reference your certificate secret here.",
+          "description": "TLS certificate for the application domain. Required for HTTPS - without it the application is served over plain HTTP.",
           "items": {
             "type": "object",
             "required": [
@@ -201,14 +201,7 @@
             "properties": {
               "secretName": {
                 "type": "string",
-                "description": "Name of the kubernetes.io/tls secret holding the certificate served at the edge. Any name works here (the fixed peaka-traefik-tls name only applies to the top-level tls block)."
-              },
-              "hosts": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Hostnames this certificate covers. Leave empty to default to the derived host (accessUrl.domain / accessUrl.dbcDomain)."
+                "description": "Name of a kubernetes.io/tls secret in the install namespace holding the certificate for the application domain. Create it with `oc create secret tls <name> --cert=fullchain.pem --key=key.pem`."
               }
             }
           }
@@ -217,7 +210,7 @@
     },
     "dbcIngress": {
       "type": "object",
-      "description": "Ingress for the JDBC/DBC endpoint - the default exposure path. Rendered only when accessUrl.dbcDomain is set (or hosts is given).",
+      "description": "Exposes the JDBC endpoint through the cluster's ingress. Requires accessUrl.dbcDomain: when dbcDomain is empty, no DBC Ingress is created and the JDBC endpoint is not exposed through the ingress.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -233,7 +226,7 @@
         },
         "tls": {
           "type": "array",
-          "description": "TLS for the DBC Ingress. May reference a different certificate secret than the web Ingress (e.g. when DBC is exposed on another domain).",
+          "description": "TLS certificate for the JDBC domain. Required for HTTPS on the JDBC endpoint.",
           "items": {
             "type": "object",
             "required": [
@@ -242,14 +235,7 @@
             "properties": {
               "secretName": {
                 "type": "string",
-                "description": "Name of the kubernetes.io/tls secret holding the certificate served at the edge. Any name works here (the fixed peaka-traefik-tls name only applies to the top-level tls block)."
-              },
-              "hosts": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Hostnames this certificate covers. Leave empty to default to the derived host (accessUrl.domain / accessUrl.dbcDomain)."
+                "description": "Name of a kubernetes.io/tls secret in the install namespace holding the certificate for the JDBC domain."
               }
             }
           }
