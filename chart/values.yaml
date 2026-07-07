@@ -371,7 +371,7 @@ redis:
 permify:
   enabled: true
   image:
-    tag: "v1.3.6"
+    tag: "v1.7.1"
   replicaCount: 1
   app:
     account_id: "recdK3q5xuwJdGjrh"
