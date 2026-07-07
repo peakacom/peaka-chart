@@ -276,6 +276,7 @@ CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 
 GRPC_DNS_RESOLVER: native
+PARTNER_API_ENABLED: {{ .Values.partnerApiEnabled | default false | quote }}
 
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
 

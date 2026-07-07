@@ -36,6 +36,8 @@ fullnameOverride: ""
 # (e.g., your private registry or Docker Hub).
 imageRegistry: ""
 
+partnerApiEnabled: false
+
 # pull secret to fetch Peaka images
 # you will be given a secret json to authenticate to pull Peaka images from its private repository.
 # If you're going to use your own image registry, leave this empty.
