@@ -1,0 +1,47 @@
+{{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-minio-export-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-minio-export
+    {{- include "peaka.labels" . | nindent 4 }}
+  {{- if and .Values.ingressRoute .Values.ingressRoute.annotations }}
+  annotations:
+    {{- toYaml .Values.ingressRoute.annotations | nindent 4}}
+  {{- end }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    # Query export artifacts are downloaded via presigned URLs. They are served
+    # under a sub-path (see peaka.routes.exportPublicPath) to avoid colliding
+    # with front-end paths; the strip middleware removes the prefix so MinIO
+    # receives the exact signed path (bucket "export"), keeping the S3 signature
+    # valid.
+    - match: PathPrefix(`{{ include "peaka.routes.exportPublicPath" . }}/`)
+      kind: Rule
+      priority: 12
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-minio-export-strip-middleware
+      services:
+        - name: {{ include "peaka.minio.fullname" . }}
+          port: {{ include "peaka.minio.port" . | int }}
+          passHostHeader: true
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ .Values.tls.secretName | default (printf "%s-tls-secret" (include "peaka.fullname" .)) }}
+  {{- end }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-minio-export-strip-middleware
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-minio-export
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: "^{{ include "peaka.routes.exportPublicPath" . }}/(.*)"
+    replacement: "/${1}"
+{{- end }}

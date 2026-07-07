@@ -128,6 +128,9 @@ MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
 {{- if .Values.externalObjectStore.enabled }}
 S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" | quote }}
 S3_BUCKET_NAME: {{ .Values.externalObjectStore.bucket | quote }}
+EXPORT_PUBLIC_MINIO_URL: {{ .Values.externalObjectStore.publicUrl | default (include "peaka.objectStore.endpoint" .) | quote }}
+{{- else }}
+EXPORT_PUBLIC_MINIO_URL: {{ printf "%s%s" (include "peaka.routes.baseUrl" .) (include "peaka.routes.exportPublicPath" .) | quote }}
 {{- end }}
 
 STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.host" . }}:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
@@ -365,6 +368,16 @@ Set Ingress route entry point based on TLS enabled
 
 {{- define "peaka.routes.servicePath" -}}
 service
+{{- end -}}
+
+{{/*
+Public sub-path under which the internal MinIO is exposed for query export
+downloads. Lives under the service path (reserved for backend routes) to avoid
+colliding with front-end paths. The reverse proxy strips this prefix before
+reaching MinIO; be-data-rest grafts it onto presigned URLs.
+*/}}
+{{- define "peaka.routes.exportPublicPath" -}}
+/{{ include "peaka.routes.servicePath" . }}/bucket
 {{- end -}}
 
 {{- define "peaka.routes.apiPath" -}}

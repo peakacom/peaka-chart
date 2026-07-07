@@ -285,6 +285,16 @@ externalObjectStore:
   accessKey: ""
   secretKey: ""
 
+  # Optional override for the URL that query export download links are
+  # presigned against. Defaults to the host/port configured above; set this
+  # only if end users' browsers reach the object store through a different
+  # address (e.g. the store is only resolvable inside the cluster).
+  # A sub-path may be included (e.g. https://minio.example.com/downloads); if so,
+  # your reverse proxy must strip that prefix before forwarding to the store, so
+  # it receives the exact signed path.
+  # Example: https://minio.example.com:9000
+  publicUrl: ""
+
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
