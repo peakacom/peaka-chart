@@ -560,17 +560,12 @@ kafkaConnect:
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
-  resources: { }
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+  # Sized to match the fixed 512M heap above (plus JVM overhead).
+  resources:
+    requests:
+      memory: "128Mi"
+    limits:
+      memory: "512Mi"
 
   ## Custom pod annotations
   podAnnotations: { }
@@ -662,25 +657,24 @@ monitoringKafkaConnect:
     "offset.storage.replication.factor": "1"
     "status.storage.replication.factor": "1"
 
-  ## Kafka Connect JVM Heap Option
-  heapOptions: "-Xms512M -Xmx4096M"
+  ## Kafka Connect JVM heap. Sized as a percentage of the container memory
+  ## limit below (the JVM reads the cgroup limit), so heap and limit cannot
+  ## drift apart; adjust resources.limits.memory to scale both.
+  ## IMPORTANT: only valid together with resources.limits.memory. Without a
+  ## limit the JVM falls back to the NODE's total RAM and the percentage
+  ## applies to that - if you remove the limit, switch back to a fixed -Xmx.
+  heapOptions: "-XX:MaxRAMPercentage=75.0"
 
   ## Additional env variables
   ## CUSTOM_SCRIPT_PATH is the path of the custom shell script to be ran mounted in a volume
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
-  resources: { }
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+  resources:
+    requests:
+      memory: "1Gi"
+    limits:
+      memory: "2Gi"
 
   ## Custom pod annotations
   podAnnotations: { }
