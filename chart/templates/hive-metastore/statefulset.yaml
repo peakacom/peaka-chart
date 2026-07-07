@@ -40,7 +40,7 @@ spec:
             - name: HADOOP_HEAPSIZE
               value: {{ .Values.hiveMetastore.hadoopHeapSize | quote }}
             - name: METASTORE_TYPE
-              value: {{ .Values.hiveMetastore.metastoreType | quote }}
+              value: "postgres"
             - name: JAVA_HOME
               value: /usr/lib/jvm/default-jvm/jre
             {{- if eq (include "peaka.customCA.enabled" .) "true" }}
@@ -49,7 +49,8 @@ spec:
             {{- end }}
           volumeMounts:
             - name: hive-config
-              mountPath: /opt/apache-hive-metastore-3.0.0-bin/conf/
+              mountPath: /opt/hive/conf/metastore-site.xml
+              subPath: metastore-site.xml
             {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore

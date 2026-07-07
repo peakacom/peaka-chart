@@ -16,7 +16,7 @@ data:
       </property>
       <property>
           <name>metastore.task.threads.always</name>
-          <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+          <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>
       </property>
       <property>
           <name>metastore.expression.proxy</name>
@@ -24,13 +24,7 @@ data:
       </property>
       <property>
           <name>javax.jdo.option.ConnectionDriverName</name>
-          {{- if eq .Values.hiveMetastore.metastoreType "mysql" }}
-          <value>com.mysql.cj.jdbc.Driver</value>
-          {{- else if eq .Values.hiveMetastore.metastoreType "postgres" }}
           <value>org.postgresql.Driver</value>
-          {{- else }}
-          {{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
-          {{- end }}
       </property>
       <property>
           <name>javax.jdo.option.ConnectionURL</name>

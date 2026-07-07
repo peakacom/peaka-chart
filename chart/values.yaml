@@ -249,11 +249,9 @@ hiveMetastore:
   image:
     registry:
     name: hive-metastore
-    tag: v1.0.4
+    tag: v1.0.5
     pullPolicy: IfNotPresent
   hadoopHeapSize: 10240
-  # db type to be used as metastore. One of mysql or postgres
-  metastoreType: mysql
   servicePort: 9083
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
@@ -285,25 +283,6 @@ externalObjectStore:
   accessKey: ""
   secretKey: ""
 
-# database to be used for thrift store.
-# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
-mariadb:
-  enabled: true
-  image:
-    repository: bitnamilegacy/mariadb-galera
-    tag: 10.11.4-debian-11-r3
-  replicaCount: 1
-  db:
-    user: peaka
-    password: peaka
-    name: metastore_db
-  rootUser:
-    password: peaka
-  galera:
-    mariabackup:
-      password: peaka
-  persistence:
-    size: 4Gi
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:

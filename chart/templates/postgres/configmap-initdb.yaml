@@ -16,7 +16,6 @@ data:
     {{- include "peaka.postgresql.initRole" . | nindent 6 }}
     EOSQL
 
-  {{- if eq .Values.hiveMetastore.metastoreType "postgres" }}
   02-hive-metastore.sh: |
     #!/bin/bash
     set -e
@@ -28,7 +27,6 @@ data:
     psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<'EOSQL'
     {{- include "peaka.postgresql.initHive" . | nindent 6 }}
     EOSQL
-  {{- end }}
 
   03-permify.sh: |
     #!/bin/bash

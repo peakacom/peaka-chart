@@ -8,16 +8,6 @@
 {{- end }}
 {{- end }}
 
-{{- define  "peaka.validate.metastore" }}
-{{- if and (eq .Values.hiveMetastore.metastoreType "postgres") .Values.mariadb.enabled }}
-{{- fail "You set hiveMetastore.metastoreType to \"postgres\". Set mariadb.enabled to false if you want to use PostgreSQL as your metastore." }}
-{{- end }}
-
-{{- if and (eq .Values.hiveMetastore.metastoreType "mysql") (not .Values.mariadb.enabled) }}
-{{- fail "You set hiveMetastore.metastoreType to \"mysql\" but mariadb.enabled is false. Enable mariadb to use MySQL as your metastore." }}
-{{- end }}
-{{- end }}
-
 {{- define "peaka.validate.objectStore" }}
 {{- if and .Values.minio.enabled .Values.externalObjectStore.enabled -}}
 {{- fail "You cannot enable both minio.enabled and externalObjectStore.enabled at the same time." }}
