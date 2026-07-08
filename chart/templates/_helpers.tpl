@@ -124,6 +124,7 @@ Environment variables injected into Peaka services
 MINIO_ADDRESS: {{ include "peaka.objectStore.endpoint" . | quote }}
 MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
+MINIO_REGION: {{ include "peaka.objectStore.region" . | quote }}
 
 {{- if .Values.externalObjectStore.enabled }}
 S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" | quote }}
