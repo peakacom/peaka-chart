@@ -106,6 +106,9 @@ spec:
             - mountPath: {{ .Values.trino.server.config.path }}/catalog/iceberg.properties
               name: catalog-volume
               subPath: iceberg.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/catalog/hive.properties
+              name: catalog-volume
+              subPath: hive.properties
             - mountPath: /home/trino/.CData
               name: workdir
             {{- range $fileName, $fileContent := .Values.trino.server.kerberosConfig }}

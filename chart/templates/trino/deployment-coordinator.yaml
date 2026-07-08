@@ -113,6 +113,9 @@ spec:
             - mountPath: {{ .Values.trino.server.config.path }}/catalog/iceberg.properties
               name: catalog-volume
               subPath: iceberg.properties
+            - mountPath: {{ .Values.trino.server.config.path }}/catalog/hive.properties
+              name: catalog-volume
+              subPath: hive.properties
             - mountPath: {{ .Values.trino.server.config.path }}/catalog/peaka_iceberg.properties
               name: catalog-volume
               subPath: peaka_iceberg.properties
