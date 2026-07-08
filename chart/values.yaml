@@ -202,7 +202,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v0.0.58
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -1266,7 +1266,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.4
+    tag: v1.0.14
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1519,7 +1519,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.10
+    tag: v1.0.15
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1549,7 +1549,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v0.0.148
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1585,7 +1585,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.4
+    tag: v1.0.16
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1635,7 +1635,7 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v0.0.26
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -1676,7 +1676,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v0.0.50
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1686,7 +1686,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v0.0.67
+    tag: v0.0.68
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1776,7 +1776,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v0.1.122
+    tag: v1.0.1
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1818,7 +1818,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v0.0.349
+    tag: v1.0.34
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1848,7 +1848,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v0.0.84
+    tag: v1.0.1
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1975,7 +1975,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.161
+    tag: v1.1.189
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
