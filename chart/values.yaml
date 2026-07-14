@@ -1266,7 +1266,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.14
+    tag: v1.0.20
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1519,7 +1519,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.15
+    tag: v1.0.16
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1549,7 +1549,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.4
+    tag: v1.0.6
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1585,7 +1585,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.17
+    tag: v1.0.19
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1818,7 +1818,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.34
+    tag: v1.0.36
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1918,7 +1918,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v0.0.98
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1928,7 +1928,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v0.0.98
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1975,7 +1975,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.193
+    tag: v1.1.194
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
