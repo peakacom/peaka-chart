@@ -1676,7 +1676,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v1.0.0
+    tag: v1.0.1
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
