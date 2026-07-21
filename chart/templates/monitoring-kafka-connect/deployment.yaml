@@ -32,11 +32,11 @@ spec:
     spec:
       initContainers:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s:%s" .Values.monitoringKafkaConnect.image .Values.monitoringKafkaConnect.imageTag)) | nindent 8 }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.monitoringKafkaConnect.imageRegistry) .Values.monitoringKafkaConnect.image .Values.monitoringKafkaConnect.imageTag)) | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-server
-          image: {{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
+          image: {{ default (include "peaka.image.registry" .) .Values.monitoringKafkaConnect.imageRegistry }}/{{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
           imagePullPolicy: {{ .Values.monitoringKafkaConnect.imagePullPolicy | quote }}
           ports:
             - name: kafka-connect
@@ -99,10 +99,16 @@ spec:
               mountPath: /truststore
               readOnly: true
             {{- end }}
-      {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
       imagePullSecrets:
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
+        {{- if .Values.monitoringKafkaConnect.imagePullSecrets }}
 {{ toYaml .Values.monitoringKafkaConnect.imagePullSecrets | indent 8 }}
-      {{- end }}
+        {{- end }}
       volumes:
       {{- if .Values.monitoringKafkaConnect.volumes }}
 {{ toYaml .Values.monitoringKafkaConnect.volumes | trim | indent 6 }}
