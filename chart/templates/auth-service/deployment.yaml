@@ -43,6 +43,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- with .Values.authService.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.authService.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

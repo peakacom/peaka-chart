@@ -1494,10 +1494,22 @@ authService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1507,7 +1519,7 @@ authService:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1519,25 +1531,77 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.16
+    tag: v1.0.18
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Actuator availability probes on the management port. Liveness is
+  # dependency-free so a downstream outage returns 503 per route rather than
+  # restarting the gateway.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/readiness
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
 
 collabSharedb:
   replicaCount: 1
   image:
     name: be-collab-sharedb
-    tag: v0.0.21
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 9090
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /health
+      path: /health/live
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 30
@@ -1549,7 +1613,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.6
+    tag: v1.0.8
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1560,10 +1624,24 @@ dataCache:
   nodeSelector: {}
   affinity: {}
   materializedViewQueryTimeout: 7200
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,mongo"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/kafka) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1573,7 +1651,7 @@ dataCache:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1585,57 +1663,170 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.19
+    tag: v1.0.21
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Liveness is dependency-free; readiness gates on Postgres + flag store.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
+      port: 8080
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 dispatcher:
   replicaCount: 1
   image:
     name: be-dispatcher
-    tag: v0.0.27
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Liveness is dependency-free; readiness reflects Kafka partition assignment.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
+      port: 8080
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 dispatcherAssigner:
   replicaCount: 1
   image:
     name: be-dispatcher-assigner
-    tag: v0.0.13
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
+  # consumer loop keeps polling (rides out broker outages, restarts if stuck).
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
 
 dispatcherDlq:
   replicaCount: 1
   image:
     name: be-dispatcher-dlq
-    tag: v0.0.14
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
+  # consumer loop keeps polling (rides out broker outages, restarts if stuck).
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
 
 emailService:
   replicaCount: 1
   image:
     name: be-email-service
-    tag: v0.0.12
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Liveness is dependency-free; readiness is a static server-up check.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
+      port: 8080
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v1.0.0
+    tag: v1.0.1
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -1645,16 +1836,30 @@ metadataService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,r2dbc"
   persistence:
     annotations:
       helm.sh/resource-policy: keep
     labels: {}
     size: 2Gi
     storageClass: ""
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1664,7 +1869,7 @@ metadataService:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1676,25 +1881,29 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v1.0.1
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
-
-permissionService:
-  replicaCount: 1
-  image:
-    name: be-permission-service
-    tag: v0.0.68
-    imagePullPolicy: IfNotPresent
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db,r2dbc,redis,mongo"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1704,7 +1913,52 @@ permissionService:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+permissionService:
+  replicaCount: 1
+  image:
+    name: be-permission-service
+    tag: v1.0.0
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  # Readiness gates on these health contributors; a real dependency outage takes
+  # the pod out of traffic (liveness stays up). Names must match live contributors.
+  readinessHealthGroup: "readinessState,r2dbc,permify"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1721,10 +1975,24 @@ runtimeApi:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,r2dbc"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1734,7 +2002,7 @@ runtimeApi:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1751,10 +2019,24 @@ scheduledFlowRunner:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1764,7 +2046,7 @@ scheduledFlowRunner:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1776,12 +2058,37 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.1
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
   bullDashboardEnabled: false
+  # Liveness is dependency-free; readiness gates on the backing store.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 3000
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
+      port: 3000
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 secretStoreService:
   replicaCount: 1
@@ -1793,10 +2100,24 @@ secretStoreService:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1806,7 +2127,7 @@ secretStoreService:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1818,15 +2139,29 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.36
+    tag: v1.0.39
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db,redis,mongo"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 48
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1836,7 +2171,7 @@ studioApi:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1848,15 +2183,29 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.1
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,redis"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1866,7 +2215,7 @@ tokenService:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1878,25 +2227,58 @@ webhookResolver:
   replicaCount: 1
   image:
     name: be-webhook-resolver
-    tag: v0.0.35
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Headless Vert.x Kafka worker: no traffic, so no readiness. Liveness is UP
+  # while the event loop and consumers are alive.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
 
 workflowHistory:
   replicaCount: 1
   image:
     name: be-workflow-history
-    tag: v0.0.24
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,mongo"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1906,7 +2288,7 @@ workflowHistory:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1918,17 +2300,36 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v1.0.2
+    tag: v1.0.3
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while all
+  # its KafkaMessageReceivers are still consuming.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8080
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
 
 workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v1.0.2
+    tag: v1.0.3
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1939,10 +2340,22 @@ workflowWorkerExpress:
   resources: {}
   nodeSelector: {}
   affinity: {}
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/liveness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1952,7 +2365,7 @@ workflowWorkerExpress:
   readinessProbe:
     failureThreshold: 3
     httpGet:
-      path: /actuator/health
+      path: /actuator/health/readiness
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
@@ -1964,12 +2377,37 @@ sqlService:
   replicaCount: 1
   image:
     name: be-sql-service
-    tag: v0.0.2
+    tag: v1.0.0
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
   affinity: {}
-  readinessProbe: {}
+  # Stateless transpile service: liveness and readiness both just report the
+  # HTTP server is up (no backing store to gate on).
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /health/live
+      port: 8000
+    periodSeconds: 5
+    failureThreshold: 30
+    timeoutSeconds: 5
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health/ready
+      port: 8000
+    periodSeconds: 5
+    timeoutSeconds: 5
 
 studioWeb:
   replicaCount: 1

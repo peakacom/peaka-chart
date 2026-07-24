@@ -44,6 +44,15 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.monitoringService.readinessHealthGroup }}
+          env:
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.monitoringService.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.monitoringService.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
