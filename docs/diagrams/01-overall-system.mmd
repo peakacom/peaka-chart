@@ -1,0 +1,57 @@
+flowchart LR
+    subgraph dev["Developer machine"]
+        edit["Edit chart/values.yaml + Chart.yaml"]
+        push["git push --tags"]
+    end
+
+    subgraph ci["Drone CI (kubernetes runner)"]
+        vc["version-check<br/>tag == Chart.yaml#version"]
+        pkg["helm-package<br/>peaka-X.Y.Z.tgz"]
+        idx["update-index-file"]
+        push2["push to GCS"]
+        sig["HMAC-signed pipeline<br/>(.drone.yml#kind: signature)"]
+    end
+
+    subgraph dist["Distribution"]
+        gcs[("gs://peaka-chart/charts/<br/>(public read)")]
+        gar[("europe-west3-docker.pkg.dev/<br/>code2-324814/...<br/>(private GAR)")]
+    end
+
+    subgraph cust["Customer Kubernetes cluster"]
+        helm["helm install peaka/peaka<br/>-f values.yaml"]
+        traefik["Traefik IngressRoute CRDs<br/>web:80, websecure:443, dbc:4567"]
+        subgraph ns["namespace = peaka"]
+            edge[Studio Web - SPA via nginx]
+            api[~25 backend services]
+            data["Data plane:<br/>Postgres x2, Mongo, Redis,<br/>MinIO, Kafka, MariaDB"]
+            wf["Workflow plane:<br/>Temporal + 4 workflow services"]
+            query["Query plane:<br/>Trino + Hive metastore"]
+            authz[Permify + PgCat]
+        end
+    end
+
+    edit --> push --> vc --> pkg --> idx --> push2 --> gcs
+    sig -.protects.-> ci
+    helm -->|pulls chart| gcs
+    helm -->|pulls images| gar
+    helm -->|renders + applies| ns
+    helm -->|installs CRDs separately| traefik
+    traefik --> edge
+    traefik --> api
+    traefik -->|forwardAuth middleware| authz
+    api --> data
+    api --> wf
+    api --> query
+    wf --> data
+    query --> data
+
+    subgraph Files["📂 Files to skim"]
+        F1[.drone.yml]
+        F2[chart/Chart.yaml]
+        F3[chart/values.yaml]
+        F4[chart/README.md]
+        F5[chart/templates/ingress.yaml]
+        F6[docs/extras/gotchas_invariants.md]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5,F6 files
