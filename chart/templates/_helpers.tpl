@@ -121,6 +121,10 @@ tolerations:
 Environment variables injected into Peaka services
 */}}
 {{- define "peaka.common.envVars" -}}
+# Tolerate readiness-group contributors that a given image may not register
+# (e.g. custom indicators): Spring skips missing names instead of failing to
+# start. Keeps the readiness groups intact across image versions.
+MANAGEMENT_ENDPOINT_HEALTH_VALIDATE_GROUP_MEMBERSHIP: "false"
 MINIO_ADDRESS: {{ include "peaka.objectStore.endpoint" . | quote }}
 MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
