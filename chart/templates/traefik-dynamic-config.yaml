@@ -137,6 +137,17 @@ data:
           priority: 1000
           middlewares: ["trino-extra-credential"]
           service: be-data-rest
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        # Query export artifacts served from MinIO (bucket "export") via
+        # presigned URLs under a sub-path; the strip middleware removes the
+        # public prefix so the S3 signature stays valid.
+        minio-export:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`{{ include "peaka.routes.exportPublicPath" . }}/`)"
+          priority: 12
+          middlewares: ["minio-export-strip"]
+          service: minio
+        {{- end }}
 
       middlewares:
         # Shared path-strip middlewares (identical regexes were deduplicated
@@ -161,6 +172,12 @@ data:
           replacePathRegex:
             regex: "^/{{ include "peaka.routes.partnerPath" . }}/(.*)"
             replacement: "/${1}"
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        minio-export-strip:
+          replacePathRegex:
+            regex: "^{{ include "peaka.routes.exportPublicPath" . }}/(.*)"
+            replacement: "/${1}"
+        {{- end }}
         oauth-replace-path:
           replacePath:
             path: /api/connections/oauth2/callback
@@ -283,6 +300,13 @@ data:
             passHostHeader: true
             servers:
               - url: http://{{ $fullname }}-fe-studio-app:80
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        minio:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ include "peaka.minio.fullname" . }}:{{ include "peaka.minio.port" . | int }}
+        {{- end }}
 
     {{- if (include "peaka.traefikTls.enabled" .) }}
     tls:
