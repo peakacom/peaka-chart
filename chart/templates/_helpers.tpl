@@ -288,6 +288,8 @@ PARTNER_API_ENABLED: {{ .Values.partnerApiEnabled | default false | quote }}
 
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
 
+MANAGEMENT_ENDPOINT_HEALTH_VALIDATE_GROUP_MEMBERSHIP: "false"
+
 {{- if eq (include "peaka.customCA.enabled" .) "true" }}
 JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
 NODE_EXTRA_CA_CERTS: /custom-ca-bundle/ca-bundle.crt
