@@ -683,9 +683,9 @@ kafkaConnect:
   # Sized to match the fixed 512M heap above (plus JVM overhead).
   resources:
     requests:
-      memory: "128Mi"
+      memory: "1Gi"
     limits:
-      memory: "512Mi"
+      memory: "2Gi"
 
   ## Custom pod annotations
   podAnnotations: { }
