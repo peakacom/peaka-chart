@@ -2,7 +2,7 @@ apiVersion: v2
 name: peaka
 description: Helm chart of the best data integration platform, aka Peaka.
 type: application
-version: 1.1.0-beta.16-redhat
+version: 1.1.0-beta.17-redhat
 appVersion: "0.3.56"
 kubeVersion: ">=1.21.0-0"
 annotations:
@@ -12,11 +12,6 @@ dependencies:
     version: ~5.1.0
     repository: https://charts.min.io/
     condition: minio.enabled
-  - name: mariadb-galera
-    alias: mariadb
-    version: 11.2.3
-    repository: https://charts.bitnami.com/bitnami
-    condition: mariadb.enabled
   - name: kafka
     version: 26.8.5
     repository: https://charts.bitnami.com/bitnami

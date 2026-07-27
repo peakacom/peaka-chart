@@ -35,18 +35,18 @@ steps:
         helm dependency update .
         helm dependency build .
 
-        # Strip Traefik subchart CRDs
-        # Users must pre-apply the CRDs to the cluster before `helm install`
-        # We publish the bundle as a separate artifact alongside the chart.
+        # Strip Traefik subchart CRDs so the packaged chart carries no CRDs;
+        # users pre-apply them and we publish the bundle as a separate artifact.
+        # Dependencies land as charts/traefik-<ver>.tgz, so the CRDs must be
+        # read from inside the tarball (there is no charts/traefik/ directory).
         apk add --no-cache tar gzip
         mkdir -p ../release-artifacts
-        cat charts/traefik/crds/*.yaml \
-          > ../release-artifacts/traefik-crds-${DRONE_TAG#v}.yaml
-        rm -rf charts/traefik/crds
+        crd_out="$(pwd)/../release-artifacts/traefik-crds-${DRONE_TAG#v}.yaml"
         ( cd charts
           tgz=$(echo traefik-*.tgz)
           mkdir _repack && cd _repack
           tar -xzf "../$tgz"
+          cat traefik/crds/*.yaml > "$crd_out"
           rm -rf traefik/crds
           tar -czf "../$tgz" traefik
           cd .. && rm -rf _repack )

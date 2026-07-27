@@ -124,10 +124,14 @@ Environment variables injected into Peaka services
 MINIO_ADDRESS: {{ include "peaka.objectStore.endpoint" . | quote }}
 MINIO_ACCESS_KEY: {{ include "peaka.objectStore.accessKey" . | quote }}
 MINIO_SECRET_KEY: {{ include "peaka.objectStore.secretKey" .  | quote }}
+MINIO_REGION: {{ include "peaka.objectStore.region" . | quote }}
 
 {{- if .Values.externalObjectStore.enabled }}
 S3_SINGLE_BUCKET_MODE: {{ .Values.externalObjectStore.singleBucketMode | default "false" | quote }}
 S3_BUCKET_NAME: {{ .Values.externalObjectStore.bucket | quote }}
+EXPORT_PUBLIC_MINIO_URL: {{ .Values.externalObjectStore.publicUrl | default (include "peaka.objectStore.endpoint" .) | quote }}
+{{- else }}
+EXPORT_PUBLIC_MINIO_URL: {{ printf "%s%s" (include "peaka.routes.baseUrl" .) (include "peaka.routes.exportPublicPath" .) | quote }}
 {{- end }}
 
 STUDIO_DB_ADDRESS: jdbc:postgresql://{{ include "peaka.postgresql.host" . }}:{{ include "peaka.postgresql.port" . }}/{{ include "peaka.postgresql.database" . }}
@@ -276,6 +280,7 @@ CODE2_PUBLISHED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 
 GRPC_DNS_RESOLVER: native
+PARTNER_API_ENABLED: {{ .Values.partnerApiEnabled | default false | quote }}
 
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
 
@@ -424,6 +429,16 @@ empty path and ImplementationSpecific pathType; otherwise a normal "/" Prefix.
 
 {{- define "peaka.routes.servicePath" -}}
 service
+{{- end -}}
+
+{{/*
+Public sub-path under which the internal MinIO is exposed for query export
+downloads. Lives under the service path (reserved for backend routes) to avoid
+colliding with front-end paths. The reverse proxy strips this prefix before
+reaching MinIO; be-data-rest grafts it onto presigned URLs.
+*/}}
+{{- define "peaka.routes.exportPublicPath" -}}
+/{{ include "peaka.routes.servicePath" . }}/bucket
 {{- end -}}
 
 {{- define "peaka.routes.apiPath" -}}
@@ -714,121 +729,30 @@ Usage: include "peaka.customCA.initContainer.node" (dict "image" "registry/image
 {{- end -}}
 
 {{/*
-Define the peaka.mariadb.fullname template with .Release.Name and "mariadb"
-*/}}
-{{- define "peaka.mariadb.fullname" -}}
-{{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Set mariadb hostname
-*/}}
-{{- define "peaka.mariadb.host" -}}
-{{ include "peaka.mariadb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
-{{- end -}}
-
-{{/*
-Set mariadb user
-*/}}
-{{- define "peaka.mariadb.user" }}
-{{- default "peaka" .Values.mariadb.db.user }}
-{{- end }}
-
-{{/*
-Set mariadb password
-*/}}
-{{- define "peaka.mariadb.password" }}
-{{- default "peaka" .Values.mariadb.db.password }}
-{{- end }}
-
-{{/*
-Set mariadb db name
-*/}}
-{{- define "peaka.mariadb.dbName" }}
-{{- default "metastore_db" .Values.mariadb.db.name }}
-{{- end }}
-
-{{/*
-Set mariadb port
-*/}}
-{{- define "peaka.mariadb.port" }}
-{{- default 3306 .Values.mariadb.service.ports.mysql }}
-{{- end }}
-
-{{/*
-Set metastore name
+Hive metastore database connection - always the chart's single PostgreSQL.
 */}}
 {{- define "peaka.metastore.host" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-{{ include "peaka.mariadb.host" . -}}
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 {{- include "peaka.postgresql.host" . -}}
-{{- else -}}
-{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." }}
-{{- end -}}
 {{- end -}}
 
-{{/*
-Set metastore db name
-*/}}
 {{- define "peaka.metastore.dbName" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-{{- default "metastore_db" .Values.mariadb.db.name -}}
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 peaka_metastore_db
-{{- else -}}
-{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
-{{- end -}}
 {{- end -}}
 
-{{/*
-Set metastore user
-*/}}
 {{- define "peaka.metastore.user" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-{{- default "peaka" .Values.mariadb.db.user -}}
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 {{- include "peaka.postgresql.user" . -}}
-{{- else }}
-{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
-{{- end -}}
 {{- end -}}
 
-{{/*
-Set metastore password
-*/}}
 {{- define "peaka.metastore.password" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-{{- default "peaka" .Values.mariadb.db.password -}}
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 {{- include "peaka.postgresql.password" . -}}
-{{- else -}}
-{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
-{{- end -}}
 {{- end -}}
 
-{{/*
-Set metastore port
-*/}}
 {{- define "peaka.metastore.port" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-{{- default 3306 .Values.mariadb.service.ports.mysql -}}
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 {{- include "peaka.postgresql.port" . -}}
-{{- else -}}
-{{- fail "You can set either 'mysql' or 'postgres' in .Values.hiveMetastore.metastoreType." -}}
-{{- end -}}
 {{- end -}}
 
-{{/*
-Set metastore connection type
-*/}}
 {{- define "peaka.metastore.connection" -}}
-{{- if eq .Values.hiveMetastore.metastoreType "mysql" -}}
-mysql
-{{- else if eq .Values.hiveMetastore.metastoreType "postgres" -}}
 postgresql
-{{- end -}}
 {{- end -}}
 
 {{/*

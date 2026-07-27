@@ -44,6 +44,10 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.sqlService.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.sqlService.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

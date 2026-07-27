@@ -59,6 +59,15 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.scheduledFlowRunner.readinessHealthGroup }}
+          env:
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.scheduledFlowRunner.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.scheduledFlowRunner.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

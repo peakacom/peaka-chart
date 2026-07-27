@@ -44,6 +44,18 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.cloudGateway.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.cloudGateway.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.cloudGateway.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
           {{- if eq (include "peaka.customCA.enabled" .) "true" }}
             - name: custom-ca-truststore

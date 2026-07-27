@@ -51,8 +51,16 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
+          {{- with .Values.collabSharedb.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.collabSharedb.livenessProbe }}
           livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.collabSharedb.readinessProbe }}
+          readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.collabSharedb.resources }}

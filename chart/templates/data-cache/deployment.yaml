@@ -40,11 +40,19 @@ spec:
           env:
             - name: DATA_CACHE_SERVER_PORT
               value: "8090"
+            {{- with .Values.dataCache.readinessHealthGroup }}
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: {{ . | quote }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           {{- with .Values.dataCache.resources }}
           resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.dataCache.startupProbe }}
+          startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.dataCache.livenessProbe }}
