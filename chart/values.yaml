@@ -1266,7 +1266,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.20
+    tag: v1.0.26
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1613,7 +1613,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.8
+    tag: v1.0.9
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -2139,7 +2139,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.39
+    tag: v1.0.40
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
