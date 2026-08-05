@@ -17,7 +17,7 @@ spec:
       kind: Rule
       priority: 11
       middlewares:
-        - name: {{ include "peaka.fullname" . }}-be-release-state-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-strip-studioapi-prefix
       services:
         - name: {{ include "peaka.fullname" . }}-be-release-state
           port: http
@@ -26,17 +26,3 @@ spec:
   tls:
     secretName: {{ .Values.tls.secretName | default (printf "%s-tls-secret" (include "peaka.fullname" .)) }}
   {{- end }}
-
----
-
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "peaka.fullname" . }}-be-release-state-replace-path-middleware
-  labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-release-state
-    {{- include "peaka.labels" . | nindent 4 }}
-spec:
-  replacePathRegex:
-    regex: "^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)"
-    replacement: "/${1}"

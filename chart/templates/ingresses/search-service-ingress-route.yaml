@@ -18,7 +18,7 @@ spec:
       priority: 99
       middlewares:
         - name: {{ include "peaka.fullname" . }}-be-search-service-auth-middleware
-        - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-strip-studioapi-prefix
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
@@ -33,7 +33,7 @@ spec:
       priority: 99
       middlewares:
         - name: {{ include "peaka.fullname" . }}-be-search-metadata-service-auth-middleware
-        - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-strip-studioapi-prefix
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
@@ -48,7 +48,7 @@ spec:
       priority: 99
       middlewares:
         - name: {{ include "peaka.fullname" . }}-be-ai-agent-service-auth-middleware
-        - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-strip-studioapi-prefix
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http

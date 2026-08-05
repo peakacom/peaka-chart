@@ -18,7 +18,7 @@ spec:
       priority: 11
       middlewares:
         - name: {{ include "peaka.fullname" . }}-be-data-cache-auth-middleware
-        - name: {{ include "peaka.fullname" . }}-be-data-cache-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-strip-studioapi-prefix
       services:
         - name: {{ include "peaka.fullname" . }}-be-data-cache
           port: http
@@ -39,16 +39,3 @@ spec:
   forwardAuth:
     address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/data-cache-auth-check
     authResponseHeadersRegex: ^X-Internal-Authorization-
-
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "peaka.fullname" . }}-be-data-cache-replace-path-middleware
-  labels:
-    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-data-cache
-    {{- include "peaka.labels" . | nindent 4 }}
-spec:
-  replacePathRegex:
-    regex: "^/{{ include "peaka.routes.servicePath" . }}/studioapi/(.*)"
-    replacement: "/${1}"
