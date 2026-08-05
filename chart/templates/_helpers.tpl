@@ -1520,5 +1520,5 @@ ALTER FUNCTION studio.gen_random_uuid() OWNER TO {{ include "peaka.postgresql.us
 Define abstract schema mapper init script
 */}}
 {{- define "peaka.postgresql.initASM" -}}
-{{- tpl (.Files.Get "files/asm-schema.sql" | trim) . -}}
+{{- tpl (.Files.Get "files/asm-schema.sql" | required "files/asm-schema.sql is missing from the chart bundle" | trim) . -}}
 {{- end -}}
