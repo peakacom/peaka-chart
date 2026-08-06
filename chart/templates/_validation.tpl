@@ -9,12 +9,23 @@
 {{- end }}
 
 {{- define "peaka.validate.objectStore" }}
-{{- if and .Values.minio.enabled .Values.externalObjectStore.enabled -}}
-{{- fail "You cannot enable both minio.enabled and externalObjectStore.enabled at the same time." }}
-{{- end }}
-
+{{/*
+minio.enabled and externalObjectStore.enabled may both be true: every client
+(env-configmap, trino catalog, hive metastore) deterministically follows
+externalObjectStore when it is enabled, while the in-cluster MinIO server can
+stay deployed (e.g. migration staging buckets still living there).
+*/}}
 {{- if and (not .Values.minio.enabled) (not .Values.externalObjectStore.enabled) -}}
 {{- fail "You must enable either minio.enabled or externalObjectStore.enabled." }}
+{{- end }}
+
+{{- if .Values.externalObjectStore.enabled -}}
+{{- if not .Values.externalObjectStore.accessKey -}}
+{{- fail "externalObjectStore.accessKey must not be empty when externalObjectStore.enabled is true." }}
+{{- end }}
+{{- if not .Values.externalObjectStore.secretKey -}}
+{{- fail "externalObjectStore.secretKey must not be empty when externalObjectStore.enabled is true." }}
+{{- end }}
 {{- end }}
 {{- end }}
 
