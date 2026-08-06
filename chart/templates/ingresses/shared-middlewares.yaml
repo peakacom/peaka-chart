@@ -2,9 +2,15 @@
 Middlewares referenced by more than one IngressRoute.
 
 strip-studioapi-prefix rewrites /<servicePath>/studioapi/<rest> to /<rest>.
-Five routes need exactly this - studio-api, data-rest, data-cache,
-workflow-history and release-state - and each used to ship its own
-byte-identical copy under a per-service name.
+
+Six IngressRoutes across eight route rules need exactly this:
+  studio-api, data-rest, data-cache, workflow-history, release-state
+    - one rule each; each used to ship its own byte-identical copy of this
+      Middleware under a per-service name
+  search-service
+    - three rules; it never defined its own, it referenced studio-api's.
+      That is why deleting the per-service copies without repointing
+      search-service would leave dangling middlewareRefs.
 */}}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
