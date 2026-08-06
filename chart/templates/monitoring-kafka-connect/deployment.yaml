@@ -12,6 +12,7 @@ metadata:
     chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- include "peaka.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.monitoringKafkaConnect.replicaCount }}
   selector:
@@ -23,6 +24,7 @@ spec:
       labels:
         app: {{ template "peaka.monitoring-kafka-connect.fullname" . }}
         release: {{ .Release.Name }}
+        {{- include "peaka.labels" . | nindent 8 }}
       {{- if .Values.monitoringKafkaConnect.podAnnotations }}
       annotations:
       {{- range $key, $value := .Values.monitoringKafkaConnect.podAnnotations }}

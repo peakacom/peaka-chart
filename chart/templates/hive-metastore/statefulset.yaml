@@ -4,6 +4,7 @@ metadata:
   name: {{ template "peaka.hive.name" . }}
   labels:
     app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: {{ template "peaka.hive.name" . }}
+        {{- include "peaka.labels" . | nindent 8 }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/hive-metastore/configmap.yaml") . | sha256sum }}
     spec:
