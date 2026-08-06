@@ -535,13 +535,18 @@ http
 
 {{/*
 Define peaka.objectStore.endpoint
+The scheme's default port (https:443 / http:80) is omitted so endpoints like
+https://storage.googleapis.com render without a redundant ":443" suffix.
 */}}
 {{- define "peaka.objectStore.endpoint" -}}
-{{- printf "%s://%s:%d"
-  (include "peaka.objectStore.scheme" .)
-  (include "peaka.objectStore.host" .)
-  (include "peaka.objectStore.port" . | int)
-}}
+{{- $scheme := include "peaka.objectStore.scheme" . -}}
+{{- $host := include "peaka.objectStore.host" . -}}
+{{- $port := include "peaka.objectStore.port" . | int -}}
+{{- if or (and (eq $scheme "https") (eq $port 443)) (and (eq $scheme "http") (eq $port 80)) -}}
+{{- printf "%s://%s" $scheme $host -}}
+{{- else -}}
+{{- printf "%s://%s:%d" $scheme $host $port -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
