@@ -528,7 +528,7 @@ pgcat:
 
 # Default values for cp-kafka-connect.
 kafkaConnect:
-  enabled: true
+  enabled: false
 
   replicaCount: 1
 
