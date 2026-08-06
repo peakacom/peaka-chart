@@ -59,6 +59,15 @@ helm repo update
 helm upgrade peaka peaka/peaka
 ```
 
+> **Note on this upgrade:** five per-service Traefik `Middleware` objects were
+> replaced by a single shared `<release>-strip-studioapi-prefix`. Helm applies
+> the routes before creating the new middleware, so for a few milliseconds
+> during the upgrade the `/service/studioapi/*` routes reference a middleware
+> that does not exist yet. If Traefik reconciles in that gap it drops those
+> routers and the affected requests return **404** until it reconciles again,
+> which happens on its own within a second. Retry any request that fails during
+> the upgrade. Fresh installations are unaffected.
+
 ### (Optional) Delete old Traefik CRDs
 This step is optional as the upgrade will use new CRDs.
 ```shell
