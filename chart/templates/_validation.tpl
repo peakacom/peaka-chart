@@ -19,19 +19,31 @@
 {{- end }}
 
 {{/*
-Kubernetes caps label VALUES at 63 characters. Services label their resources
-`app.kubernetes.io/name: <peaka.fullname>-be-<service>`, and the longest suffix
-in use is `-be-collab-sharedb-websocket` (28 chars), so peaka.fullname must stay
-within 63-28=35 characters. Neither `helm template` nor `helm lint` checks label
-length, so without this guard an over-long release name or fullnameOverride
-renders fine and is only rejected by the API server at apply time, with an error
-that does not name the cause.
+Three Kubernetes limits bind on peaka.fullname, all against the 63-character cap
+on DNS labels and label values. Neither `helm template` nor `helm lint` checks
+any of them, so without this guard an over-long release name or fullnameOverride
+renders cleanly and fails only at apply time (or, worse, installs and leaves a
+StatefulSet whose pods cannot resolve), with an error that does not name the
+cause.
+
+  1. Label VALUES are capped at 63. Longest suffix appended to fullname is
+     `-be-collab-sharedb-websocket` (28)                    -> fullname <= 35
+  2. Service names are RFC 1035 labels, also capped at 63, same suffix (28)
+                                                            -> fullname <= 35
+  3. StatefulSet pods are named `<sts-name>-<ordinal>`, and that pod name is a
+     DNS label in the headless-service record, so it must fit 63 - NOT the 253
+     that applies to most object names. Longest StatefulSet suffix is
+     `-be-workflow-worker-express` (27); reserve 3 for a `-NN` ordinal so
+     scaling past 9 replicas stays safe          -> fullname <= 63-27-3 = 33
+
+(3) binds, so 33 is the limit enforced here. If a longer service or StatefulSet
+name is ever added, recompute: the check is only as good as these measurements.
 */}}
 {{- define "peaka.validate.nameLength" }}
 {{- $fullname := include "peaka.fullname" . }}
-{{- $longestSuffix := 28 }}
-{{- if gt (add (len $fullname) $longestSuffix) 63 }}
-{{- fail (printf "Name too long: %q is %d characters. Appending the longest resource suffix (-be-collab-sharedb-websocket, %d characters) exceeds Kubernetes' 63-character limit for label values, which the API server rejects at apply time. Use a release name (or fullnameOverride) of at most %d characters." $fullname (len $fullname) $longestSuffix (sub 63 $longestSuffix)) }}
+{{- $limit := 33 }}
+{{- if gt (len $fullname) $limit }}
+{{- fail (printf "Name too long: %q is %d characters, but the limit is %d. Peaka appends suffixes of up to 28 characters to this name for Service names and label values, and StatefulSet pods append a further \"-<ordinal>\" that must still fit a 63-character DNS label. Past %d characters those exceed Kubernetes' limits, which fails at apply time rather than here. Use a shorter release name, or set fullnameOverride to at most %d characters." $fullname (len $fullname) $limit $limit $limit) }}
 {{- end }}
 {{- end }}
 

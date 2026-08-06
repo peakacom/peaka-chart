@@ -21,5 +21,12 @@
 .idea/
 *.tmproj
 .vscode/
+# AI coding agent config. Not just noise: some harnesses materialise these as
+# character-special /dev/null mounts, and Helm's loader aborts the whole chart
+# on any irregular file ("cannot load irregular file ... file mode type bits
+# set"). The .helmignore check runs before that test, so excluding them here
+# keeps `helm template`/`package` working when an agent runs in the repo.
+.claude/
+.mcp.json
 # Temporary values file
 .values.yaml
