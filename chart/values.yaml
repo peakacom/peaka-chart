@@ -534,6 +534,8 @@ kafkaConnect:
 
   ## Image Info
   ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
+  ## "image" may be a plain name (resolved against imageRegistry / the global
+  ## default registry) or a full registry-qualified reference, used as-is.
   image: quay.io/debezium/connect
   imageTag: 3.1
 
@@ -641,6 +643,8 @@ monitoringKafkaConnect:
 
   ## Image Info
   ## ref: https://hub.docker.com/r/confluentinc/cp-kafka/
+  ## "image" may be a plain name (resolved against imageRegistry / the global
+  ## default registry) or a full registry-qualified reference, used as-is.
   image: be-peaka-kafka-connector
   imageTag: v1.0.4
 
