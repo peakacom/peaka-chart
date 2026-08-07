@@ -304,6 +304,24 @@ Set image registry for peaka images
 {{- end -}}
 
 {{/*
+Resolve a container image reference from a single "image" value that may or
+may not already include a registry host. If the first path segment looks like
+a registry host (contains "." or ":", or is "localhost" — Docker's own
+heuristic), the value is used as-is; otherwise the component registry override
+(or the global default) is prepended.
+Usage: include "peaka.image.resolve" (dict "root" . "image" <image> "registry" <componentRegistryOverride> "tag" <tag>)
+*/}}
+{{- define "peaka.image.resolve" -}}
+{{- $tag := toString .tag -}}
+{{- $firstSegment := first (splitList "/" .image) -}}
+{{- if and (contains "/" .image) (or (contains "." $firstSegment) (contains ":" $firstSegment) (eq $firstSegment "localhost")) -}}
+{{- printf "%s:%s" .image $tag -}}
+{{- else -}}
+{{- printf "%s/%s:%s" (default (include "peaka.image.registry" .root) .registry) .image $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create imagePullSecret to pull Peaka images
 */}}
 {{- define "peaka.imageRegistry.secret" -}}

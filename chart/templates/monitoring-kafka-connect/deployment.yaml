@@ -34,11 +34,11 @@ spec:
     spec:
       initContainers:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.monitoringKafkaConnect.imageRegistry) .Values.monitoringKafkaConnect.image .Values.monitoringKafkaConnect.imageTag)) | nindent 8 }}
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (include "peaka.image.resolve" (dict "root" . "image" .Values.monitoringKafkaConnect.image "registry" .Values.monitoringKafkaConnect.imageRegistry "tag" .Values.monitoringKafkaConnect.imageTag))) | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-server
-          image: {{ default (include "peaka.image.registry" .) .Values.monitoringKafkaConnect.imageRegistry }}/{{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
+          image: {{ include "peaka.image.resolve" (dict "root" . "image" .Values.monitoringKafkaConnect.image "registry" .Values.monitoringKafkaConnect.imageRegistry "tag" .Values.monitoringKafkaConnect.imageTag) }}
           imagePullPolicy: {{ .Values.monitoringKafkaConnect.imagePullPolicy | quote }}
           # Connect's plugin scan can take minutes on constrained CPU; gate
           # liveness/readiness behind a generous startup window so the pod is

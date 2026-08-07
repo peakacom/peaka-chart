@@ -746,6 +746,8 @@ kafkaConnect:
   replicaCount: 1
 
   ## Image Info
+## "image" may be a plain name (resolved against imageRegistry / the global
+  ## default registry) or a full registry-qualified reference, used as-is.
   ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
   image: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/peaka-kafka-connect
   imageTag: v1.0.0-redhat_ubi.2
@@ -858,6 +860,8 @@ monitoringKafkaConnect:
   replicaCount: 1
 
   ## Image Info
+## "image" may be a plain name (resolved against imageRegistry / the global
+  ## default registry) or a full registry-qualified reference, used as-is.
   ## Unified Peaka Kafka Connect image (Iceberg + MongoDB + Debezium connectors).
   image: peaka-kafka-connect
   imageTag: v1.0.0-redhat_ubi.2
