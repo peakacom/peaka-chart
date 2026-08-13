@@ -72,6 +72,18 @@ spec:
         - name: common-flow-utilities-service
           image: {{ default (include "peaka.image.registry" .) .Values.dataCache.sidecar.imageRegistry }}/{{ .Values.dataCache.sidecar.imageName }}:{{ .Values.dataCache.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.sidecar.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - "true"
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - "true"
+            initialDelaySeconds: 10
+            periodSeconds: 30
           ports:
             - name: http
               containerPort: 8080

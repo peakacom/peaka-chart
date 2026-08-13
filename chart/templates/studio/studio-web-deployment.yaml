@@ -31,6 +31,20 @@ spec:
         - name: studio-web
           image: {{ default (include "peaka.image.registry" .) .Values.studioWeb.image.registry }}/{{ .Values.studioWeb.image.name }}:{{ .Values.studioWeb.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.studioWeb.image.imagePullPolicy }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
           ports:
             - name: http
               containerPort: 8080

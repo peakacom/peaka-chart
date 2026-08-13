@@ -32,6 +32,20 @@ spec:
         - name: metastore
           image: {{ default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry }}/{{ .Values.hiveMetastore.image.name }}:{{ .Values.hiveMetastore.image.tag }}
           imagePullPolicy: {{ .Values.hiveMetastore.image.pullPolicy | quote }}
+          livenessProbe:
+            tcpSocket:
+              port: 9083
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 9083
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
           env:
             - name: METASTORE_DB_HOSTNAME
               value: {{ include "peaka.metastore.host" . }}

@@ -126,12 +126,14 @@ spec:
             - name: metrics
               containerPort: 9090
               protocol: TCP
-          {{- if ne $service "worker"}}
           livenessProbe:
              initialDelaySeconds: 150
              tcpSocket:
-               port: rpc
-          {{- end }}
+               port: metrics
+          readinessProbe:
+             initialDelaySeconds: 30
+             tcpSocket:
+               port: metrics
           volumeMounts:
             - name: config
               mountPath: /etc/temporal/config/config_template.yaml

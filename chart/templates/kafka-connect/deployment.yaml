@@ -34,6 +34,20 @@ spec:
         - name: {{ template "peaka.kafka-connect.fullname" . }}-server
           image: {{ .Values.kafkaConnect.image }}:{{ .Values.kafkaConnect.imageTag }}
           imagePullPolicy: {{ .Values.kafkaConnect.imagePullPolicy | quote }}
+          livenessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
           ports:
             - name: kafka-connect
               containerPort: {{ .Values.kafkaConnect.servicePort }}

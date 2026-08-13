@@ -1867,6 +1867,14 @@ dispatcherAssigner:
     periodSeconds: 5
     failureThreshold: 30
     timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
   livenessProbe:
     failureThreshold: 6
     httpGet:
@@ -1895,6 +1903,14 @@ dispatcherDlq:
       port: 8080
     periodSeconds: 5
     failureThreshold: 30
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 15
     timeoutSeconds: 5
   livenessProbe:
     failureThreshold: 6
@@ -2361,6 +2377,14 @@ webhookResolver:
     periodSeconds: 5
     failureThreshold: 30
     timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
   livenessProbe:
     failureThreshold: 6
     httpGet:
@@ -2433,6 +2457,14 @@ workflowStarter:
       port: 8080
     periodSeconds: 5
     failureThreshold: 30
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /health/live
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 15
     timeoutSeconds: 5
   livenessProbe:
     failureThreshold: 6
@@ -2550,7 +2582,20 @@ releaseState:
   resources: {}
   nodeSelector: {}
   affinity: {}
-  readinessProbe: {}
+  livenessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 6
+  readinessProbe:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 6
 
 
 # -----------------------------------------------------------------------------

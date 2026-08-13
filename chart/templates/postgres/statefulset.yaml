@@ -31,6 +31,20 @@ spec:
       containers:
         - name: postgres
           image: {{ default (include "peaka.image.registry" .) .Values.postgresql.image.registry }}/{{ .Values.postgresql.image.name }}:{{ .Values.postgresql.image.tag }}
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
           args:
             - "-c"
             - "idle_session_timeout={{ default 600000 .Values.postgresql.config.idle_session_timeout }}"

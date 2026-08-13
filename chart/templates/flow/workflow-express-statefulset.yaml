@@ -70,6 +70,18 @@ spec:
         - name: common-flow-utilities-service
           image: {{ default (include "peaka.image.registry" .) .Values.workflowWorkerExpress.sidecar.imageRegistry }}/{{ .Values.workflowWorkerExpress.sidecar.imageName }}:{{ .Values.workflowWorkerExpress.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.workflowWorkerExpress.sidecar.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - "true"
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - "true"
+            initialDelaySeconds: 10
+            periodSeconds: 30
           env:
             - name: PAYLOAD_SIZE_LIMIT
               value: 50mb

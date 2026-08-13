@@ -38,6 +38,20 @@ spec:
         - name: {{ template "peaka.monitoring-kafka-connect.fullname" . }}-server
           image: {{ default (include "peaka.image.registry" .) .Values.monitoringKafkaConnect.imageRegistry }}/{{ .Values.monitoringKafkaConnect.image }}:{{ .Values.monitoringKafkaConnect.imageTag }}
           imagePullPolicy: {{ .Values.monitoringKafkaConnect.imagePullPolicy | quote }}
+          livenessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
           ports:
             - name: kafka-connect
               containerPort: {{ .Values.monitoringKafkaConnect.servicePort }}
