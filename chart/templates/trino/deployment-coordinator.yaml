@@ -54,7 +54,13 @@ spec:
           configMap:
             name: {{ template "peaka.trino.catalog" . }}
         - name: workdir
-          emptyDir: {}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                resources:
+                  requests:
+                    storage: 2Gi
         {{- if .Values.trino.server.kerberosKeytab }}
         - name: kerberos-keytab
           secret:
@@ -73,10 +79,22 @@ spec:
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
         - name: custom-ca-truststore
-          emptyDir: {}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                resources:
+                  requests:
+                    storage: 2Gi
         {{- end }}
         - name: trino-var
-          emptyDir: {}
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                resources:
+                  requests:
+                    storage: 2Gi
       initContainers:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}

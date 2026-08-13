@@ -961,7 +961,13 @@ temporal:
     # SCC-assigned arbitrary UID (the image dir isn't writable by a non-default UID).
     additionalVolumes:
       - name: temporal-config-dir
-        emptyDir: {}
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes: [ "ReadWriteOnce" ]
+              resources:
+                requests:
+                  storage: 128Mi
     additionalVolumeMounts:
       - name: temporal-config-dir
         mountPath: /etc/temporal/config
