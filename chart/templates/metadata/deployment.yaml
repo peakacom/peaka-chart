@@ -6,6 +6,12 @@ metadata:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-metadata-service
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
+  # The metadata volume is a ReadWriteOnce PVC: with the default
+  # RollingUpdate strategy the new pod cannot attach the volume while the
+  # old pod still holds it (Multi-Attach error on multi-node clusters) and
+  # the rollout hangs. Same fix as trino-coordinator.
+  strategy:
+    type: "Recreate"
   replicas: {{ .Values.metadataService.replicaCount }}
   selector:
     matchLabels:
