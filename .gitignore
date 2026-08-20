@@ -1,4 +1,15 @@
 .idea
-chart/charts
 chart/Chart.lock
 chart/.values*.yaml
+.DS_Store
+
+# Local deploy artifacts / customer-specific overlays — never commit.
+# /values.yaml carries live credentials (registry service-account key).
+/values.yaml
+/fiba-values.yaml
+/kowl-values.yaml
+/kowl/
+/samba.yaml
+/egress.yaml
+/preflight.log
+/traefik-crds-*.yaml
