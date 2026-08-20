@@ -84,7 +84,10 @@ spec:
         - name: create-{{ $store }}-store
           image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
           imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
-          command: ['temporal-sql-tool', '--database', '{{ include "peaka.temporal.persistence.sql.database" (list $ $store) }}', 'create-database']
+          # sh-wrap: Turkcell SELinux'u static Go binary'lerin dogrudan
+          # entrypoint-exec'ini (domain transition) blokluyor (EACCES); dynamic
+          # /bin/sh entrypoint olup binary'yi transition'siz exec edince geciyor.
+          command: ['/bin/sh', '-c', 'exec temporal-sql-tool --database {{ include "peaka.temporal.persistence.sql.database" (list $ $store) }} create-database']
           env:
             - name: SQL_PLUGIN
               value: {{ include "peaka.temporal.persistence.sql.driver" (list $ $store) }}
@@ -119,7 +122,8 @@ spec:
         - name: {{ $store }}-schema
           image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
           imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
-          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'setup-schema', '-v', '0.0']
+          # sh-wrap: bkz. create-store init'indeki not (static Go entrypoint-exec).
+          command: ['/bin/sh', '-c', 'exec temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool setup-schema -v 0.0']
           env:
             {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
             - name: CASSANDRA_HOST
@@ -263,12 +267,13 @@ spec:
         - name: {{ $store }}-schema
           image: "{{ $.Values.temporal.admintools.image.repository }}:{{ $.Values.temporal.admintools.image.tag }}"
           imagePullPolicy: {{ $.Values.temporal.admintools.image.pullPolicy }}
+          # sh-wrap: bkz. schema-setup Job'undaki not (static Go entrypoint-exec).
           {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
-          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/cassandra/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          command: ['/bin/sh', '-c', 'exec temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool update-schema --schema-dir /etc/temporal/schema/cassandra/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
           {{- else if eq (include "peaka.temporal.persistence.sql.driver" (list $ $store)) "mysql8" }}
-          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/mysql/v8/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          command: ['/bin/sh', '-c', 'exec temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool update-schema --schema-dir /etc/temporal/schema/mysql/v8/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
           {{- else if eq (include "peaka.temporal.persistence.sql.driver" (list $ $store)) "postgres12" }}
-          command: ['temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool', 'update-schema', '--schema-dir', '/etc/temporal/schema/postgresql/v12/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
+          command: ['/bin/sh', '-c', 'exec temporal-{{ include "peaka.temporal.persistence.driver" (list $ $store) }}-tool update-schema --schema-dir /etc/temporal/schema/postgresql/v12/{{ include "peaka.temporal.persistence.schema" $store }}/versioned']
           {{- end }}
           env:
             {{- if eq (include "peaka.temporal.persistence.driver" (list $ $store)) "cassandra" }}
