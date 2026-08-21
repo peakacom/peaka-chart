@@ -54,14 +54,6 @@ spec:
         - name: catalog-volume
           configMap:
             name: {{ template "peaka.trino.catalog" . }}
-        - name: workdir
-          ephemeral:
-            volumeClaimTemplate:
-              spec:
-                accessModes: [ "ReadWriteOnce" ]
-                resources:
-                  requests:
-                    storage: 2Gi
         {{- if .Values.trino.server.kerberosKeytab }}
         - name: kerberos-keytab
           secret:
@@ -81,13 +73,8 @@ spec:
                     storage: 2Gi
         {{- end }}
         - name: trino-var
-          ephemeral:
-            volumeClaimTemplate:
-              spec:
-                accessModes: [ "ReadWriteOnce" ]
-                resources:
-                  requests:
-                    storage: 2Gi
+          persistentVolumeClaim:
+            claimName: {{ template "peaka.trino.worker" . }}-var
       initContainers:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
@@ -127,8 +114,6 @@ spec:
             - mountPath: {{ .Values.trino.server.config.path }}/catalog/hive.properties
               name: catalog-volume
               subPath: hive.properties
-            - mountPath: /home/trino/.CData
-              name: workdir
             {{- range $fileName, $fileContent := .Values.trino.server.kerberosConfig }}
             - mountPath: {{ $.Values.trino.server.kerberosConfigPath }}/{{ $fileName }}
               name: config-volume

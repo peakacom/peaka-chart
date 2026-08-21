@@ -31,6 +31,10 @@ spec:
       containers:
         - name: postgres
           image: {{ default (include "peaka.image.registry" .) .Values.postgresql.image.registry }}/{{ .Values.postgresql.image.name }}:{{ .Values.postgresql.image.tag }}
+          {{- with .Values.postgresql.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             tcpSocket:
               port: 5432

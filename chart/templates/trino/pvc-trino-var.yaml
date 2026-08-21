@@ -1,0 +1,35 @@
+{{- /* OpenShift: emptyDir/ephemeral bloklu; trino-var (/data/trino) icin PVC.
+       Worker autoscaling kapali ve replicas=1 oldugu icin RWO PVC + Recreate yeterli. */}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "peaka.trino.coordinator" . }}-var
+  labels:
+    app: {{ template "peaka.trino.fullname" . }}
+    component: coordinator
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}
+{{- if gt (int .Values.trino.server.workers) 0 }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "peaka.trino.worker" . }}-var
+  labels:
+    app: {{ template "peaka.trino.fullname" . }}
+    component: worker
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}
+{{- end }}

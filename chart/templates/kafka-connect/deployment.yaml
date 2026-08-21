@@ -34,6 +34,15 @@ spec:
         - name: {{ template "peaka.kafka-connect.fullname" . }}-server
           image: {{ .Values.kafkaConnect.image }}:{{ .Values.kafkaConnect.imageTag }}
           imagePullPolicy: {{ .Values.kafkaConnect.imagePullPolicy | quote }}
+          # Connect's plugin scan can take minutes on constrained CPU; gate
+          # liveness/readiness behind a generous startup window so the pod is
+          # not killed before the REST port opens.
+          startupProbe:
+            tcpSocket:
+              port: 8083
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 60
           livenessProbe:
             tcpSocket:
               port: 8083

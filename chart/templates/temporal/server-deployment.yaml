@@ -16,6 +16,8 @@ metadata:
     app.kubernetes.io/component: {{ $service }}
     app.kubernetes.io/part-of: {{ $.Chart.Name }}
 spec:
+  strategy:
+    type: Recreate
   replicas: {{ default $.Values.temporal.server.replicaCount $serviceValues.replicaCount }}
   selector:
     matchLabels:

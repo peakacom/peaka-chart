@@ -23,7 +23,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "peaka.pgcat.fullname" . }}
+      serviceAccountName: {{ .Values.pgcat.serviceAccount.name | default (include "peaka.pgcat.fullname" .) }}
       {{- if .Values.pgcat.podSecurityContext }}
       securityContext:
         {{- toYaml .Values.pgcat.podSecurityContext | nindent 8 }}

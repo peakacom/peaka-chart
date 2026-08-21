@@ -85,7 +85,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           ports:
-            - name: http
+            - name: cfu-http
               containerPort: 8080
           envFrom:
             - configMapRef:
