@@ -245,6 +245,15 @@ postgresql:
     registry:
     name: peaka-postgres
     tag: v1.0.0-redhat_ubi
+  # Central DB every service depends on; explicit sizing so the cluster
+  # LimitRange's 512Mi default limit never applies to it.
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
   service:
     port: 5432
   persistence:
@@ -285,7 +294,16 @@ hiveMetastore:
     name: hive-metastore
     tag: v1.0.0-redhat_ubi
     pullPolicy: IfNotPresent
-  hadoopHeapSize: 10240
+  # POC sizing: 10240 (10GB) heap OOMKilled (exit 137) under the cluster
+  # LimitRange. Keep heap modest and give an explicit resources limit above it.
+  hadoopHeapSize: 2048
+  resources:
+    requests:
+      cpu: 250m
+      memory: 2Gi
+    limits:
+      cpu: "1"
+      memory: 3Gi
   # JAVA_HOME inside the UBI hive-metastore image (apache/hive on temurin).
   javaHome: /opt/java/openjdk
   # db type to be used as metastore. One of mysql or postgres.
@@ -297,6 +315,11 @@ hiveMetastore:
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
 minio:
   enabled: true
+  # OpenShift: named SA'lar spc_t webhook'unu tetikliyor; default SA
+  # custom-selinuxrelabeling'e sahip. Bu yuzden default SA kullan.
+  serviceAccount:
+    create: false
+    name: default
   # UBI-wrapped MinIO; pull secret comes from global.imagePullSecrets.
   image:
     repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/minio
@@ -308,6 +331,17 @@ minio:
     enabled: false
   mode: standalone
   replicas: 1
+  # Upstream minio chart defaults to requests.memory=16Gi with NO limit; the
+  # cluster LimitRange then injects a 512Mi default limit and the pod becomes
+  # invalid (request > limit) -> ReplicaSet FailedCreate, no pod at all.
+  # POC sizing with explicit request+limit:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
   users: []
   rootUser: peaka_minio
   rootPassword: peaka_minio123
@@ -364,6 +398,10 @@ mariadb:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
   enabled: true
+  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
+  serviceAccount:
+    create: false
+    name: default
   nameOverride: kafka
   # Peaka's UBI-rebased Apache Kafka image (certified). Bitnami subchart needs
   # allowInsecureImages to accept a non-Bitnami-registry image.
@@ -387,8 +425,22 @@ kafka:
     offsets.topic.replication.factor: 1
   controller:
     replicaCount: 1
+    # OpenShift: kafka.controller.resources set edilmeyince namespace LimitRange,
+    # JVM heap'in (1GB) altinda memory limit enjekte edip KRaft storage format
+    # sirasinda OOMKill (exit 137) yapiyordu. Acik limit ver (heap + overhead > 1GB).
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1536Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
     persistence:
       size: 4Gi
+    # OpenShift: emptyDir/ephemeral bloklu; logs icin PVC (volumeClaimTemplate).
+    logPersistence:
+      enabled: true
+      size: 2Gi
     # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
     # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
     podSecurityContext:
@@ -410,6 +462,10 @@ kafka:
 # connection details under externalMongoDB.
 mongodb:
   enabled: true
+  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
+  serviceAccount:
+    create: false
+    name: default
   # Bitnami subchart needs allowInsecureImages to accept the non-Bitnami UBI image.
   global:
     security:
@@ -428,6 +484,19 @@ mongodb:
     enabled: false
   persistence:
     size: 4Gi
+  # POC: default (empty) resources -> cluster LimitRange caps CPU low -> mongosh
+  # (readiness-probe.sh) can't start within the 5s probe timeout, and real DB ops
+  # get throttled too. Give CPU headroom: fixes the readiness timeout AND app latency.
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  # mongosh cold-start safety margin on top of the CPU bump.
+  readinessProbe:
+    timeoutSeconds: 10
   # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
   # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
   podSecurityContext:
@@ -458,6 +527,10 @@ externalMongoDB:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
   enabled: true
+  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
+  serviceAccount:
+    create: false
+    name: default
   global:
     security:
       allowInsecureImages: true
@@ -474,6 +547,17 @@ redis:
   master:
     persistence:
       size: 4Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
+    serviceAccount:
+      create: false
+      name: default
     # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
     # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
     podSecurityContext:
@@ -491,6 +575,22 @@ permify:
   imagePullSecrets:
     - name: peaka-docker-registry
   replicaCount: 1
+  # OpenShift: default SA kullan — diger workload'larla tutarlilik icin (named
+  # SA'lar custom-selinuxrelabeling SCC'sine erisemiyor). create:false ile
+  # kullanilmayan job-status-reader Role da dusuyor (serve RBAC gerektirmiyor).
+  # NOT: `exec ... permify: Permission denied`in kok nedeni SA DEGIL — Turkcell
+  # SELinux'u static Go binary'lerin dogrudan entrypoint-exec'ini blokluyor;
+  # o fix subchart deployment'indaki /bin/sh -c exec wrapper'i (empirik dogrulandi).
+  serviceAccount:
+    create: false
+    name: default
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   app:
     account_id: "recdK3q5xuwJdGjrh"
     server:
@@ -526,12 +626,11 @@ permify:
 
 pgcat:
   enabled: true
+  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
   serviceAccount:
-    create: true
+    create: false
+    name: default
     annotations: {}
-    ## The name of the service account to use.
-    ## If not set and create is true, a name is generated using the fullname template
-    name: ""
   service:
     type: ClusterIP
     port: 6432
@@ -541,8 +640,12 @@ pgcat:
     pullSecrets:
       - name: peaka-docker-registry
   resources:
-    limits: {}
-    requests: {}
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   configuration:
     general:
       ## @param configuration.general.host What IP to run on, 0.0.0.0 means accessible from everywhere.
@@ -681,10 +784,15 @@ kafkaConnect:
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
   # Sized to match the fixed 512M heap above (plus JVM overhead).
+  # CPU: without an explicit request/limit the cluster LimitRange throttles the
+  # container so hard that Connect's plugin scan alone takes minutes and the
+  # liveness window kills the pod before the REST port (8083) opens.
   resources:
     requests:
+      cpu: 500m
       memory: "1Gi"
     limits:
+      cpu: "2"
       memory: "2Gi"
 
   ## Custom pod annotations
@@ -790,10 +898,13 @@ monitoringKafkaConnect:
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
+  # CPU: see kafkaConnect.resources note (plugin scan vs liveness window).
   resources:
     requests:
+      cpu: 500m
       memory: "1Gi"
     limits:
+      cpu: "2"
       memory: "2Gi"
 
   ## Custom pod annotations
@@ -831,7 +942,13 @@ monitoringKafkaConnect:
 
       ## Resources configuration for the JMX exporter container.
       ## See the `resources` documentation above for details.
-      resources: { }
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
 
   ## You can list load balanced service endpoint, or list of all brokers (which is hard in K8s).  e.g.:
   ## bootstrapServers: "PLAINTEXT://dozing-prawn-kafka-headless:9092"
@@ -943,7 +1060,13 @@ temporal:
     podLabels: {}
     secretLabels: {}
     secretAnnotations: {}
-    resources: {}
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -957,20 +1080,12 @@ temporal:
     nodeSelector: {}
     tolerations: []
     affinity: {}
-    # OpenShift: emptyDir gives temporal a writable /etc/temporal/config under the
-    # SCC-assigned arbitrary UID (the image dir isn't writable by a non-default UID).
-    additionalVolumes:
-      - name: temporal-config-dir
-        ephemeral:
-          volumeClaimTemplate:
-            spec:
-              accessModes: [ "ReadWriteOnce" ]
-              resources:
-                requests:
-                  storage: 128Mi
-    additionalVolumeMounts:
-      - name: temporal-config-dir
-        mountPath: /etc/temporal/config
+    # OpenShift: the UBI temporal-server image already makes /etc/temporal writable
+    # for the arbitrary UID (Dockerfile: chgrp -R 0 + chmod -R g+rwX /etc/temporal)
+    # and ships its config files there, so no extra volume is needed. An empty
+    # PVC mounted over /etc/temporal/config would mask the image-shipped config.
+    additionalVolumes: []
+    additionalVolumeMounts: []
     additionalEnv: []
     # OpenShift restricted-v2 rejects hardcoded UID/fsGroup; leave empty so the
     # namespace-assigned UID is used (consistent with the other subcharts).
@@ -1200,7 +1315,13 @@ temporal:
     tolerations: []
     affinity: {}
     additionalEnv: []
-    resources: {}
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
     containerSecurityContext: {}
     securityContext: {}
     podDisruptionBudget: {}
@@ -1233,7 +1354,13 @@ temporal:
     podAnnotations: {}
     podLabels: {}
 
-    resources: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -1267,7 +1394,13 @@ temporal:
     update:
       enabled: true
       backoffLimit: 100
-    resources: {}
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
     containerSecurityContext: {}
     securityContext: {}
 
@@ -1405,12 +1538,12 @@ trino:
   coordinator:
     config:
       query:
-        maxMemoryPerNode: 9GB
+        maxMemoryPerNode: 3GB
         maxLength: "1000000000"     # a billion
       memory:
         heapHeadroomPerNode: ""
     jvm:
-      maxHeapSize: 25G
+      maxHeapSize: 6G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1436,7 +1569,15 @@ trino:
       # storageClass of the trino coordinator persistent volume
       storageClass: ""
 
-    resources: {}
+    # POC sizing: prod defaults (25G heap) OOMKilled under the cluster
+    # LimitRange. Give explicit limits above heap+overhead.
+    resources:
+      requests:
+        cpu: 500m
+        memory: 4Gi
+      limits:
+        cpu: "2"
+        memory: 8Gi
       # We usually recommend not to specify default resources and to leave this as a conscious
       # choice for the user. This also increases chances charts run on environments with little
       # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -1468,10 +1609,10 @@ trino:
       memory:
         heapHeadroomPerNode: ""
       query:
-        maxMemoryPerNode: 15GB
+        maxMemoryPerNode: 5GB
         maxLength: "1000000000"     # a billion
     jvm:
-      maxHeapSize: 50G
+      maxHeapSize: 8G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1485,7 +1626,15 @@ trino:
       - -javaagent:/usr/lib/trino/lib/trino-byte-manipulation.jar
     additionalConfigFiles: {}
     additionalExposedPorts: {}
-    resources: {}
+    # POC sizing: prod defaults (50G heap) OOMKilled under the cluster
+    # LimitRange. Give explicit limits above heap+overhead.
+    resources:
+      requests:
+        cpu: "1"
+        memory: 6Gi
+      limits:
+        cpu: "3"
+        memory: 12Gi
     livenessProbe: {}
       # initialDelaySeconds: 20
       # periodSeconds: 10
@@ -1515,7 +1664,7 @@ trino:
     config:
       path: /etc/trino
       query:
-        maxMemory: 20GB
+        maxMemory: 8GB
       authenticationType: ""
       https:
         enabled: false
@@ -1615,7 +1764,13 @@ authService:
     name: be-auth-service
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Liveness hits the dependency-free availability probe so a dependency outage
@@ -1657,7 +1812,13 @@ cloudGateway:
     name: be-cloud-gateway
     tag: v1.0.18-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Actuator availability probes on the management port. Liveness is
@@ -1700,7 +1861,13 @@ collabSharedb:
     name: be-collab-sharedb
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   nodeSelector: {}
   affinity: {}
   # Startup gate: give the app time to come up before liveness/readiness
@@ -1743,8 +1910,23 @@ dataCache:
     imageName: be-common-flow-utilities-service
     imageTag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-    resources: {}
-  resources: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  # CPU: with empty resources the cluster LimitRange throttles the JVM so hard
+  # that startup exceeds the startup-probe window and the pod restart-loops.
+  # Sized generously: cache flows are both CPU- and memory-intensive.
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "3"
+      memory: 4Gi
   nodeSelector: {}
   affinity: {}
   materializedViewQueryTimeout: 7200
@@ -1757,16 +1939,18 @@ dataCache:
   startupProbe:
     httpGet:
       path: /actuator/health/liveness
-      port: 9090
+      port: 8090
       scheme: HTTP
     periodSeconds: 5
-    failureThreshold: 36
+    # 6 min window: on CPU-constrained clusters (LimitRange) JVM startup can
+    # exceed the old 3 min window even with explicit resources set.
+    failureThreshold: 72
     timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
     httpGet:
       path: /actuator/health/liveness
-      port: 9090
+      port: 8090
       scheme: HTTP
     initialDelaySeconds: 60
     periodSeconds: 20
@@ -1776,7 +1960,7 @@ dataCache:
     failureThreshold: 3
     httpGet:
       path: /actuator/health/readiness
-      port: 9090
+      port: 8090
       scheme: HTTP
     initialDelaySeconds: 60
     periodSeconds: 20
@@ -1789,7 +1973,13 @@ dataRest:
     name: be-data-rest
     tag: v1.0.21-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness gates on Postgres + flag store.
@@ -1824,7 +2014,13 @@ dispatcher:
     name: be-dispatcher
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness reflects Kafka partition assignment.
@@ -1859,7 +2055,13 @@ dispatcherAssigner:
     name: be-dispatcher-assigner
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
@@ -1896,7 +2098,13 @@ dispatcherDlq:
     name: be-dispatcher-dlq
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
@@ -1933,7 +2141,13 @@ emailService:
     name: be-email-service
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness is a static server-up check.
@@ -1973,7 +2187,13 @@ metadataService:
       name: be-metadata-connector
       tag: v1.0.0-redhat_ubi
       imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2023,7 +2243,13 @@ monitoringService:
     name: be-monitoring-service
     tag: v1.0.2-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2067,7 +2293,13 @@ permissionService:
     name: be-permission-service
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors; a real dependency outage takes
@@ -2112,7 +2344,13 @@ runtimeApi:
     name: be-runtime-api
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2156,7 +2394,13 @@ scheduledFlowRunner:
     name: be-scheduled-flow-runner
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2200,7 +2444,13 @@ searchService:
     name: be-search-service
     tag: v1.0.2-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   bullDashboardEnabled: false
@@ -2237,7 +2487,13 @@ secretStoreService:
     name: be-secret-store-service
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2281,7 +2537,17 @@ studioApi:
     name: be-studio-api
     tag: v1.0.39-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  # CPU/memory: with empty resources the cluster LimitRange injects a 512Mi
+  # memory limit + a small CPU cap; the biggest Spring service then can't start
+  # within the startup window and is SIGTERM'd mid-init (surfaces as confusing
+  # "Shutdown in progress" traces from r2dbc/minio bean constructors).
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2296,7 +2562,8 @@ studioApi:
       port: 9090
       scheme: HTTP
     periodSeconds: 5
-    failureThreshold: 48
+    # 6 min window (CPU-constrained clusters), consistent with dataCache.
+    failureThreshold: 72
     timeoutSeconds: 3
   livenessProbe:
     failureThreshold: 3
@@ -2325,7 +2592,13 @@ tokenService:
     name: be-token-service
     tag: v1.0.2-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2369,7 +2642,13 @@ webhookResolver:
     name: be-webhook-resolver
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Headless Vert.x Kafka worker: no traffic, so no readiness. Liveness is UP
@@ -2406,7 +2685,13 @@ workflowHistory:
     name: be-workflow-history
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2450,7 +2735,13 @@ workflowStarter:
     name: be-workflow-starter
     tag: v1.0.3-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while all
@@ -2491,9 +2782,21 @@ workflowWorkerExpress:
     imageName: be-common-flow-utilities-service
     imageTag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-    resources: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     readinessProbe: {}
-  resources: {}
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "3"
+      memory: 4Gi
   nodeSelector: {}
   affinity: {}
   # Liveness hits the dependency-free availability probe so a dependency outage
@@ -2535,7 +2838,13 @@ sqlService:
     name: be-sql-service
     tag: v1.0.0-redhat_ubi
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Stateless transpile service: liveness and readiness both just report the
@@ -2572,7 +2881,13 @@ studioWeb:
     # .5 = CI-built (pid→/tmp + SPA try_files), fresh digest (cert-published).
     tag: v1.0.0-redhat_ubi.5
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   nodeSelector: {}
   affinity: {}
   readinessProbe: {}
@@ -2581,11 +2896,19 @@ releaseState:
   replicaCount: 1
   image:
     name: be-release-state
-    tag: v1.0.0-redhat_ubi
+    # v1.0.6: static Go binary exec'd via /bin/sh for SELinux-hardened clusters
+    # (Turkcell) + ubi-minimal base.
+    tag: v1.0.6-redhat_ubi
     imagePullPolicy: IfNotPresent
   serviceAccount:
     create: true
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   nodeSelector: {}
   affinity: {}
   livenessProbe:
@@ -2647,6 +2970,24 @@ releaseState:
 #       nodePort: 30567
 traefik:
   enabled: true
+  # OpenShift: default SA kullan. traefik file provider kullaniyor (kubernetesCRD/Ingress
+  # disabled, rbac disabled) -> RBAC gerekmez; named SA ise spc_t webhook'unu tetikliyor.
+  serviceAccount:
+    create: false
+    name: default
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # OpenShift: emptyDir/ephemeral bloklu; data volume'u PVC yap (bitnami pvc.yaml
+  # olusturur). updateStrategy Recreate subchart values.yaml'da ayarli (rollingUpdate
+  # ile cakismamasi icin).
+  persistence:
+    enabled: true
+    size: 256Mi
   # UBI-wrapped Traefik image.
   image:
     registry: europe-west3-docker.pkg.dev
