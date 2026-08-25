@@ -1527,7 +1527,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.26-redhat_ubi
+    tag: v1.0.30-redhat_ubi
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1908,7 +1908,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.8-redhat_ubi
+    tag: v1.0.11-redhat_ubi
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1975,7 +1975,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.21-redhat_ubi
+    tag: v1.0.23-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2189,7 +2189,7 @@ metadataService:
   initContainer:
     image:
       name: be-metadata-connector
-      tag: v1.0.0-redhat_ubi
+      tag: v1.0.1-redhat_ubi
       imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2446,7 +2446,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.2-redhat_ubi
+    tag: v1.0.3-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2539,7 +2539,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.39-redhat_ubi
+    tag: v1.0.43-redhat_ubi
     imagePullPolicy: IfNotPresent
   # CPU/memory: with empty resources the cluster LimitRange injects a 512Mi
   # memory limit + a small CPU cap; the biggest Spring service then can't start
@@ -2594,7 +2594,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.2-redhat_ubi
+    tag: v1.0.3-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
