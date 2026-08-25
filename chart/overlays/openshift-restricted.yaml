@@ -1,0 +1,74 @@
+# =====================================================================
+# Hardened / restricted OpenShift profile (opt-in)
+#
+# For clusters with admission webhooks that block emptyDir/ephemeral
+# volumes, reject explicit seccompProfile fields, and grant the SELinux
+# relabeling SCC only to the namespace's default ServiceAccount
+# (e.g. the Turkcell POC clusters).
+#
+# Usage:
+#   helm upgrade --install peaka <chart> -f overlays/openshift-restricted.yaml [...]
+#
+# What the flag switches inside the templates (global.openshiftRestricted):
+#   - scratch emptyDirs -> PVCs/volumeClaimTemplates (trino-var, traefik tmp,
+#     redis tmp-conf, kafka config/tmp/secret-config)
+#   - Deployment strategy Recreate where an RWO PVC forces it (trino, traefik)
+#   - subchart seccompProfile fields stripped (the cluster injects its own)
+#
+# What this file additionally sets (values-level):
+#   - default-SA overrides: named SAs cannot use the relabeling SCC on these
+#     clusters, so volume-mounting workloads must run as the default SA
+#   - persistence for volumes that have no emptyDir alternative here
+# =====================================================================
+
+global:
+  openshiftRestricted: true
+
+minio:
+  serviceAccount:
+    create: false
+    name: default
+
+kafka:
+  serviceAccount:
+    create: false
+    name: default
+  controller:
+    # Log dir would be an emptyDir otherwise; claim it per-replica.
+    logPersistence:
+      enabled: true
+      size: 2Gi
+
+mongodb:
+  serviceAccount:
+    create: false
+    name: default
+
+redis:
+  serviceAccount:
+    create: false
+    name: default
+  master:
+    serviceAccount:
+      create: false
+      name: default
+
+permify:
+  serviceAccount:
+    create: false
+    name: default
+
+pgcat:
+  serviceAccount:
+    create: false
+    name: default
+    annotations: {}
+
+traefik:
+  serviceAccount:
+    # traefik uses an existing SA whenever "name" is set (no create key upstream).
+    name: default
+  # data volume: emptyDir is blocked -> PVC (the subchart's pvc.yaml).
+  persistence:
+    enabled: true
+    size: 256Mi

@@ -62,7 +62,7 @@ spec:
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.master.hostAliases "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.master.podSecurityContext.enabled }}
-      securityContext: {{- omit .Values.master.podSecurityContext "enabled" "seccompProfile" | toYaml | nindent 8 }}
+      securityContext: {{- omit .Values.master.podSecurityContext "enabled" (ternary "seccompProfile" "enabled" (.Values.global.openshiftRestricted | default false)) | toYaml | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ template "redis.masterServiceAccountName" . }}
       automountServiceAccountToken: {{ .Values.master.automountServiceAccountToken }}
@@ -108,7 +108,7 @@ spec:
           lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.master.lifecycleHooks "context" $) | nindent 12 }}
           {{- end }}
           {{- if .Values.master.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.master.containerSecurityContext "enabled" "seccompProfile" | toYaml | nindent 12 }}
+          securityContext: {{- omit .Values.master.containerSecurityContext "enabled" (ternary "seccompProfile" "enabled" (.Values.global.openshiftRestricted | default false)) | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
@@ -247,6 +247,10 @@ spec:
               mountPath: /opt/bitnami/redis/mounted-etc
             - name: redis-tmp-conf
               mountPath: /opt/bitnami/redis/etc/
+            {{- if not .Values.global.openshiftRestricted }}
+            - name: tmp
+              mountPath: /tmp
+            {{- end }}
             {{- if .Values.tls.enabled }}
             - name: redis-certificates
               mountPath: /opt/bitnami/redis/certs
@@ -260,7 +264,7 @@ spec:
           image: {{ include "redis.metrics.image" . }}
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
           {{- if .Values.metrics.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.metrics.containerSecurityContext "enabled" "seccompProfile" | toYaml | nindent 12 }}
+          securityContext: {{- omit .Values.metrics.containerSecurityContext "enabled" (ternary "seccompProfile" "enabled" (.Values.global.openshiftRestricted | default false)) | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
@@ -433,6 +437,12 @@ spec:
         - name: config
           configMap:
             name: {{ include "redis.configmapName" . }}
+        {{- if not .Values.global.openshiftRestricted }}
+        - name: redis-tmp-conf
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        {{- end }}
         {{- if .Values.sysctl.mountHostSys }}
         - name: host-sys
           hostPath:
@@ -510,6 +520,9 @@ spec:
         {{- if .Values.master.persistence.selector }}
         selector: {{- include "common.tplvalues.render" (dict "value" .Values.master.persistence.selector "context" $) | nindent 10 }}
         {{- end }}
+    {{- if .Values.global.openshiftRestricted }}
+    # Restricted clusters block emptyDir; the bitnami entrypoint needs a
+    # writable /opt/bitnami/redis/etc -> claim it per-replica.
     - apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
@@ -523,6 +536,7 @@ spec:
         dataSource: {{- include "common.tplvalues.render" (dict "value" .Values.master.persistence.dataSource "context" $) | nindent 10 }}
         {{- end }}
         {{- include "common.storage.class" (dict "persistence" .Values.master.persistence "global" .Values.global) | nindent 8 }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}

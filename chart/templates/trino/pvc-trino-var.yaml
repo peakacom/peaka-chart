@@ -1,5 +1,6 @@
-{{- /* OpenShift: emptyDir/ephemeral bloklu; trino-var (/data/trino) icin PVC.
-       Worker autoscaling kapali ve replicas=1 oldugu icin RWO PVC + Recreate yeterli. */}}
+{{- if .Values.global.openshiftRestricted }}
+{{- /* Restricted clusters block emptyDir/ephemeral; trino-var (/data/trino) becomes a PVC.
+       Worker autoscaling is off and replicas=1, so RWO PVC + Recreate suffices. */}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,4 +33,5 @@ spec:
     requests:
       storage: 2Gi
   {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}
+{{- end }}
 {{- end }}

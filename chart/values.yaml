@@ -1,5 +1,14 @@
 # global parameters
 global:
+  # Opt-in profile for hardened/restricted OpenShift clusters (admission
+  # webhooks that block emptyDir/ephemeral volumes and reject explicit
+  # seccompProfile). When true: scratch volumes become PVCs (with
+  # strategy: Recreate where a RWO PVC forces it) and subchart
+  # seccompProfile fields are stripped. Defaults to false = upstream
+  # behavior (emptyDir scratch space, RollingUpdate, explicit seccomp).
+  # See overlays/openshift-restricted.yaml for the full profile.
+  openshiftRestricted: false
+
   # Pull secret applied to bundled dependency images.
   imagePullSecrets:
     - peaka-docker-registry
@@ -315,11 +324,7 @@ hiveMetastore:
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
 minio:
   enabled: true
-  # OpenShift: named SA'lar spc_t webhook'unu tetikliyor; default SA
-  # custom-selinuxrelabeling'e sahip. Bu yuzden default SA kullan.
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   # UBI-wrapped MinIO; pull secret comes from global.imagePullSecrets.
   image:
     repository: europe-west3-docker.pkg.dev/code2-324814/peaka-ubi-images/minio
@@ -398,10 +403,7 @@ mariadb:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
   enabled: true
-  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   nameOverride: kafka
   # Peaka's UBI-rebased Apache Kafka image (certified). Bitnami subchart needs
   # allowInsecureImages to accept a non-Bitnami-registry image.
@@ -437,10 +439,7 @@ kafka:
         memory: 2Gi
     persistence:
       size: 4Gi
-    # OpenShift: emptyDir/ephemeral bloklu; logs icin PVC (volumeClaimTemplate).
-    logPersistence:
-      enabled: true
-      size: 2Gi
+    # Restricted clusters: logPersistence is enabled in overlays/openshift-restricted.yaml.
     # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
     # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
     podSecurityContext:
@@ -462,10 +461,7 @@ kafka:
 # connection details under externalMongoDB.
 mongodb:
   enabled: true
-  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   # Bitnami subchart needs allowInsecureImages to accept the non-Bitnami UBI image.
   global:
     security:
@@ -527,10 +523,7 @@ externalMongoDB:
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
   enabled: true
-  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   global:
     security:
       allowInsecureImages: true
@@ -554,10 +547,7 @@ redis:
       limits:
         cpu: "1"
         memory: 1Gi
-    # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
-    serviceAccount:
-      create: false
-      name: default
+    # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
     # OpenShift restricted-v2 rejects hardcoded UID/fsGroup (1001); null them so
     # OpenShift assigns from the namespace range (keep runAsNonRoot/seccomp).
     podSecurityContext:
@@ -575,15 +565,10 @@ permify:
   imagePullSecrets:
     - name: peaka-docker-registry
   replicaCount: 1
-  # OpenShift: default SA kullan — diger workload'larla tutarlilik icin (named
-  # SA'lar custom-selinuxrelabeling SCC'sine erisemiyor). create:false ile
-  # kullanilmayan job-status-reader Role da dusuyor (serve RBAC gerektirmiyor).
-  # NOT: `exec ... permify: Permission denied`in kok nedeni SA DEGIL — Turkcell
-  # SELinux'u static Go binary'lerin dogrudan entrypoint-exec'ini blokluyor;
-  # o fix subchart deployment'indaki /bin/sh -c exec wrapper'i (empirik dogrulandi).
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: default-SA override in overlays/openshift-restricted.yaml.
+  # NOTE: the `exec ... permify: Permission denied` root cause was NOT the SA —
+  # hardened SELinux blocks direct entrypoint-exec of static Go binaries; the
+  # fix is the /bin/sh -c exec wrapper in the vendored subchart deployment.
   resources:
     requests:
       cpu: 250m
@@ -626,10 +611,10 @@ permify:
 
 pgcat:
   enabled: true
-  # OpenShift: default SA kullan (named SA spc_t webhook'unu tetikliyor).
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   serviceAccount:
-    create: false
-    name: default
+    create: true
+    name: ""
     annotations: {}
   service:
     type: ClusterIP
@@ -2974,11 +2959,7 @@ releaseState:
 #       nodePort: 30567
 traefik:
   enabled: true
-  # OpenShift: default SA kullan. traefik file provider kullaniyor (kubernetesCRD/Ingress
-  # disabled, rbac disabled) -> RBAC gerekmez; named SA ise spc_t webhook'unu tetikliyor.
-  serviceAccount:
-    create: false
-    name: default
+  # Restricted clusters: the default-SA override lives in overlays/openshift-restricted.yaml.
   resources:
     requests:
       cpu: 100m
@@ -2986,12 +2967,8 @@ traefik:
     limits:
       cpu: 500m
       memory: 512Mi
-  # OpenShift: emptyDir/ephemeral bloklu; data volume'u PVC yap (bitnami pvc.yaml
-  # olusturur). updateStrategy Recreate subchart values.yaml'da ayarli (rollingUpdate
-  # ile cakismamasi icin).
-  persistence:
-    enabled: true
-    size: 256Mi
+  # Restricted clusters: enable persistence via overlays/openshift-restricted.yaml
+  # (emptyDir-blocking webhooks need the data volume as a PVC + Recreate).
   # UBI-wrapped Traefik image.
   image:
     registry: europe-west3-docker.pkg.dev
