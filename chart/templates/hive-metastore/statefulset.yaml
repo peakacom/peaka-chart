@@ -34,6 +34,10 @@ spec:
         - name: metastore
           image: {{ default (include "peaka.image.registry" .) .Values.hiveMetastore.image.registry }}/{{ .Values.hiveMetastore.image.name }}:{{ .Values.hiveMetastore.image.tag }}
           imagePullPolicy: {{ .Values.hiveMetastore.image.pullPolicy | quote }}
+          {{- with .Values.hiveMetastore.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             - name: METASTORE_DB_HOSTNAME
               value: {{ include "peaka.metastore.host" . }}

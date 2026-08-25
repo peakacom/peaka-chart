@@ -262,6 +262,17 @@ minio:
   enabled: true
   mode: standalone
   replicas: 1
+  # Upstream minio chart defaults to requests.memory=16Gi (no limit); that
+  # forces scheduling onto a node with 16Gi free and, on clusters with a
+  # LimitRange, makes the pod invalid (request > injected default limit) so
+  # no pod is created at all. Size it explicitly.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 4Gi
   users: []
   rootUser: peaka_minio
   rootPassword: peaka_minio123
@@ -2428,7 +2439,9 @@ releaseState:
   replicaCount: 1
   image:
     name: be-release-state
-    tag: v1.0.5
+    # v1.0.6: static Go binary exec'd via /bin/sh (SELinux-hardened clusters)
+    # + ubi-minimal base for the redhat variant; plain variant unchanged.
+    tag: v1.0.6
     imagePullPolicy: IfNotPresent
   serviceAccount:
     create: true

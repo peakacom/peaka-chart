@@ -73,7 +73,7 @@ spec:
           image: {{ default (include "peaka.image.registry" .) .Values.dataCache.sidecar.imageRegistry }}/{{ .Values.dataCache.sidecar.imageName }}:{{ .Values.dataCache.sidecar.imageTag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.dataCache.sidecar.imagePullPolicy }}
           ports:
-            - name: http
+            - name: cfu-http
               containerPort: 8080
           envFrom:
             - configMapRef:
