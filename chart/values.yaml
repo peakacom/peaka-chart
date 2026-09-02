@@ -306,6 +306,15 @@ externalObjectStore:
   # Example: https://minio.example.com:9000
   publicUrl: ""
 
+# Serve query-export downloads through be-data-rest instead of presigned
+# object-store URLs. Recommended for on-prem installs where client hosts
+# cannot (or must not) reach the object store directly; every download is
+# then authorization-checked by data-rest. When enabled, presigning (and
+# externalObjectStore.publicUrl) is not used for export downloads, and the
+# MinIO export ingress route is not rendered.
+exportDownloadProxy:
+  enabled: false
+
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:
