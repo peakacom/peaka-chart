@@ -137,7 +137,7 @@ data:
           priority: 1000
           middlewares: ["trino-extra-credential"]
           service: be-data-rest
-        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) (not .Values.exportDownloadProxy.enabled) }}
         # Query export artifacts served from MinIO (bucket "export") via
         # presigned URLs under a sub-path; the strip middleware removes the
         # public prefix so the S3 signature stays valid.
@@ -172,7 +172,7 @@ data:
           replacePathRegex:
             regex: "^/{{ include "peaka.routes.partnerPath" . }}/(.*)"
             replacement: "/${1}"
-        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) (not .Values.exportDownloadProxy.enabled) }}
         minio-export-strip:
           replacePathRegex:
             regex: "^{{ include "peaka.routes.exportPublicPath" . }}/(.*)"
@@ -300,7 +300,7 @@ data:
             passHostHeader: true
             servers:
               - url: http://{{ $fullname }}-fe-studio-app:80
-        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+        {{- if and .Values.minio.enabled (not .Values.externalObjectStore.enabled) (not .Values.exportDownloadProxy.enabled) }}
         minio:
           loadBalancer:
             passHostHeader: true

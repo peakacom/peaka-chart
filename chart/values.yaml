@@ -346,7 +346,7 @@ minio:
       memory: 1Gi
     limits:
       cpu: "1"
-      memory: 2Gi
+      memory: 4Gi
   users: []
   rootUser: peaka_minio
   rootPassword: peaka_minio123
@@ -380,25 +380,15 @@ externalObjectStore:
   # Example: https://minio.example.com:9000
   publicUrl: ""
 
-# database to be used for thrift store.
-# for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/mariadb-galera/values.yaml
-mariadb:
+# Serve query-export downloads through be-data-rest instead of presigned
+# object-store URLs. Recommended for on-prem installs where client hosts
+# cannot (or must not) reach the object store directly; every download is
+# then authorization-checked by data-rest. When enabled, presigning (and
+# externalObjectStore.publicUrl) is not used for export downloads, and the
+# MinIO export ingress route is not rendered.
+exportDownloadProxy:
   enabled: false
-  image:
-    repository: bitnamilegacy/mariadb-galera
-    tag: 10.11.4-debian-11-r3
-  replicaCount: 1
-  db:
-    user: peaka
-    password: peaka
-    name: metastore_db
-  rootUser:
-    password: peaka
-  galera:
-    mariabackup:
-      password: peaka
-  persistence:
-    size: 4Gi
+
 
 # for the full list of values, see https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 kafka:

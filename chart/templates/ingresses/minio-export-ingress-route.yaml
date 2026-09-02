@@ -1,4 +1,4 @@
-{{- if and (eq (dig "provider" "file" (.Values.routing | default dict)) "crd") .Values.minio.enabled (not .Values.externalObjectStore.enabled) }}
+{{- if and (eq (dig "provider" "file" (.Values.routing | default dict)) "crd") .Values.minio.enabled (not .Values.externalObjectStore.enabled) (not .Values.exportDownloadProxy.enabled) }}
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:

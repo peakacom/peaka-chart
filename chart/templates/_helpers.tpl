@@ -146,6 +146,8 @@ DB_PORT: {{ include "peaka.postgresql.port" . | quote }}
 DB_NAME: {{ include "peaka.postgresql.database" . }}
 DB_SSL: {{ include "peaka.postgresql.ssl" . | quote }}
 
+EXPORT_DOWNLOAD_PROXY_ENABLED: {{ .Values.exportDownloadProxy.enabled | default false | quote }}
+
 SECRET_STORAGE_SERVICE: http://{{ include "peaka.fullname" . }}-be-secret-store-service.{{ .Release.Namespace }}.svc.cluster.local:80
 
 AUTH_SERVICE_EXTERNAL_ADDRESS: {{ include "peaka.routes.baseServiceUrl" . }}/auth
