@@ -2206,7 +2206,7 @@ metadataService:
   initContainer:
     image:
       name: be-metadata-connector
-      tag: v1.0.1-redhat_ubi
+      tag: v1.0.2-redhat_ubi
       imagePullPolicy: IfNotPresent
   resources:
     requests:
