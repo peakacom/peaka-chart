@@ -2947,8 +2947,9 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    # .5 = CI-built (pid→/tmp + SPA try_files), fresh digest (cert-published).
-    tag: v1.0.0-redhat_ubi.5
+    # fe CI now builds -redhat_ubi variants on release tags (since v1.1.199);
+    # tracks main's pinned fe version.
+    tag: v1.1.202-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
