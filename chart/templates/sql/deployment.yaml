@@ -26,10 +26,6 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.sqlService.image.registry) .Values.sqlService.image.name .Values.sqlService.image.tag)) | nindent 8 }}
-      {{- end }}
       containers:
         - name: sql-service
           image: {{ default (include "peaka.image.registry" .) .Values.sqlService.image.registry }}/{{ .Values.sqlService.image.name }}:{{ .Values.sqlService.image.tag }}
@@ -67,11 +63,11 @@ spec:
       {{- end }}
       volumes:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        - name: custom-ca-certs
+        # Read-only ConfigMap mount; ca-bundle.crt is pre-concatenated in the
+        # ConfigMap, no init container / emptyDir needed.
+        - name: custom-ca-bundle
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
-        - name: custom-ca-bundle
-          emptyDir: {}
       {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.sqlService.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- with .Values.sqlService.affinity }}

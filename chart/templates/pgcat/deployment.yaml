@@ -31,7 +31,7 @@ spec:
         {{- toYaml .Values.pgcat.podSecurityContext | nindent 8 }}
       {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: import-custom-ca-certs
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           command:
@@ -59,7 +59,7 @@ spec:
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           imagePullPolicy: {{ .Values.pgcat.image.pullPolicy | default "IfNotPresent" }}
           env:
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: SSL_CERT_FILE
               value: "/custom-ca-bundle/ca-certificates.crt"
           {{- end }}
@@ -81,7 +81,7 @@ spec:
           volumeMounts:
           - mountPath: /etc/pgcat
             name: config
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
           - name: custom-ca-bundle
             mountPath: /custom-ca-bundle
             readOnly: true
@@ -103,7 +103,7 @@ spec:
           defaultMode: 420
           secretName: {{ include "peaka.pgcat.fullname" . }}
         name: config
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
       - name: custom-ca-certs
         configMap:
           name: {{ include "peaka.fullname" . }}-custom-ca-certs

@@ -27,7 +27,7 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.permissionService.image.registry) .Values.permissionService.image.name .Values.permissionService.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
@@ -44,7 +44,7 @@ spec:
             - mountPath: /secrets/jwt/rsa
               name: jwt-rsa-secret
               readOnly: true
-            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -74,7 +74,7 @@ spec:
         - name: jwt-rsa-secret
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs

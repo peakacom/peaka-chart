@@ -27,7 +27,7 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
       {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (include "peaka.image.registry" .) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 6 }}
       {{- end }}
       - name: data-migrator
@@ -40,7 +40,7 @@ spec:
           - configMapRef:
               name: {{ include "peaka.fullname" . }}-env-config
         volumeMounts:
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
           - name: custom-ca-truststore
             mountPath: /truststore
             readOnly: true
@@ -77,13 +77,13 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
           {{- end }}
       volumes:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs

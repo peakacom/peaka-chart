@@ -27,7 +27,7 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.runtimeApi.image.registry) .Values.runtimeApi.image.name .Values.runtimeApi.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
@@ -62,7 +62,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -71,7 +71,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.runtimeApi.terminationGracePeriodSeconds }}
       {{- end }}
       volumes:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs

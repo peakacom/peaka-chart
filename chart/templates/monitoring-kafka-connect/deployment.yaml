@@ -33,7 +33,7 @@ spec:
       {{- end }}
     spec:
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (include "peaka.image.resolve" (dict "root" . "image" .Values.monitoringKafkaConnect.image "registry" .Values.monitoringKafkaConnect.imageRegistry "tag" .Values.monitoringKafkaConnect.imageTag))) | nindent 8 }}
       {{- end }}
       containers:
@@ -98,7 +98,7 @@ spec:
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: KAFKA_OPTS
               value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
             {{- end }}
@@ -119,7 +119,7 @@ spec:
           {{- if .Values.monitoringKafkaConnect.volumeMounts }}
 {{ toYaml .Values.monitoringKafkaConnect.volumeMounts | indent 10 }}
           {{- end }}
-            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -135,7 +135,7 @@ spec:
       {{- if .Values.monitoringKafkaConnect.volumes }}
 {{ toYaml .Values.monitoringKafkaConnect.volumes | trim | indent 6 }}
       {{- end}}
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs

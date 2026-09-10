@@ -26,10 +26,6 @@ spec:
         {{- range $_, $secret := .Values.imagePullSecrets }}
         - name: {{ $secret }}
         {{- end }}
-      initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.collabSharedb.image.registry) .Values.collabSharedb.image.name .Values.collabSharedb.image.tag)) | nindent 8 }}
-      {{- end }}
       containers:
         - name: collab-sharedb
           image: {{ default (include "peaka.image.registry" .) .Values.collabSharedb.image.registry }}/{{ .Values.collabSharedb.image.name }}:{{ .Values.collabSharedb.image.tag }}
@@ -72,11 +68,11 @@ spec:
           secret:
             secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
         {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        - name: custom-ca-certs
+        # Read-only ConfigMap mount; ca-bundle.crt is pre-concatenated in the
+        # ConfigMap, no init container / emptyDir needed.
+        - name: custom-ca-bundle
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
-        - name: custom-ca-bundle
-          emptyDir: {}
         {{- end }}
       {{- if .Values.collabSharedb.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.cloudGateway.terminationGracePeriodSeconds }}

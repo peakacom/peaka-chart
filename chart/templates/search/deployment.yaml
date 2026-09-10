@@ -20,7 +20,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
         {{- end }}
         - name: data-migrator
@@ -33,14 +33,11 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
           {{- end }}
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.node" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.searchService.image.registry) .Values.searchService.image.name .Values.searchService.image.tag)) | nindent 8 }}
-        {{- end }}
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
         - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
@@ -82,11 +79,16 @@ spec:
           {{- end }}
       volumes:
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        # Read-only ConfigMap mount; ca-bundle.crt is pre-concatenated in the
+        # ConfigMap, no init container / emptyDir needed.
+        - name: custom-ca-bundle
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+      {{- end }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
-        - name: custom-ca-bundle
-          emptyDir: {}
         - name: custom-ca-truststore
           emptyDir: {}
       {{- end }}

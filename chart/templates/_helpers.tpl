@@ -304,8 +304,10 @@ PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespa
 
 MANAGEMENT_ENDPOINT_HEALTH_VALIDATE_GROUP_MEMBERSHIP: "false"
 
-{{- if eq (include "peaka.customCA.enabled" .) "true" }}
+{{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
 JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
+{{- end }}
+{{- if eq (include "peaka.customCA.enabled" .) "true" }}
 NODE_EXTRA_CA_CERTS: /custom-ca-bundle/ca-bundle.crt
 {{- end }}
 {{- end -}}
@@ -680,6 +682,19 @@ Safe to call even when .Values.global is nil.
 {{- define "peaka.customCA.enabled" -}}
 {{- $certs := (((.Values).global).customCACertificates) -}}
 {{- if $certs -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Returns true if custom CA certificates can be imported into a writable
+truststore (Java keytool import, pgcat bundle merge). The import needs an
+emptyDir scratch volume, which hardened clusters block, so it is disabled
+under global.openshiftRestricted. Node services are unaffected: they read
+the pre-concatenated bundle straight from the custom-ca-certs ConfigMap.
+*/}}
+{{- define "peaka.customCA.importEnabled" -}}
+{{- if and (eq (include "peaka.customCA.enabled" .) "true") (not (((.Values).global).openshiftRestricted)) -}}
 true
 {{- end -}}
 {{- end -}}

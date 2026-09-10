@@ -68,7 +68,7 @@ spec:
               - key: password.db
                 path: password.db
         {{- end }}
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
@@ -91,7 +91,7 @@ spec:
           emptyDir: {}
         {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
       {{- end }}
       {{- if .Values.trino.initContainers.worker }}
@@ -166,7 +166,7 @@ spec:
               name: config-volume
               subPath: {{ $fileName }}
             {{- end }}
-            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true

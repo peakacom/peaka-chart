@@ -10,4 +10,11 @@ data:
   {{ .name }}.crt: |
     {{- .cert | nindent 4 }}
   {{- end }}
+  # Pre-concatenated bundle for services that consume PEM directly
+  # (NODE_EXTRA_CA_CERTS); lets them mount this ConfigMap read-only instead
+  # of assembling the bundle in an init container over an emptyDir.
+  ca-bundle.crt: |
+  {{- range .Values.global.customCACertificates }}
+    {{- .cert | nindent 4 }}
+  {{- end }}
 {{- end }}

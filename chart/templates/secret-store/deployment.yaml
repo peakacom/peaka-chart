@@ -27,7 +27,7 @@ spec:
         - name: {{ $secret }}
         {{- end }}
       initContainers:
-      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.secretStoreService.image.registry) .Values.secretStoreService.image.name .Values.secretStoreService.image.tag)) | nindent 8 }}
       {{- end }}
       containers:
@@ -62,7 +62,7 @@ spec:
             - name: connection-providers
               readOnly: true
               mountPath: /secrets
-            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -74,7 +74,7 @@ spec:
         - name: connection-providers
           secret:
             secretName: {{ include "peaka.fullname" . }}-connection-credentials-secret
-        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
         - name: custom-ca-certs
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
