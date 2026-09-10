@@ -2970,6 +2970,12 @@ releaseState:
     # (Turkcell) + ubi-minimal base.
     tag: v1.0.6-redhat_ubi
     imagePullPolicy: IfNotPresent
+  # create:false renders none of SA/Role/RoleBinding AND drops the
+  # serviceAccountName from the deployment, so the pod runs under the
+  # namespace default SA. Use it when the installer's RBAC cannot manage
+  # Role objects (helm upgrade otherwise fails on `get roles`); the
+  # release-status API then gets 403 from the k8s API and degrades, but
+  # the pod stays up.
   serviceAccount:
     create: true
   resources:
