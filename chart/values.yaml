@@ -1687,7 +1687,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.25
+    tag: v1.0.27
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1850,7 +1850,7 @@ mcpServer:
   replicaCount: 1
   image:
     name: peaka-mcp-server
-    tag: v0.13.1
+    tag: v0.13.2
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2156,7 +2156,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.4
+    tag: v1.0.5
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2511,7 +2511,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.202
+    tag: v1.1.205
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
