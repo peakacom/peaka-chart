@@ -45,7 +45,7 @@ spec:
             - configMapRef:
                 name: {{ include "peaka.fullname" . }}-env-config
           volumeMounts:
-          {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
+          {{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -115,6 +115,12 @@ spec:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
         - name: custom-ca-truststore
           emptyDir: {}
+      {{- else if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
+        # Pre-built truststore from values (hardened clusters block the
+        # keytool import's emptyDir); mounted read-only.
+        - name: custom-ca-truststore
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
       {{- end }}
       {{- if .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.workflowWorkerExpress.terminationGracePeriodSeconds }}

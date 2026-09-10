@@ -37,9 +37,9 @@ data:
   {{- if .Values.trino.server.kerberosConfig }}
     -Djava.security.krb5.conf={{ .Values.trino.server.kerberosConfigPath }}/krb5.conf
   {{- end }}
-  {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
+  {{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
     -Djavax.net.ssl.trustStore=/truststore/cacerts
-    -Djavax.net.ssl.trustStorePassword=changeit
+    -Djavax.net.ssl.trustStorePassword={{ include "peaka.customCA.javaTruststorePassword" . }}
   {{- end }}
   {{- range $configValue := .Values.trino.worker.additionalJVMConfig }}
     {{ $configValue }}

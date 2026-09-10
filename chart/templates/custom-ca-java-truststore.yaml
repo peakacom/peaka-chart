@@ -1,0 +1,11 @@
+{{- if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
+  labels:
+    {{- include "peaka.labels" . | nindent 4 }}
+type: Opaque
+data:
+  cacerts: {{ .Values.global.customCAJavaTruststore.data }}
+{{- end }}

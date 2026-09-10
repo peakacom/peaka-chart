@@ -29,8 +29,9 @@ global:
   # Each entry will be imported into Java truststores and Node.js CA bundles.
   # Node.js services read the certificates straight from a read-only ConfigMap
   # mount. Java truststore import needs an emptyDir scratch volume, which
-  # hardened clusters block, so it is skipped when openshiftRestricted is
-  # true (Java services then keep their default truststore).
+  # hardened clusters block, so when openshiftRestricted is true the import
+  # is skipped - provide customCAJavaTruststore below to cover Java services
+  # there (otherwise they keep their default truststore).
   # Example:
   #   customCACertificates:
   #     - name: minio-ca
@@ -39,6 +40,21 @@ global:
   #         ...
   #         -----END CERTIFICATE-----
   customCACertificates: []
+
+  # Pre-built Java truststore (base64 JKS/PKCS12), mounted read-only from a
+  # Secret - the hardened-cluster (openshiftRestricted) alternative to the
+  # keytool import above. IMPORTANT: it replaces the JVM default truststore
+  # entirely, so it MUST be built on top of a standard cacerts copy (default
+  # public CAs preserved) with the custom CAs imported into it, e.g.:
+  #   docker run --rm -v "$PWD:/work" eclipse-temurin:17 sh -c '
+  #     cp "$JAVA_HOME/lib/security/cacerts" /work/cacerts &&
+  #     keytool -importcert -noprompt -keystore /work/cacerts \
+  #       -storepass changeit -alias corp-root -file /work/root-ca.pem'
+  #   base64 -w0 cacerts   # -> data
+  # customCAJavaTruststore:
+  #   data: <base64 keystore>
+  #   password: changeit
+  customCAJavaTruststore: {}
 
 # Override the name of the chart. Useful to avoid collisions or enforce naming conventions.
 nameOverride: ""

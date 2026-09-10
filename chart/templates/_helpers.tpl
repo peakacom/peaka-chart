@@ -304,8 +304,8 @@ PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespa
 
 MANAGEMENT_ENDPOINT_HEALTH_VALIDATE_GROUP_MEMBERSHIP: "false"
 
-{{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
-JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
+{{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
+JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword={{ include "peaka.customCA.javaTruststorePassword" . }}
 {{- end }}
 {{- if eq (include "peaka.customCA.enabled" .) "true" }}
 NODE_EXTRA_CA_CERTS: /custom-ca-bundle/ca-bundle.crt
@@ -697,6 +697,32 @@ the pre-concatenated bundle straight from the custom-ca-certs ConfigMap.
 {{- if and (eq (include "peaka.customCA.enabled" .) "true") (not (((.Values).global).openshiftRestricted)) -}}
 true
 {{- end -}}
+{{- end -}}
+
+{{/*
+Returns true if a pre-built Java truststore was supplied via
+global.customCAJavaTruststore.data - the hardened-cluster alternative to the
+keytool import (mounted read-only from a Secret, no emptyDir needed).
+*/}}
+{{- define "peaka.customCA.javaTruststoreProvided" -}}
+{{- if ((((.Values).global).customCAJavaTruststore).data) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Returns true if Java services have a custom-CA truststore available through
+either path: the keytool import (non-restricted clusters) or a pre-built
+truststore Secret. Gates the /truststore mount and JAVA_TOOL_OPTIONS.
+*/}}
+{{- define "peaka.customCA.javaEnabled" -}}
+{{- if or (eq (include "peaka.customCA.importEnabled" .) "true") (eq (include "peaka.customCA.javaTruststoreProvided" .) "true") -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.customCA.javaTruststorePassword" -}}
+{{- ((((.Values).global).customCAJavaTruststore).password) | default "changeit" -}}
 {{- end -}}
 
 {{/*

@@ -78,7 +78,7 @@ spec:
               # single file via subPath so the image's other conf files are kept.
               mountPath: /opt/hive/conf/metastore-site.xml
               subPath: metastore-site.xml
-            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
@@ -93,6 +93,12 @@ spec:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
         - name: custom-ca-truststore
           emptyDir: {}
+        {{- else if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
+        # Pre-built truststore from values (hardened clusters block the
+        # keytool import's emptyDir); mounted read-only.
+        - name: custom-ca-truststore
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
         {{- end }}
       {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.hiveMetastore.nodeSelector "global" $.Values.global) | nindent 6 }}
       {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.hiveMetastore.tolerations "global" $.Values.global) | nindent 6 }}

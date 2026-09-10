@@ -71,6 +71,12 @@ spec:
                 resources:
                   requests:
                     storage: 2Gi
+        {{- else if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
+        # Pre-built truststore from values (hardened clusters block the
+        # keytool import's scratch volume); mounted read-only.
+        - name: custom-ca-truststore
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
         {{- end }}
         - name: trino-var
         {{- if .Values.global.openshiftRestricted }}
@@ -135,7 +141,7 @@ spec:
               name: kerberos-keytab
               subPath: {{ $fileName }}
             {{- end }}
-            {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
+            {{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
             - name: custom-ca-truststore
               mountPath: /truststore
               readOnly: true
