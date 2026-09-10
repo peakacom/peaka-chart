@@ -166,6 +166,18 @@ TOKEN_SERVICE_REDIRECT_URL: {{ include "peaka.routes.baseUrl" . }}/oauth2/callba
 DBC_PUBLIC_URL: {{ include "peaka.dbc.url" . }}
 STUDIO_API_HOST_NO_SCHEME: {{ .Values.accessUrl.domain }}
 
+{{/* MCP server + OAuth2 authorization server. Single-host install: the OAuth
+endpoints are served from the access URL root (so the issuer is the access URL
+itself) and the MCP resource lives under /mcp — routing is in
+ingresses/mcp-server-ingress-route.yaml. */}}
+OAUTH_AUTHORIZATION_SERVER_URL: {{ include "peaka.routes.baseUrl" . }}
+OAUTH2_ISSUER_URL: {{ include "peaka.routes.baseUrl" . }}
+OAUTH_ISSUER: {{ include "peaka.routes.baseUrl" . }}
+OAUTH_JWKS_URI: {{ include "peaka.routes.baseUrl" . }}/oauth2/jwks
+OAUTH_RESOURCE: {{ include "peaka.routes.baseUrl" . }}
+MCP_RESOURCE_URL: {{ include "peaka.routes.baseUrl" . }}/mcp
+OAUTH_REQUIRED_SCOPE: user_access
+
 ENVIRONMENT: production
 TEST_ENVIRONMENT: "false"
 CLUSTER_NAMESPACE: prod

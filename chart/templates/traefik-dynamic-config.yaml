@@ -120,6 +120,20 @@ data:
           priority: 101
           middlewares: ["oauth-replace-path"]
           service: be-studio-api
+        # OAuth2 discovery/registration/protocol endpoints -> authorization
+        # server. Mirrors ingresses/mcp-server-ingress-route.yaml for the file
+        # provider. /oauth2/callback keeps priority 101 above and still wins.
+        oauth2-endpoints:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/.well-known/oauth-protected-resource`) || PathPrefix(`/.well-known/oauth-authorization-server`) || PathPrefix(`/.well-known/openai-apps-challenge`) || PathPrefix(`/.well-known/openid-configuration`) || PathPrefix(`/connect/register`) || Path(`/register`) || PathPrefix(`/oauth2/`)"
+          priority: 100
+          service: be-oauth2-authorization-server
+        # MCP server handles the MCP endpoint itself.
+        mcp-server:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/mcp`)"
+          priority: 10
+          service: peaka-mcp-server
         workflow-history:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/history`)"
@@ -240,6 +254,16 @@ data:
               - "X-Peaka-Api-Key"
 
       services:
+        be-oauth2-authorization-server:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-be-oauth2-authorization-server:80
+        peaka-mcp-server:
+          loadBalancer:
+            passHostHeader: true
+            servers:
+              - url: http://{{ $fullname }}-peaka-mcp-server:80
         be-dispatcher:
           loadBalancer:
             passHostHeader: true

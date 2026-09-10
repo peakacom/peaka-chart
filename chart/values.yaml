@@ -1954,7 +1954,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.23-redhat_ubi
+    tag: v1.0.25-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2159,6 +2159,44 @@ emailService:
     periodSeconds: 5
     timeoutSeconds: 5
 
+mcpServer:
+  replicaCount: 1
+  image:
+    name: peaka-mcp-server
+    tag: v0.13.1-redhat_ubi
+    imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  nodeSelector: {}
+  affinity: {}
+  # Stateless MCP server; /health is a static liveness check (no
+  # dependency to gate readiness on).
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 6
+    timeoutSeconds: 5
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 5
+
 metadataService:
   replicaCount: 1
   image:
@@ -2266,6 +2304,54 @@ monitoringService:
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+oauth2AuthorizationServer:
+  replicaCount: 1
+  image:
+    name: be-oauth2-authorization-server
+    tag: v1.0.4-redhat_ubi
+    imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
+  nodeSelector: {}
+  affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/readiness
+      port: 9090
+      scheme: HTTP
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -2425,7 +2511,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.3-redhat_ubi
+    tag: v1.0.4-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2518,7 +2604,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.43-redhat_ubi
+    tag: v1.0.45-redhat_ubi
     imagePullPolicy: IfNotPresent
   # CPU/memory: with empty resources the cluster LimitRange injects a 512Mi
   # memory limit + a small CPU cap; the biggest Spring service then can't start
