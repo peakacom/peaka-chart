@@ -36,10 +36,14 @@ spec:
           imagePullPolicy: {{ default "IfNotPresent" .Values.mcpServer.image.imagePullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              # Unprivileged port: binding <1024 needs CAP_NET_BIND_SERVICE,
+              # which restricted clusters (OpenShift restricted-v2) drop for the
+              # arbitrary non-root UID -> listen EACCES. The Service still
+              # exposes port 80 (targetPort follows this named port).
+              containerPort: 3000
           env:
             - name: PORT
-              value: "80"
+              value: "3000"
             - name: TRANSPORT
               value: "httpStream"
           envFrom:
