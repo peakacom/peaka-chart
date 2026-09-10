@@ -1846,6 +1846,38 @@ emailService:
     periodSeconds: 5
     timeoutSeconds: 5
 
+mcpServer:
+  replicaCount: 1
+  image:
+    name: peaka-mcp-server
+    tag: v0.13.1
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  # Stateless MCP server; /health is a static liveness check (no
+  # dependency to gate readiness on).
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 5
+    failureThreshold: 30
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 6
+    timeoutSeconds: 5
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    periodSeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 5
+
 metadataService:
   replicaCount: 1
   image:
@@ -1941,6 +1973,48 @@ monitoringService:
       port: 9090
       scheme: HTTP
     initialDelaySeconds: 60
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+oauth2AuthorizationServer:
+  replicaCount: 1
+  image:
+    name: be-oauth2-authorization-server
+    tag: v1.0.4
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  nodeSelector: {}
+  affinity: {}
+  # Readiness gates on these health contributors (see other services for notes).
+  readinessHealthGroup: "readinessState,db"
+  # Liveness hits the dependency-free availability probe so a dependency outage
+  # (db/redis/etc.) takes the pod out of traffic via readiness, not a restart.
+  # Startup gate: give the app time to come up before liveness/readiness
+  # begin; hits the same dependency-free endpoint as liveness.
+  startupProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 5
+    failureThreshold: 36
+    timeoutSeconds: 3
+  livenessProbe:
+    failureThreshold: 6
+    httpGet:
+      path: /actuator/health/liveness
+      port: 9090
+      scheme: HTTP
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /actuator/health/readiness
+      port: 9090
+      scheme: HTTP
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
@@ -2082,7 +2156,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.3
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2163,7 +2237,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.43
+    tag: v1.0.45
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2437,7 +2511,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.201
+    tag: v1.1.202
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}

@@ -1,0 +1,44 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "peaka.fullname" . }}-peaka-mcp-server-routes
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-peaka-mcp-server
+    {{- include "peaka.labels" . | nindent 4 }}
+  {{- if and .Values.ingressRoute .Values.ingressRoute.annotations }}
+  annotations:
+    {{- toYaml .Values.ingressRoute.annotations | nindent 4}}
+  {{- end }}
+spec:
+  entryPoints:
+    - {{ include "peaka.ingress.entryPoint" . }}
+  routes:
+    # OAuth2 discovery, registration and protocol endpoints are forwarded to
+    # the OAuth2 authorization server. MCP clients (Claude etc.) probe these
+    # paths on the host that serves the MCP resource — on a single-host install
+    # that is the access URL root, so the issuer equals the access URL.
+    # PathPrefix(/oauth2/) covers every endpoint the discovery metadata
+    # advertises (authorize, token, jwks, revoke, introspect,
+    # device_authorization, ...). /oauth2/callback still reaches studio-api:
+    # its rule has priority 101, which beats this one.
+    - match: PathPrefix(`/.well-known/oauth-protected-resource`) || PathPrefix(`/.well-known/oauth-authorization-server`) || PathPrefix(`/.well-known/openai-apps-challenge`) || PathPrefix(`/.well-known/openid-configuration`) || PathPrefix(`/connect/register`) || Path(`/register`) || PathPrefix(`/oauth2/`)
+      kind: Rule
+      priority: 100
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-oauth2-authorization-server
+          port: http
+          passHostHeader: true
+
+    # MCP server handles the MCP endpoint itself.
+    - match: PathPrefix(`/mcp`)
+      kind: Rule
+      priority: 10
+      services:
+        - name: {{ include "peaka.fullname" . }}-peaka-mcp-server
+          port: http
+          passHostHeader: true
+
+  {{- if .Values.tls.enabled }}
+  tls:
+    secretName: {{ .Values.tls.secretName | default (printf "%s-tls-secret" (include "peaka.fullname" .)) }}
+  {{- end }}

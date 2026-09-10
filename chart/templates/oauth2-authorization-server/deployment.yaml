@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-oauth2-authorization-server
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-oauth2-authorization-server
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.oauth2AuthorizationServer.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-oauth2-authorization-server
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-oauth2-authorization-server
+        {{- include "peaka.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+    spec:
+      imagePullSecrets:
+        {{- if .Values.peakaContainerRegistryAccessSecret }}
+        - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
+        {{- end }}
+        {{- range $_, $secret := .Values.imagePullSecrets }}
+        - name: {{ $secret }}
+        {{- end }}
+      {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+      initContainers:
+        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.oauth2AuthorizationServer.image.registry) .Values.oauth2AuthorizationServer.image.name .Values.oauth2AuthorizationServer.image.tag)) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: oauth2-authorization-server
+          image: {{ default (include "peaka.image.registry" .) .Values.oauth2AuthorizationServer.image.registry }}/{{ .Values.oauth2AuthorizationServer.image.name }}:{{ .Values.oauth2AuthorizationServer.image.tag }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.oauth2AuthorizationServer.image.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- with .Values.oauth2AuthorizationServer.readinessHealthGroup }}
+          env:
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: {{ . | quote }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-env-config
+          volumeMounts:
+            - mountPath: /secrets/jwt/rsa
+              name: jwt-rsa-secret
+              readOnly: true
+            {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+            - name: custom-ca-truststore
+              mountPath: /truststore
+              readOnly: true
+            {{- end }}
+          {{- with .Values.oauth2AuthorizationServer.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.oauth2AuthorizationServer.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.oauth2AuthorizationServer.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.oauth2AuthorizationServer.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: jwt-rsa-secret
+          secret:
+            secretName: {{ include "peaka.fullname" . }}-jwt-rsa-secret
+        {{- if eq (include "peaka.customCA.enabled" .) "true" }}
+        - name: custom-ca-certs
+          configMap:
+            name: {{ include "peaka.fullname" . }}-custom-ca-certs
+        - name: custom-ca-truststore
+          emptyDir: {}
+        {{- end }}
+      {{- if .Values.oauth2AuthorizationServer.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.oauth2AuthorizationServer.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- include "peaka.common.nodeSelector" ( dict "nodeSelector" .Values.oauth2AuthorizationServer.nodeSelector "global" $.Values.global) | nindent 6 }}
+      {{- with .Values.oauth2AuthorizationServer.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.oauth2AuthorizationServer.tolerations "global" $.Values.global) | nindent 6 }}
