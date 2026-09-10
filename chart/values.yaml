@@ -1954,7 +1954,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.25-redhat_ubi
+    tag: v1.0.27-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2163,7 +2163,7 @@ mcpServer:
   replicaCount: 1
   image:
     name: peaka-mcp-server
-    tag: v0.13.1-redhat_ubi
+    tag: v0.13.2-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2511,7 +2511,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.4-redhat_ubi
+    tag: v1.0.5-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2949,7 +2949,7 @@ studioWeb:
     name: fe-studio-app
     # fe CI now builds -redhat_ubi variants on release tags (since v1.1.199);
     # tracks main's pinned fe version.
-    tag: v1.1.202-redhat_ubi
+    tag: v1.1.205-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
