@@ -177,6 +177,11 @@ OAUTH_JWKS_URI: {{ include "peaka.routes.baseUrl" . }}/oauth2/jwks
 OAUTH_RESOURCE: {{ include "peaka.routes.baseUrl" . }}
 MCP_RESOURCE_URL: {{ include "peaka.routes.baseUrl" . }}/mcp
 OAUTH_REQUIRED_SCOPE: user_access
+{{/* Without this the MCP server falls back to its compiled-in cloud default
+(https://partner.peaka.studio/api/v1), which is unreachable from on-prem
+installs. Single-host layout: the partner API is the cloud-gateway behind
+the /partner path prefix. */}}
+PARTNER_API_BASE_URL: {{ include "peaka.routes.baseUrl" . }}/{{ include "peaka.routes.partnerPath" . }}/api/v1
 
 ENVIRONMENT: production
 TEST_ENVIRONMENT: "false"
