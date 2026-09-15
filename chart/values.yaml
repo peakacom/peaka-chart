@@ -1522,7 +1522,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.30-redhat_ubi
+    tag: v1.0.32-redhat_ubi
   initContainers: {}
   auth: {}
     # Set username and password
@@ -2531,7 +2531,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.5-redhat_ubi
+    tag: v1.0.6-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2969,7 +2969,7 @@ studioWeb:
     name: fe-studio-app
     # fe CI now builds -redhat_ubi variants on release tags (since v1.1.199);
     # tracks main's pinned fe version.
-    tag: v1.1.205-redhat_ubi
+    tag: v1.1.206-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
