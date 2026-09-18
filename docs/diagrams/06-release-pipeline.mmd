@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor M as Maintainer
+    participant G as Git
+    participant D as Drone CI
+    participant H as helm CLI in CI
+    participant GCS as gs://peaka-chart/
+    actor C as Customer
+
+    M->>M: Edit chart/values.yaml<br/>(image tags) and Chart.yaml (version)
+    M->>G: git commit -am "Update image versions"
+    M->>G: git commit -am "Release chart 1.0.12"
+    M->>G: git tag v1.0.12
+    M->>G: git push --tags
+
+    G->>D: tag event
+    D->>D: validate signed pipeline (HMAC)
+
+    D->>H: version-check<br/>tag minus 'v' == Chart.yaml#version?
+    alt mismatch
+        D->>M: pipeline FAILS
+    end
+
+    D->>H: helm dependency update + build
+    H->>H: pull bitnami / minio / traefik / permify subcharts
+    D->>H: helm package . → peaka-1.0.12.tgz
+
+    D->>GCS: gsutil cp gs://peaka-chart/charts/index.yaml /tmp/
+    D->>H: helm repo index . --merge /tmp/index.yaml<br/>--url https://peaka-chart.storage.googleapis.com/charts
+
+    D->>GCS: gsutil cp index.yaml gs://peaka-chart/charts/
+    D->>GCS: gsutil cp peaka-1.0.12.tgz gs://peaka-chart/charts/
+
+    Note over C: later...
+    C->>C: helm repo update
+    C->>GCS: GET /charts/index.yaml
+    C->>GCS: GET /charts/peaka-1.0.12.tgz
+    C->>C: helm upgrade mypeaka peaka/peaka<br/>-f my-values.yaml
+
+    Note over M,C: 📂 Files to skim<br/>.drone.yml — pipeline steps<br/>chart/Chart.yaml — version, deps<br/>chart/values.yaml — what the customer overrides<br/>docs/runbooks/chart-release.md — release runbook<br/>docs/extras/gotchas_invariants.md#8 — version-tag invariant

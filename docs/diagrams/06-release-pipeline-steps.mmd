@@ -1,0 +1,14 @@
+flowchart LR
+    clone[clone] --> vc[version-check]
+    vc --> pkg[helm-package]
+    vc --> get[get-index-file]
+    pkg --> upd[update-index-file]
+    get --> upd
+    upd --> push[push]
+
+    subgraph Files["📂 Files to skim"]
+        F1[.drone.yml]
+        F2[chart/Chart.yaml]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2 files
