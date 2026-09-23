@@ -1,10 +1,11 @@
-{{- /* Restricted clusters render the worker as a StatefulSet instead
-       (statefulset-_worker.yaml): /data/trino is per-pod scratch, so with
-       replicas > 1 a shared RWO PVC multi-attach-fails; volumeClaimTemplates
-       give each replica its own claim. */}}
-{{- if and (gt (int .Values.trino.server.workers) 0) (not .Values.global.openshiftRestricted) }}
+{{- /* Restricted-cluster variant of the trino worker (see deployment-_worker.yaml
+       for the default). emptyDir/ephemeral volumes are blocked on these clusters,
+       and /data/trino is per-pod scratch: with replicas > 1 a single shared RWO
+       PVC fails with Multi-Attach. A StatefulSet gives each replica its own
+       claim via volumeClaimTemplates. */}}
+{{- if and (gt (int .Values.trino.server.workers) 0) .Values.global.openshiftRestricted }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "peaka.trino.worker" . }}
   labels:
@@ -16,8 +17,8 @@ metadata:
     app.kubernetes.io/name: {{ include "peaka.fullname" . }}-trino-worker
     {{- include "peaka.labels" . | nindent 4 }}
 spec:
-  strategy:
-    type: "Recreate"
+  serviceName: {{ template "peaka.trino.worker" . }}-headless
+  podManagementPolicy: Parallel
   replicas: {{ .Values.trino.server.workers }}
   selector:
     matchLabels:
@@ -63,31 +64,14 @@ spec:
           secret:
             secretName: {{ include "peaka.trino.keytab" . }}
         {{- end }}
-        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
-        - name: custom-ca-certs
-          configMap:
-            name: {{ include "peaka.fullname" . }}-custom-ca-certs
-        - name: custom-ca-truststore
-          ephemeral:
-            volumeClaimTemplate:
-              spec:
-                accessModes: [ "ReadWriteOnce" ]
-                resources:
-                  requests:
-                    storage: 2Gi
-        {{- else if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
+        {{- if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
         # Pre-built truststore from values (hardened clusters block the
         # keytool import's scratch volume); mounted read-only.
         - name: custom-ca-truststore
           secret:
             secretName: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
         {{- end }}
-        - name: trino-var
-          emptyDir: {}
       initContainers:
-      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
-      {{- end }}
       {{- if .Values.trino.initContainers.worker }}
       {{-  tpl (toYaml .Values.trino.initContainers.worker) . | nindent 6 }}
       {{- end }}
@@ -189,4 +173,35 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- include "peaka.common.tolerations" ( dict "tolerations" .Values.trino.worker.tolerations "global" $.Values.global) | nindent 6 }}
+  volumeClaimTemplates:
+    - metadata:
+        name: trino-var
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 2Gi
+        {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 8 }}
+---
+# Headless service required by the StatefulSet (stable per-pod identity).
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "peaka.trino.worker" . }}-headless
+  labels:
+    app: {{ template "peaka.trino.fullname" . }}
+    component: worker
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    app: {{ template "peaka.trino.fullname" . }}
+    release: {{ .Release.Name }}
+    component: worker
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-trino-worker
+    {{- include "peaka.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.trino.service.port }}
+      protocol: TCP
 {{- end }}

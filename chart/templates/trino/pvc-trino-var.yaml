@@ -1,6 +1,9 @@
 {{- if .Values.global.openshiftRestricted }}
-{{- /* Restricted clusters block emptyDir/ephemeral; trino-var (/data/trino) becomes a PVC.
-       Worker autoscaling is off and replicas=1, so RWO PVC + Recreate suffices. */}}
+{{- /* Restricted clusters block emptyDir/ephemeral; the coordinator's trino-var
+       (/data/trino) becomes a PVC (single replica, RWO + Recreate suffices).
+       The worker gets per-replica claims via volumeClaimTemplates instead
+       (statefulset-_worker.yaml) — a shared RWO PVC multi-attach-fails at
+       replicas > 1. */}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -16,22 +19,4 @@ spec:
     requests:
       storage: 2Gi
   {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}
-{{- if gt (int .Values.trino.server.workers) 0 }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ template "peaka.trino.worker" . }}-var
-  labels:
-    app: {{ template "peaka.trino.fullname" . }}
-    component: worker
-    {{- include "peaka.labels" . | nindent 4 }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
-  {{- include "peaka.common.storage.class" (dict "persistence" .Values.trino.coordinator.persistence "global" .Values.global) | nindent 2 }}
-{{- end }}
 {{- end }}
