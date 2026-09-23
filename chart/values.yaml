@@ -1290,7 +1290,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.32
+    tag: v1.0.40
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1555,7 +1555,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.18
+    tag: v1.0.19
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1637,7 +1637,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.11
+    tag: v1.0.14
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1687,7 +1687,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.27
+    tag: v1.0.30
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1937,7 +1937,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v1.0.2
+    tag: v1.0.3
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2156,7 +2156,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.6
+    tag: v1.0.10
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2237,7 +2237,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.45
+    tag: v1.0.48
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2281,7 +2281,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.3
+    tag: v1.0.5
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2398,7 +2398,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v1.0.3
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2427,7 +2427,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v1.0.3
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -2511,7 +2511,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.1.206
+    tag: v1.2.9
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
