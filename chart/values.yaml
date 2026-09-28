@@ -1637,7 +1637,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.17.onpremise.1
+    tag: v1.0.17
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
