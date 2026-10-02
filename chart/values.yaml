@@ -263,7 +263,7 @@ traefikTls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v1.0.5-redhat_ubi
+    tag: v1.0.7-redhat_ubi
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -1522,7 +1522,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.32-redhat_ubi
+    tag: v1.0.45-redhat_ubi
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1809,7 +1809,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.18-redhat_ubi
+    tag: v1.0.20-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1903,7 +1903,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.11-redhat_ubi
+    tag: v1.0.17-redhat_ubi
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1974,7 +1974,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.27-redhat_ubi
+    tag: v1.0.33-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2282,7 +2282,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v1.0.2-redhat_ubi
+    tag: v1.0.5-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2531,7 +2531,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.6-redhat_ubi
+    tag: v1.0.11-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2624,7 +2624,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.45-redhat_ubi
+    tag: v1.0.51-redhat_ubi
     imagePullPolicy: IfNotPresent
   # CPU/memory: with empty resources the cluster LimitRange injects a 512Mi
   # memory limit + a small CPU cap; the biggest Spring service then can't start
@@ -2679,7 +2679,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.3-redhat_ubi
+    tag: v1.0.6-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2822,7 +2822,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v1.0.3-redhat_ubi
+    tag: v1.0.4-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2865,7 +2865,7 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v1.0.3-redhat_ubi
+    tag: v1.0.4-redhat_ubi
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -2969,7 +2969,7 @@ studioWeb:
     name: fe-studio-app
     # fe CI now builds -redhat_ubi variants on release tags (since v1.1.199);
     # tracks main's pinned fe version.
-    tag: v1.1.206-redhat_ubi
+    tag: v1.2.12-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
