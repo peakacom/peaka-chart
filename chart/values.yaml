@@ -1858,7 +1858,7 @@ collabSharedb:
   replicaCount: 1
   image:
     name: be-collab-sharedb
-    tag: v1.0.0-redhat_ubi
+    tag: v1.0.1-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2969,7 +2969,7 @@ studioWeb:
     name: fe-studio-app
     # fe CI now builds -redhat_ubi variants on release tags (since v1.1.199);
     # tracks main's pinned fe version.
-    tag: v1.2.13-redhat_ubi
+    tag: v1.2.16-redhat_ubi
     imagePullPolicy: IfNotPresent
   resources:
     requests:
