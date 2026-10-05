@@ -1,0 +1,90 @@
+flowchart TD
+    user_browser["User browser"]
+    jdbc_client["JDBC client<br/>(BI tool, app server)"]
+    lb["LoadBalancer / NodePort / port-forward"]
+
+    subgraph cluster["Customer Kubernetes cluster — namespace: peaka"]
+        traefik["Traefik IngressRoute<br/>web:80 / websecure:443 / dbc:4567"]
+        web["fe-studio-app<br/>nginx serving SPA"]
+        api_gw["be-dispatcher<br/>API gateway behind /api"]
+
+        subgraph backends["Backend services"]
+            studio_api[be-studio-api]
+            auth[be-auth-service]
+            perm[be-permission-service]
+            token[be-token-service]
+            runtime[be-runtime-api]
+            data_rest[be-data-rest]
+            others["...others"]
+        end
+
+        subgraph workflow["Workflow plane"]
+            wf_starter[be-workflow-starter]
+            wf_express[be-workflow-worker-express]
+            wf_history[be-workflow-history]
+            temporal["Temporal frontend:7233"]
+        end
+
+        subgraph data_plane["Data plane"]
+            pg[("Postgres<br/>code2db")]
+            mongo[(MongoDB)]
+            redis[(Redis)]
+            kafka[Kafka]
+            minio[(MinIO)]
+        end
+
+        subgraph query["Query plane"]
+            trino["Trino coordinator:8080"]
+            workers[Trino workers]
+            hive["Hive metastore:9083"]
+            mariadb[(MariaDB)]
+        end
+
+        permify[Permify]
+    end
+
+    user_browser --> lb --> traefik
+    jdbc_client --> lb
+
+    traefik -->|"PathPrefix /"| web
+    traefik -->|"PathPrefix /api<br/>priority 10"| api_gw
+    api_gw --> studio_api
+    api_gw --> runtime
+    api_gw --> token
+    api_gw --> auth
+    api_gw --> others
+
+    traefik -->|"dbc:4567 entrypoint"| dbc_mw{forwardAuth<br/>middleware}
+    dbc_mw -->|"GET /auth/dbc-custom-header-handling"| perm
+    dbc_mw -->|"+ X-Trino-Extra-Credential headers"| data_rest
+    data_rest -->|JDBC| trino
+    trino --> workers
+    trino --> hive
+    hive --> mariadb
+    trino -->|reads Iceberg files| minio
+
+    studio_api --> pg
+    studio_api --> redis
+    studio_api --> kafka
+    studio_api --> wf_starter
+    wf_starter --> temporal
+    wf_express --> temporal
+    wf_history --> temporal
+    temporal --> pg
+
+    perm --> permify
+    permify -->|"via PgCat:6432"| pg
+
+    others -.-> mongo
+    others -.-> kafka
+
+    subgraph Files["📂 Files to skim"]
+        F1[chart/templates/ingress.yaml]
+        F2[chart/templates/dispatcher/]
+        F3[chart/templates/auth-service/]
+        F4[chart/templates/permission/]
+        F5[chart/templates/data-rest/]
+        F6[chart/templates/_helpers.tpl]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5,F6 files
