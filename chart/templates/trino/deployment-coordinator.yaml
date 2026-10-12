@@ -80,6 +80,20 @@ spec:
         - name: trino-var
           emptyDir: {}
       initContainers:
+        # Catalogs are loaded at startup and Peaka connectors need the token
+        # service to initialize. Trino keeps running with "failed" catalogs if
+        # the token service is unreachable, so gate startup on it instead of
+        # letting the coordinator come up Ready with broken catalogs.
+        - name: wait-for-token-service
+          image: {{ default (include "peaka.image.registry" .) .Values.trino.image.registry }}/{{ .Values.trino.image.name }}:{{ .Values.trino.image.tag }}
+          imagePullPolicy: {{ .Values.trino.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "peaka.fullname" . }}-env-config
+          command:
+            - sh
+            - -c
+            - until curl -s -o /dev/null "$TOKEN_SERVICE_INTERNAL_ADDRESS/"; do echo "waiting for token service at $TOKEN_SERVICE_INTERNAL_ADDRESS"; sleep 5; done
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
         {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.trino.image.registry) .Values.trino.image.name .Values.trino.image.tag)) | nindent 8 }}
       {{- end }}
