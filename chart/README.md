@@ -164,6 +164,37 @@ traefik:
 For more information about Traefik's installation parameters, consult the 
 [Traefik Helm Chart](https://github.com/traefik/traefik-helm-chart).
 
+### Log Collection (optional)
+The chart can collect the logs of every container in the release namespace with
+[Fluent Bit](https://fluentbit.io) and store them in a bundled [OpenObserve](https://openobserve.ai)
+instance, so logs survive pod restarts and can be searched later. Both are off by default.
+
+```yaml
+logging:
+  fluentBit:
+    enabled: true        # DaemonSet, one pod per node
+  openobserve:
+    enabled: true        # StatefulSet with a 10Gi PVC
+    retentionDays: 7
+```
+
+Open the OpenObserve UI with:
+```shell
+kubectl -n <namespace> port-forward svc/<release>-openobserve 5080:5080
+kubectl -n <namespace> get secret <release>-openobserve -o jsonpath='{.data.ZO_ROOT_USER_PASSWORD}' | base64 -d
+```
+Then browse `http://localhost:5080` and log in with `logging.openobserve.rootUserEmail` and that password.
+Logs are in the `fluent_bit_kube` stream. To supply your own credentials, create a Secret with the keys
+`ZO_ROOT_USER_EMAIL` and `ZO_ROOT_USER_PASSWORD` and set `logging.openobserve.existingSecret`.
+
+Security notes:
+- Fluent Bit runs as root and mounts the node paths `/var/log` and `/var/lib/docker/containers`
+  (read-only) plus `/var/lib/fluent-bit/<namespace>-<release>` (read offsets). Namespaces enforcing the
+  PodSecurity `baseline` or `restricted` level reject it; OpenShift needs a SCC allowing hostPath.
+- It reads only the release namespace's log files and gets a namespaced Role (read pods), no cluster-wide access.
+- For air-gapped installs, mirror `cr.fluentbit.io/fluent/fluent-bit` and `o2cr.ai/openobserve/openobserve`
+  and set `logging.fluentBit.image` / `logging.openobserve.image` to the mirrored names.
+
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
 web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart
