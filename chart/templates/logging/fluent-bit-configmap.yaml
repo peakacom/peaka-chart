@@ -28,13 +28,13 @@ data:
         HTTP_Port     2020
         Health_Check  On
 
-    # Only this release's namespace; Fluent Bit's own logs are skipped so a
-    # failing output cannot feed on its own error messages.
+    # Only this release's namespace. Fluent Bit's and OpenObserve's own logs are
+    # skipped: each ingest call makes them log a line, which would be shipped too.
     [INPUT]
         Name              tail
         Tag               kube.*
         Path              /var/log/containers/*_{{ .Release.Namespace }}_*.log
-        Exclude_Path      /var/log/containers/{{ include "peaka.fluentBit.fullname" . }}-*
+        Exclude_Path      /var/log/containers/{{ include "peaka.fluentBit.fullname" . }}-*, /var/log/containers/{{ include "peaka.openobserve.fullname" . }}-*
         # docker = Docker JSON log files (e.g. RKE1), cri = containerd/CRI-O (e.g. RKE2)
         multiline.parser  docker, cri
         DB                /var/lib/fluent-bit/state/tail.db
