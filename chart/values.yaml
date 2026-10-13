@@ -2547,7 +2547,8 @@ releaseState:
 # "restricted" level reject it unless the namespace is exempted.
 #
 # Access the OpenObserve UI (<fullname>: the release name if it contains
-# "peaka", else <release>-peaka; fullnameOverride replaces it):
+# <name>, else <release>-<name>, where <name> is nameOverride or else "peaka";
+# fullnameOverride replaces it):
 #   kubectl -n <namespace> port-forward svc/<fullname>-openobserve 5080:5080
 #   login: ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD from the
 #   <fullname>-openobserve Secret (or logging.openobserve.existingSecret)

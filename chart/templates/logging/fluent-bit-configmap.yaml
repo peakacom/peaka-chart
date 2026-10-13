@@ -101,7 +101,8 @@ data:
 
     # Retry until OpenObserve is back: tail has already moved its offsets past a
     # chunk's lines, so a dropped chunk is lost. Mem_Buf_Limit bounds memory
-    # (tail pauses; unread lines wait in the node's log files).
+    # (tail pauses; unread lines wait in the node's log files, except in a file
+    # rotated or deleted during the pause: tail drops it within Rotate_Wait, 5s).
     [OUTPUT]
         Name              http
         Match             kube.*

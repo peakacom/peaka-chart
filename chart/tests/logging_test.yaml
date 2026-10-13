@@ -112,13 +112,8 @@ tests:
                 name: peaka-openobserve
                 key: ZO_ROOT_USER_TOKEN
         template: templates/logging/fluent-bit-daemonset.yaml
-      - notContains:
-          path: spec.template.spec.containers[0].env
-          content:
-            valueFrom:
-              secretKeyRef:
-                key: ZO_ROOT_USER_PASSWORD
-          any: true
+      - notExists:
+          path: spec.template.spec.containers[0].env[?(@.valueFrom.secretKeyRef.key == "ZO_ROOT_USER_PASSWORD")]
         template: templates/logging/fluent-bit-daemonset.yaml
 
   - it: drops the [OUTPUT] block and its credentials together when the output is off

@@ -178,8 +178,8 @@ logging:
     retentionDays: 7
 ```
 
-Open the OpenObserve UI with (`<fullname>` is the release name if it contains `peaka`, otherwise
-`<release>-peaka`; `fullnameOverride` replaces it):
+Open the OpenObserve UI with (`<fullname>` is the release name if it contains `<name>`, otherwise
+`<release>-<name>`, where `<name>` is `nameOverride` or else `peaka`; `fullnameOverride` replaces it):
 ```shell
 kubectl -n <namespace> port-forward svc/<fullname>-openobserve 5080:5080
 kubectl -n <namespace> get secret <fullname>-openobserve -o jsonpath='{.data.ZO_ROOT_USER_PASSWORD}' | base64 -d
