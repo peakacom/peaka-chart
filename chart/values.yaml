@@ -2542,14 +2542,15 @@ releaseState:
 #   Fluent Bit + bundled OpenObserve:  fluentBit.enabled=true, openobserve.enabled=true
 #   No log collection (default):       both false
 #
-# Fluent Bit mounts hostPath volumes (/var/log, the container log dirs) and runs
-# as root to read them; clusters enforcing the PodSecurity "baseline" or
+# Fluent Bit mounts hostPath volumes (/var/log/pods, /var/log/containers) and
+# runs as root to read them; clusters enforcing the PodSecurity "baseline" or
 # "restricted" level reject it unless the namespace is exempted.
 #
-# Access the OpenObserve UI:
-#   kubectl -n <namespace> port-forward svc/<release>-openobserve 5080:5080
+# Access the OpenObserve UI (<fullname>: the release name if it contains
+# "peaka", else <release>-peaka; fullnameOverride replaces it):
+#   kubectl -n <namespace> port-forward svc/<fullname>-openobserve 5080:5080
 #   login: ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD from the
-#   <release>-openobserve Secret (or logging.openobserve.existingSecret)
+#   <fullname>-openobserve Secret (or logging.openobserve.existingSecret)
 logging:
   fluentBit:
     enabled: false
@@ -2565,7 +2566,21 @@ logging:
         memory: 256Mi
     nodeSelector: {}
     tolerations: []
-    # Each enabled output adds one [OUTPUT] block; more than one may be enabled.
+    # root is needed to read the node's container log files (0640 root). On
+    # SELinux-enforcing nodes (e.g. OpenShift) also set seLinuxOptions.type
+    # (e.g. spc_t): the default type cannot read the logs or write the offsets.
+    securityContext:
+      runAsUser: 0
+      runAsNonRoot: false
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+    # Docker-runtime nodes only (e.g. RKE1): Docker's containers dir, usually
+    # /var/lib/docker/containers, which holds the real log files. Fluent Bit can
+    # then also read every container's config there, env secrets included.
+    dockerContainersDir: ""
+    # Each enabled output adds one [OUTPUT] block. Supported: openobserve.
     outputs:
       # Ship to the bundled OpenObserve (requires logging.openobserve.enabled).
       openobserve:
@@ -2577,17 +2592,20 @@ logging:
     imageRegistry:
     imageTag: v0.80.2
     imagePullPolicy: IfNotPresent
-    # Logs older than this are deleted by OpenObserve's compactor.
+    # Logs older than this are deleted by OpenObserve's compactor. Minimum 3.
     retentionDays: 7
     persistence:
       size: 10Gi
       storageClass: ""
     # Secret with keys ZO_ROOT_USER_EMAIL, ZO_ROOT_USER_PASSWORD and
     # ZO_ROOT_USER_TOKEN (ingestion-only token Fluent Bit sends). If empty, the
-    # chart creates <release>-openobserve with random values on first install
-    # and keeps them across upgrades. OpenObserve applies them only when it
-    # first creates the root user; changing them later does not rotate them.
+    # chart creates <fullname>-openobserve on first install (rootUserEmail and
+    # random values) and keeps it across upgrades. OpenObserve applies them only
+    # when it first creates the root user; changing them later does not rotate
+    # them. Renders without cluster access (Argo CD, helm template) cannot see
+    # that Secret and generate new values each time: set existingSecret there.
     existingSecret: ""
+    # Applied only on first install; later changes are ignored.
     rootUserEmail: admin@peaka.local
     resources:
       requests:

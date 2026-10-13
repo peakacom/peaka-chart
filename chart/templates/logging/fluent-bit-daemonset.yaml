@@ -36,14 +36,10 @@ spec:
           args:
             - --workdir=/fluent-bit/etc
             - --config=/fluent-bit/etc/conf/fluent-bit.conf
-          # root is needed to read the node's container log files (0640 root)
+          {{- with $fb.securityContext }}
           securityContext:
-            runAsUser: 0
-            runAsNonRoot: false
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 2020
@@ -76,25 +72,35 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /fluent-bit/etc/conf
-            - name: varlog
-              mountPath: /var/log
+            - name: varlogpods
+              mountPath: /var/log/pods
               readOnly: true
+            - name: varlogcontainers
+              mountPath: /var/log/containers
+              readOnly: true
+            {{- with $fb.dockerContainersDir }}
             - name: varlibdockercontainers
-              mountPath: /var/lib/docker/containers
+              mountPath: {{ . }}
               readOnly: true
+            {{- end }}
             - name: state
               mountPath: /var/lib/fluent-bit/state
       volumes:
         - name: config
           configMap:
             name: {{ include "peaka.fluentBit.fullname" . }}
-        - name: varlog
+        - name: varlogpods
           hostPath:
-            path: /var/log
+            path: /var/log/pods
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        {{- with $fb.dockerContainersDir }}
         # Docker runtimes keep the files /var/log/containers links to here
         - name: varlibdockercontainers
           hostPath:
-            path: /var/lib/docker/containers
+            path: {{ . }}
+        {{- end }}
         # tail offsets survive pod restarts, so upgrades do not resend logs
         - name: state
           hostPath:

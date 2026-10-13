@@ -23,3 +23,5 @@
 .vscode/
 # Temporary values file
 .values.yaml
+# helm-unittest suites (anchored: "tests/" would also drop templates/tests/)
+/tests/

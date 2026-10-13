@@ -44,6 +44,9 @@ stay deployed (e.g. migration staging buckets still living there).
 {{- if $fb.enabled -}}
 {{- $enabled := 0 -}}
 {{- range $name, $output := $fb.outputs -}}
+{{- if ne $name "openobserve" -}}
+{{- fail (printf "logging.fluentBit.outputs.%s is not a supported output (supported: openobserve)." $name) }}
+{{- end -}}
 {{- if $output.enabled -}}{{- $enabled = add1 $enabled -}}{{- end -}}
 {{- end -}}
 {{- if eq $enabled 0 -}}
@@ -51,6 +54,12 @@ stay deployed (e.g. migration staging buckets still living there).
 {{- end -}}
 {{- if and $fb.outputs.openobserve.enabled (not .Values.logging.openobserve.enabled) -}}
 {{- fail "logging.fluentBit.outputs.openobserve.enabled requires logging.openobserve.enabled (or disable that output)." }}
+{{- end -}}
+{{- end -}}
+{{- if .Values.logging.openobserve.enabled -}}
+{{- $days := int .Values.logging.openobserve.retentionDays -}}
+{{- if and (gt $days 0) (lt $days 3) -}}
+{{- fail "logging.openobserve.retentionDays must be at least 3: OpenObserve does not start with 1 or 2." }}
 {{- end -}}
 {{- end -}}
 {{- end }}
