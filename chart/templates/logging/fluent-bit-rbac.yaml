@@ -1,0 +1,39 @@
+{{- if .Values.logging.fluentBit.enabled -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "peaka.fluentBit.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+---
+# Namespaced on purpose: the kubernetes filter only looks up pods of this
+# release's namespace, which is all the tail input reads.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "peaka.fluentBit.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "peaka.fluentBit.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "peaka.fluentBit.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "peaka.fluentBit.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
