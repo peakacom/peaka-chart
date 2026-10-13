@@ -1,0 +1,184 @@
+# Run from the repo root: helm unittest chart
+# (plugin: helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.0.3;
+# later versions need Helm 3.18+ to load the plugin)
+suite: logging resources
+templates:
+  - templates/logging/openobserve-secret.yaml
+  - templates/logging/fluent-bit-configmap.yaml
+  - templates/logging/fluent-bit-daemonset.yaml
+release:
+  name: peaka
+  namespace: peaka
+set:
+  logging.fluentBit.enabled: true
+  logging.openobserve.enabled: true
+tests:
+  - it: creates the root credentials from rootUserEmail and random values on first install
+    template: templates/logging/openobserve-secret.yaml
+    asserts:
+      - equal:
+          path: data.ZO_ROOT_USER_EMAIL
+          value: admin@peaka.local
+          decodeBase64: true
+      - matchRegex:
+          path: data.ZO_ROOT_USER_PASSWORD
+          pattern: ^[A-Za-z0-9]{32}$
+          decodeBase64: true
+      - matchRegex:
+          path: data.ZO_ROOT_USER_TOKEN
+          pattern: ^[A-Za-z0-9]{32}$
+          decodeBase64: true
+
+  # OpenObserve applies the root credentials only when it creates the root user.
+  - it: keeps every root credential of the existing Secret, even if rootUserEmail changed
+    template: templates/logging/openobserve-secret.yaml
+    set:
+      logging.openobserve.rootUserEmail: changed@peaka.local
+    kubernetesProvider:
+      scheme:
+        "v1/Secret":
+          gvr:
+            version: v1
+            resource: secrets
+          namespaced: true
+      objects:
+        - apiVersion: v1
+          kind: Secret
+          metadata:
+            name: peaka-openobserve
+            namespace: peaka
+          data:
+            ZO_ROOT_USER_EMAIL: Zmlyc3RAcGVha2EubG9jYWw=  # first@peaka.local
+            ZO_ROOT_USER_PASSWORD: b2xkLXBhc3N3b3Jk      # old-password
+            ZO_ROOT_USER_TOKEN: b2xkLXRva2Vu             # old-token
+    asserts:
+      - equal:
+          path: data.ZO_ROOT_USER_EMAIL
+          value: first@peaka.local
+          decodeBase64: true
+      - equal:
+          path: data.ZO_ROOT_USER_PASSWORD
+          value: old-password
+          decodeBase64: true
+      - equal:
+          path: data.ZO_ROOT_USER_TOKEN
+          value: old-token
+          decodeBase64: true
+
+  - it: generates a key the existing Secret lacks
+    template: templates/logging/openobserve-secret.yaml
+    kubernetesProvider:
+      scheme:
+        "v1/Secret":
+          gvr:
+            version: v1
+            resource: secrets
+          namespaced: true
+      objects:
+        - apiVersion: v1
+          kind: Secret
+          metadata:
+            name: peaka-openobserve
+            namespace: peaka
+          data:
+            ZO_ROOT_USER_EMAIL: Zmlyc3RAcGVha2EubG9jYWw=  # first@peaka.local
+            ZO_ROOT_USER_PASSWORD: b2xkLXBhc3N3b3Jk      # old-password
+    asserts:
+      - equal:
+          path: data.ZO_ROOT_USER_PASSWORD
+          value: old-password
+          decodeBase64: true
+      - matchRegex:
+          path: data.ZO_ROOT_USER_TOKEN
+          pattern: ^[A-Za-z0-9]{32}$
+          decodeBase64: true
+
+  - it: ships to OpenObserve with the ingestion token and retries without limit
+    asserts:
+      - matchRegex:
+          path: data["fluent-bit.conf"]
+          pattern: \[OUTPUT\]\s+Name\s+http
+        template: templates/logging/fluent-bit-configmap.yaml
+      - matchRegex:
+          path: data["fluent-bit.conf"]
+          pattern: Retry_Limit\s+no_limits
+        template: templates/logging/fluent-bit-configmap.yaml
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OPENOBSERVE_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: peaka-openobserve
+                key: ZO_ROOT_USER_TOKEN
+        template: templates/logging/fluent-bit-daemonset.yaml
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            valueFrom:
+              secretKeyRef:
+                key: ZO_ROOT_USER_PASSWORD
+          any: true
+        template: templates/logging/fluent-bit-daemonset.yaml
+
+  - it: drops the [OUTPUT] block and its credentials together when the output is off
+    set:
+      logging.fluentBit.outputs.openobserve.enabled: false
+    asserts:
+      - notMatchRegex:
+          path: data["fluent-bit.conf"]
+          pattern: \[OUTPUT\]
+        template: templates/logging/fluent-bit-configmap.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].env
+        template: templates/logging/fluent-bit-daemonset.yaml
+
+  - it: mounts only the pod log dirs of the node by default
+    template: templates/logging/fluent-bit-daemonset.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: varlogpods
+            hostPath:
+              path: /var/log/pods
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: varlogcontainers
+            hostPath:
+              path: /var/log/containers
+      # config, varlogpods, varlogcontainers, state
+      - lengthEqual:
+          path: spec.template.spec.volumes
+          count: 4
+
+  - it: mounts Docker's containers dir only when dockerContainersDir is set
+    template: templates/logging/fluent-bit-daemonset.yaml
+    set:
+      logging.fluentBit.dockerContainersDir: /var/lib/docker/containers
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: varlibdockercontainers
+            hostPath:
+              path: /var/lib/docker/containers
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: varlibdockercontainers
+            mountPath: /var/lib/docker/containers
+            readOnly: true
+
+  - it: takes the container securityContext from values
+    template: templates/logging/fluent-bit-daemonset.yaml
+    set:
+      logging.fluentBit.securityContext.seLinuxOptions.type: spc_t
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 0
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.seLinuxOptions.type
+          value: spc_t
