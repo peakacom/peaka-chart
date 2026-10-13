@@ -2533,6 +2533,74 @@ releaseState:
   affinity: {}
   readinessProbe: {}
 
+# -----------------------------------------------------------------------------
+# Logging (optional, off by default)
+# -----------------------------------------------------------------------------
+# Fluent Bit (one pod per node) tails the logs of this release's namespace and
+# ships them to the enabled outputs; OpenObserve is a bundled log store/UI.
+#
+#   Fluent Bit + bundled OpenObserve:  fluentBit.enabled=true, openobserve.enabled=true
+#   No log collection (default):       both false
+#
+# Fluent Bit mounts hostPath volumes (/var/log, the container log dirs) and runs
+# as root to read them; clusters enforcing the PodSecurity "baseline" or
+# "restricted" level reject it unless the namespace is exempted.
+#
+# Access the OpenObserve UI:
+#   kubectl -n <namespace> port-forward svc/<release>-openobserve 5080:5080
+#   login: ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD from the
+#   <release>-openobserve Secret (or logging.openobserve.existingSecret)
+logging:
+  fluentBit:
+    enabled: false
+    image: cr.fluentbit.io/fluent/fluent-bit
+    imageRegistry:
+    imageTag: 3.1.6
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+    # Each enabled output adds one [OUTPUT] block; more than one may be enabled.
+    outputs:
+      # Ship to the bundled OpenObserve (requires logging.openobserve.enabled).
+      openobserve:
+        enabled: true
+
+  openobserve:
+    enabled: false
+    image: o2cr.ai/openobserve/openobserve
+    imageRegistry:
+    imageTag: v0.80.2
+    imagePullPolicy: IfNotPresent
+    # Logs older than this are deleted by OpenObserve's compactor.
+    retentionDays: 7
+    persistence:
+      size: 10Gi
+      storageClass: ""
+    # Secret with keys ZO_ROOT_USER_EMAIL and ZO_ROOT_USER_PASSWORD. If empty,
+    # the chart creates <release>-openobserve with a random password on first
+    # install and keeps it across upgrades.
+    existingSecret: ""
+    rootUserEmail: admin@peaka.local
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+    podSecurityContext:
+      fsGroup: 2000
+      runAsUser: 10000
+      runAsGroup: 3000
+      runAsNonRoot: true
+    nodeSelector: {}
+    tolerations: []
+
 
 # -----------------------------------------------------------------------------
 # Service Exposure Settings

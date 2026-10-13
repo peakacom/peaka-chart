@@ -1,0 +1,102 @@
+{{- if .Values.logging.fluentBit.enabled -}}
+{{- $fb := .Values.logging.fluentBit -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "peaka.fluentBit.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/logging/fluent-bit-configmap.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.fluentBit.fullname" . }}
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "peaka.fluentBit.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- include "peaka.common.nodeSelector" (dict "nodeSelector" $fb.nodeSelector "global" .Values.global) | nindent 6 }}
+      {{- include "peaka.common.tolerations" (dict "tolerations" $fb.tolerations "global" .Values.global) | nindent 6 }}
+      containers:
+        - name: fluent-bit
+          image: {{ include "peaka.image.resolve" (dict "root" . "image" $fb.image "registry" $fb.imageRegistry "tag" $fb.imageTag) }}
+          imagePullPolicy: {{ $fb.imagePullPolicy }}
+          args:
+            - --workdir=/fluent-bit/etc
+            - --config=/fluent-bit/etc/conf/fluent-bit.conf
+          # root is needed to read the node's container log files (0640 root)
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 2020
+          {{- if $fb.outputs.openobserve.enabled }}
+          env:
+            - name: OPENOBSERVE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_EMAIL
+            - name: OPENOBSERVE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_PASSWORD
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+          {{- with $fb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /fluent-bit/etc/conf
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: state
+              mountPath: /var/lib/fluent-bit/state
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "peaka.fluentBit.fullname" . }}
+        - name: varlog
+          hostPath:
+            path: /var/log
+        # Docker runtimes keep the files /var/log/containers links to here
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        # tail offsets survive pod restarts, so upgrades do not resend logs
+        - name: state
+          hostPath:
+            path: /var/lib/fluent-bit/{{ .Release.Namespace }}-{{ .Release.Name }}
+            type: DirectoryOrCreate
+{{- end }}

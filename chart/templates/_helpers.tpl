@@ -990,6 +990,22 @@ Create a default fully qualified schema registry name for monitoring kafka conne
 {{- printf "%s-%s" .Release.Name "trino-coordinator" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
+{{- define "peaka.fluentBit.fullname" -}}
+{{- printf "%s-fluent-bit" (include "peaka.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "peaka.openobserve.fullname" -}}
+{{- printf "%s-openobserve" (include "peaka.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Secret holding ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD; read by OpenObserve
+and by the Fluent Bit openobserve output.
+*/}}
+{{- define "peaka.openobserve.secretName" -}}
+{{- default (include "peaka.openobserve.fullname" .) .Values.logging.openobserve.existingSecret -}}
+{{- end -}}
+
 {{/*
 Expand the name of Temporal.
 */}}
