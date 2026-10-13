@@ -60,6 +60,9 @@ spec:
             # container limit; 512 matches the cloud install (2Gi limit).
             - name: ZO_MEMORY_CACHE_MAX_SIZE
               value: "512"
+            # Default false downloads GeoIP databases from the internet at start.
+            - name: ZO_MMDB_DISABLE_DOWNLOAD
+              value: "true"
             - name: ZO_ROOT_USER_EMAIL
               valueFrom:
                 secretKeyRef:
@@ -70,6 +73,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "peaka.openobserve.secretName" . }}
                   key: ZO_ROOT_USER_PASSWORD
+            - name: ZO_ROOT_USER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_TOKEN
           livenessProbe:
             httpGet:
               path: /healthz

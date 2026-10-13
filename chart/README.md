@@ -185,7 +185,9 @@ kubectl -n <namespace> get secret <release>-openobserve -o jsonpath='{.data.ZO_R
 ```
 Then browse `http://localhost:5080` and log in with `logging.openobserve.rootUserEmail` and that password.
 Logs are in the `fluent_bit_kube` stream. To supply your own credentials, create a Secret with the keys
-`ZO_ROOT_USER_EMAIL` and `ZO_ROOT_USER_PASSWORD` and set `logging.openobserve.existingSecret`.
+`ZO_ROOT_USER_EMAIL`, `ZO_ROOT_USER_PASSWORD` and `ZO_ROOT_USER_TOKEN` and set
+`logging.openobserve.existingSecret`. Fluent Bit only receives the email and the token, which OpenObserve
+accepts on ingestion endpoints only.
 
 Security notes:
 - Fluent Bit runs as root and mounts the node paths `/var/log` and `/var/lib/docker/containers`

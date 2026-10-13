@@ -54,11 +54,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "peaka.openobserve.secretName" . }}
                   key: ZO_ROOT_USER_EMAIL
-            - name: OPENOBSERVE_PASSWORD
+            # ingestion-only token, not the root password
+            - name: OPENOBSERVE_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ include "peaka.openobserve.secretName" . }}
-                  key: ZO_ROOT_USER_PASSWORD
+                  key: ZO_ROOT_USER_TOKEN
           {{- end }}
           livenessProbe:
             httpGet:

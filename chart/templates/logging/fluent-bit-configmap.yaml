@@ -110,7 +110,7 @@ data:
         json_date_format  iso8601
         json_date_key     @timestamp
         HTTP_User         ${OPENOBSERVE_USER}
-        HTTP_Passwd       ${OPENOBSERVE_PASSWORD}
+        HTTP_Passwd       ${OPENOBSERVE_TOKEN}
         tls               Off
         Retry_Limit       5
         compress          gzip

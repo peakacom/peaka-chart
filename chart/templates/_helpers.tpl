@@ -999,8 +999,8 @@ Create a default fully qualified schema registry name for monitoring kafka conne
 {{- end -}}
 
 {{/*
-Secret holding ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD; read by OpenObserve
-and by the Fluent Bit openobserve output.
+Secret holding ZO_ROOT_USER_EMAIL / ZO_ROOT_USER_PASSWORD / ZO_ROOT_USER_TOKEN;
+read by OpenObserve, and (email + token only) by the Fluent Bit openobserve output.
 */}}
 {{- define "peaka.openobserve.secretName" -}}
 {{- default (include "peaka.openobserve.fullname" .) .Values.logging.openobserve.existingSecret -}}

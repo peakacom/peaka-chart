@@ -2582,9 +2582,11 @@ logging:
     persistence:
       size: 10Gi
       storageClass: ""
-    # Secret with keys ZO_ROOT_USER_EMAIL and ZO_ROOT_USER_PASSWORD. If empty,
-    # the chart creates <release>-openobserve with a random password on first
-    # install and keeps it across upgrades.
+    # Secret with keys ZO_ROOT_USER_EMAIL, ZO_ROOT_USER_PASSWORD and
+    # ZO_ROOT_USER_TOKEN (ingestion-only token Fluent Bit sends). If empty, the
+    # chart creates <release>-openobserve with random values on first install
+    # and keeps them across upgrades. OpenObserve applies them only when it
+    # first creates the root user; changing them later does not rotate them.
     existingSecret: ""
     rootUserEmail: admin@peaka.local
     resources:
