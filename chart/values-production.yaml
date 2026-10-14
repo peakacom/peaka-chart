@@ -1,7 +1,7 @@
 # Production profile: 3 nodes x 16 vCPU / 64 GiB (e.g. Fibabanka).
 # Use it with the chart it ships in, on top of the chart defaults and your own values:
-#   helm pull peaka/peaka --version <version> --untar
-#   helm upgrade --install peaka ./peaka -f peaka/values-production.yaml -f my-values.yaml
+#   helm pull peaka/peaka --version <version> --untar --untardir <version>
+#   helm upgrade --install peaka ./<version>/peaka -f <version>/peaka/values-production.yaml -f my-values.yaml
 # - One Trino worker per node (required anti-affinity), request = limit.
 #   Worker 36Gi: heap 80% (~28.8G) -> ~8.6 GB query memory per node.
 #   Coordinator 12Gi: heap 60%. The coordinator's node needs ~56 GiB allocatable.
