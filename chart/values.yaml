@@ -899,16 +899,6 @@ temporal:
         memory: 256Mi
       limits:
         memory: 1Gi
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-    #  cpu: 100m
-    #  memory: 128Mi
     nodeSelector: {}
     tolerations: []
     affinity: {}
@@ -1348,12 +1338,16 @@ trino:
   coordinator:
     config:
       query:
-        maxMemoryPerNode: 9GB
+        # Empty = Trino's default, 30% of the heap.
+        maxMemoryPerNode: ""
         maxLength: "1000000000"     # a billion
       memory:
         heapHeadroomPerNode: ""
     jvm:
-      maxHeapSize: 25G
+      # Heap follows resources.limits.memory unless maxHeapSize (-Xmx) is set.
+      maxHeapSize: ""
+      maxRAMPercentage: 50
+      maxDirectMemorySize: 1G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1379,17 +1373,12 @@ trino:
       # storageClass of the trino coordinator persistent volume
       storageClass: ""
 
-    resources: {}
-      # We usually recommend not to specify default resources and to leave this as a conscious
-      # choice for the user. This also increases chances charts run on environments with little
-      # resources, such as Minikube. If you do want to specify resources, uncomment the following
-      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-      # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
-      # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        memory: 8Gi
     livenessProbe: {}
       # initialDelaySeconds: 20
       # periodSeconds: 10
@@ -1411,10 +1400,14 @@ trino:
       memory:
         heapHeadroomPerNode: ""
       query:
-        maxMemoryPerNode: 15GB
+        # Empty = Trino's default, 30% of the heap.
+        maxMemoryPerNode: ""
         maxLength: "1000000000"     # a billion
     jvm:
-      maxHeapSize: 50G
+      # Heap follows resources.limits.memory unless maxHeapSize (-Xmx) is set.
+      maxHeapSize: ""
+      maxRAMPercentage: 75
+      maxDirectMemorySize: 2G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1428,7 +1421,12 @@ trino:
       - -javaagent:/usr/lib/trino/lib/trino-byte-manipulation.jar
     additionalConfigFiles: {}
     additionalExposedPorts: {}
-    resources: {}
+    resources:
+      requests:
+        cpu: 1
+        memory: 5Gi
+      limits:
+        memory: 24Gi
     livenessProbe: {}
       # initialDelaySeconds: 20
       # periodSeconds: 10
@@ -1443,7 +1441,16 @@ trino:
       # successThreshold: 1
     nodeSelector: {}
     tolerations: []
-    affinity: {}
+    # Spread workers over nodes; values-production.yaml makes this required.
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  component: worker
   server:
     exchangeManager:
       name: filesystem
