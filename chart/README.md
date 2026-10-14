@@ -173,7 +173,7 @@ and the Temporal schema Jobs set none. Heaps:
 - Trino: `trino.*.jvm.maxRAMPercentage` of the limit, or a fixed `trino.*.jvm.maxHeapSize`.
 - Hive metastore: `hiveMetastore.hadoopHeapSize` (MB); change it together with the limit.
 - Kafka: a fixed 1 GiB (`kafka.controller.heapOpts`). Kafka Connect: 75% of the limit.
-- Node services (collab, search, MCP, SQL and the flow-utilities sidecars): one fixed 768 MiB for all
+- Node services (collab, search, MCP and the flow-utilities sidecars): one fixed 768 MiB for all
   (`NODE_OPTIONS=--max-old-space-size=768`). A higher limit does not raise it; keep their limits ≥ 1Gi.
 
 | Profile | Nodes | Values |
