@@ -259,7 +259,14 @@ hiveMetastore:
     name: hive-metastore
     tag: v1.0.5
     pullPolicy: IfNotPresent
-  hadoopHeapSize: 10240
+  # Heap in MB; change it together with resources.limits.memory (keep it <= 80% of the limit).
+  hadoopHeapSize: 1024
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
   servicePort: 9083
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
