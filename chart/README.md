@@ -166,32 +166,51 @@ For more information about Traefik's installation parameters, consult the
 
 ## Sizing
 
-Every workload sets a memory request, a memory limit and a CPU request (no CPU limits). Java and Node heaps
-follow the memory limit (`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70.0`, `NODE_OPTIONS=--max-old-space-size=768`),
-so raise a limit to give a service more heap.
+Every main container sets a memory request, a memory limit and a CPU request (no CPU limits); init containers
+and the Temporal schema Jobs set none. Heaps:
+- be-* Java services: 70% of the memory limit (`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70.0`), so raise a
+  service's limit to give it more heap.
+- Trino: `trino.*.jvm.maxRAMPercentage` of the limit, or a fixed `trino.*.jvm.maxHeapSize`.
+- Hive metastore: `hiveMetastore.hadoopHeapSize` (MB); change it together with the limit.
+- Kafka: a fixed 1 GiB (`kafka.controller.heapOpts`). Kafka Connect: 75% of the limit.
+- Node services (collab, search, MCP, SQL and the flow-utilities sidecars): one fixed 768 MiB for all
+  (`NODE_OPTIONS=--max-old-space-size=768`). A higher limit does not raise it; keep their limits ≥ 1Gi.
 
 | Profile | Nodes | Values |
 |---|---|---|
 | Trial / PoC | 1 × 8 vCPU / 32 GiB | chart defaults (≈ 24 GiB and 6 vCPU of requests) |
 | Production | 3 × 16 vCPU / 64 GiB | `-f values-production.yaml`: one Trino worker per node (36Gi), coordinator 12Gi, other requests × 1.5 |
 
-Get the production file from the chart package:
+Get the production file from the chart package and deploy that same chart, so chart and file match:
 ```shell
 helm pull peaka/peaka --version <version> --untar
-helm upgrade -n peaka [RELEASE_NAME] peaka/peaka -f peaka/values-production.yaml -f my-values.yaml
+helm upgrade -n peaka [RELEASE_NAME] ./peaka -f peaka/values-production.yaml -f my-values.yaml
 ```
 
 ### Upgrading an existing install
 - Pass your own values with `-f`; do not use `--reuse-values`, which keeps the old chart's empty `resources`
   under the new heap settings (`--reset-then-reuse-values`, Helm ≥ 3.14, is fine).
 - Trino's heap now follows its limit and per-node query memory defaults to 30% of the heap: the default worker
-  goes from 15 GB to ≈ 5.4 GB per node, the production worker to ≈ 8.6 GB. If you override
-  `trino.*.jvm.maxHeapSize`, `trino.*.config.query.maxMemoryPerNode`, `hiveMetastore.hadoopHeapSize` or
-  `kafkaConnect.heapOptions`, keep each heap ≤ 80% of its memory limit, or the pod is OOM-killed.
+  goes from 15 GB to ≈ 5.4 GB per node, the production worker to ≈ 8.6 GB, and a coordinator-only install
+  (`trino.server.workers: 0`) from 9 GB to ≈ 1.2 GB. To keep 15 GB per worker, set
+  `trino.worker.jvm.maxHeapSize: 50G`, `trino.worker.config.query.maxMemoryPerNode: 15GB` and
+  `trino.worker.resources.limits.memory` ≥ 63Gi.
+- If you keep an override of `trino.*.jvm.maxHeapSize`, `trino.*.config.query.maxMemoryPerNode`,
+  `hiveMetastore.hadoopHeapSize` or `kafkaConnect.heapOptions`, re-size it to the new limits:
+  - each heap ≤ 80% of its memory limit, and for Trino heap + `jvm.maxDirectMemorySize` + 10% of the
+    heap + 2 GiB ≤ the limit, or the pod is OOM-killed;
+  - Trino's `maxMemoryPerNode` + `config.memory.heapHeadroomPerNode` (default 30% of the heap) < the heap,
+    or Trino refuses to start (`Invalid memory configuration`) and the pod crash-loops.
 - If the namespace has a ResourceQuota or LimitRange, check it against the new totals before upgrading:
-  quota ≥ the profile's requests and limits plus one rolling-update pod; LimitRange max ≥ the largest
-  limit (24Gi, production 36Gi), min ≤ the smallest request (32Mi / 50m), `maxLimitRequestRatio` ≥ 16; a default
-  CPU limit re-adds CPU limits.
+  - quota ≥ the profile's requests and limits plus the rollout surge: about 35 Deployments restart at once,
+    each starting its new pod before it stops the old one. With the surge that is ≈ 36 GiB / 8.7 vCPU of
+    requests and ≈ 157 GiB of limits by default, ≈ 164 GiB / 10.7 vCPU and ≈ 245 GiB in production;
+  - LimitRange max ≥ the largest limit (24Gi, production 36Gi), min ≤ the smallest request (32Mi / 50m);
+  - `maxLimitRequestRatio`: memory ≥ 16; CPU absent, or ≥ the default CPU limit / 50m;
+  - a default CPU limit re-adds CPU limits: it must be ≥ 1 (Trino's CPU request) or removed, or the Trino pods
+    are rejected (request > limit);
+  - init containers and the Temporal schema Jobs set no resources, so with a quota on requests or limits the
+    LimitRange must give them defaults.
 - Production: you need ≥ 3 schedulable nodes, each with ≈ 44 GiB allocatable free for Peaka, and the node that
   runs the Trino coordinator ≈ 56 GiB (`kubectl describe nodes`). Trino workers use `Recreate`, so all old
   workers stop first; if a new one stays `Pending`, run `helm rollback`.
