@@ -164,6 +164,45 @@ traefik:
 For more information about Traefik's installation parameters, consult the 
 [Traefik Helm Chart](https://github.com/traefik/traefik-helm-chart).
 
+## Sizing
+
+Every workload sets a memory request, a memory limit and a CPU request (no CPU limits). Java and Node heaps
+follow the memory limit (`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70.0`, `NODE_OPTIONS=--max-old-space-size=768`),
+so raise a limit to give a service more heap.
+
+| Profile | Nodes | Values |
+|---|---|---|
+| Trial / PoC | 1 × 8 vCPU / 32 GiB | chart defaults (≈ 24 GiB and 6 vCPU of requests) |
+| Production | 3 × 16 vCPU / 64 GiB | `-f values-production.yaml`: one Trino worker per node (36Gi), coordinator 12Gi, other requests × 1.5 |
+
+Get the production file from the chart package:
+```shell
+helm pull peaka/peaka --version <version> --untar
+helm upgrade -n peaka [RELEASE_NAME] peaka/peaka -f peaka/values-production.yaml -f my-values.yaml
+```
+
+### Upgrading an existing install
+- Pass your own values with `-f`; do not use `--reuse-values`, which keeps the old chart's empty `resources`
+  under the new heap settings (`--reset-then-reuse-values`, Helm ≥ 3.14, is fine).
+- Trino's heap now follows its limit and per-node query memory defaults to 30% of the heap: the default worker
+  goes from 15 GB to ≈ 5.4 GB per node, the production worker to ≈ 8.6 GB. If you override
+  `trino.*.jvm.maxHeapSize`, `trino.*.config.query.maxMemoryPerNode`, `hiveMetastore.hadoopHeapSize` or
+  `kafkaConnect.heapOptions`, keep each heap ≤ 80% of its memory limit, or the pod is OOM-killed.
+- If the namespace has a ResourceQuota or LimitRange, check it against the new totals before upgrading:
+  quota ≥ the profile's requests and limits plus one rolling-update pod; LimitRange max ≥ the largest
+  limit (24Gi, production 36Gi), min ≤ the smallest request (32Mi / 50m), `maxLimitRequestRatio` ≥ 16; a default
+  CPU limit re-adds CPU limits.
+- Production: you need ≥ 3 schedulable nodes, each with ≈ 44 GiB allocatable free for Peaka, and the node that
+  runs the Trino coordinator ≈ 56 GiB (`kubectl describe nodes`). Trino workers use `Recreate`, so all old
+  workers stop first; if a new one stays `Pending`, run `helm rollback`.
+
+### Tainted nodes
+`global.tolerations` does not reach every pod. Also set `temporal.server.tolerations`,
+`temporal.admintools.tolerations` (schema Job), `pgcat.tolerations`, `kafka.controller.tolerations`,
+`mongodb.tolerations`, `redis.master.tolerations`, `minio.tolerations`, `traefik.tolerations` and
+`permify.tolerations`. The in-chart Postgres has no tolerations setting: on tainted-only nodes use
+`externalPostgresql`.
+
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
 web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart
