@@ -71,24 +71,40 @@ Debezium Connect (`kafkaConnect`, the CDC cache engine) is now disabled by defau
 `monitoringKafkaConnect` is a different component and is not affected.
 
 ### Before upgrading
-Run on Peaka's Postgres:
-```sql
-SELECT count(*) FROM studio.cdc_connection;
-SELECT count(*) FROM studio.cache_settings WHERE cachetype = 1;
+Run on Peaka's Postgres, in the database that holds the `studio` schema: `postgresql.primary.database` (default
+`peaka_db`), or `externalPostgresql.database` (default `code2db`) with an external Postgres. For the in-cluster
+Postgres with default values:
+```shell
+kubectl exec -n peaka <release>-postgres-0 -- psql -U peakadb -d peaka_db \
+  -c "SELECT count(*) FROM studio.cdc_connection;" \
+  -c "SELECT count(*) FROM studio.cache_settings WHERE cachetype = 1;"
 ```
-If either count is above 0, contact Peaka before upgrading.
+A query error means the check has not run. If either count is above 0, contact Peaka before upgrading: each Postgres
+CDC connection keeps a Debezium replication slot on its source database. Once Debezium Connect is gone nothing reads
+that slot, and the source database keeps WAL for it without limit unless `max_slot_wal_keep_size` is set.
 
 ### What the upgrade does
-- `helm upgrade` deletes the `<release>-kafka-connect` Deployment and Service. No volume or database is touched.
+- `helm upgrade` deletes the `<release>-kafka-connect` Deployment and Service. No Peaka volume or database is touched.
 - CDC caches stop refreshing.
-- Upgrade fe-studio-app together with the chart, to a tag that hides the CDC cache menu.
-- Leave the `kafka-connect-status`, `kafka-connect-offset` and `kafka-connect-config` topics in place. be-data-cache
-  recreates them at every start and logs three `TopicExistsException` lines; this is expected.
+- Upgrade Studio (`studioWeb.image.tag`) together with the chart, to an image that hides the CDC cache menu. Images up
+  to `v1.2.20` still show it, and creating a CDC cache from it fails.
+- Leave the `<release>-kafka-connect-status`, `<release>-kafka-connect-offset` and `<release>-kafka-connect-config`
+  topics in place. be-data-cache recreates them at every start and logs three `TopicExistsException` lines; this is
+  expected. The `<release>-monitoring-kafka-connect-*` topics belong to `monitoringKafkaConnect`.
 
 ### Keeping CDC
-```shell
-helm upgrade peaka peaka/peaka --set kafkaConnect.enabled=true
+Set this in your `values.yaml`:
+```yaml
+kafkaConnect:
+  enabled: true
 ```
+Then upgrade with that file, pinned to the chart version you upgrade to:
+```shell
+helm upgrade -n peaka peaka peaka/peaka --version <CHART_VERSION> -f values.yaml
+```
+Without `--version`, Helm skips pre-releases such as `1.1.0-beta.31` and picks the latest stable chart. Do not run
+`helm upgrade` with only `--set kafkaConnect.enabled=true`: Helm then drops your previous values and uses the chart
+defaults for everything else.
 
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
