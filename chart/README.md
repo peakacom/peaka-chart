@@ -100,7 +100,7 @@ kafkaConnect:
 ```
 Then upgrade with that file, pinned to the chart version you upgrade to:
 ```shell
-helm upgrade -n peaka peaka peaka/peaka --version <CHART_VERSION> -f values.yaml
+helm upgrade -n peaka <release> peaka/peaka --version <CHART_VERSION> -f values.yaml
 ```
 Without `--version`, Helm skips pre-releases such as `1.1.0-beta.31` and picks the latest stable chart. Do not run
 `helm upgrade` with only `--set kafkaConnect.enabled=true`: Helm then drops your previous values and uses the chart
