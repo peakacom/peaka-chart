@@ -38,3 +38,28 @@ stay deployed (e.g. migration staging buckets still living there).
 {{- fail "You must enable either mongodb.enabled or externalMongoDB.enabled." }}
 {{- end -}}
 {{- end }}
+
+{{- define "peaka.validate.logging" }}
+{{- $fb := .Values.logging.fluentBit -}}
+{{- if $fb.enabled -}}
+{{- $enabled := 0 -}}
+{{- range $name, $output := $fb.outputs -}}
+{{- if ne $name "openobserve" -}}
+{{- fail (printf "logging.fluentBit.outputs.%s is not a supported output (supported: openobserve)." $name) }}
+{{- end -}}
+{{- if $output.enabled -}}{{- $enabled = add1 $enabled -}}{{- end -}}
+{{- end -}}
+{{- if eq $enabled 0 -}}
+{{- fail "logging.fluentBit.enabled is true but no logging.fluentBit.outputs.* output is enabled." }}
+{{- end -}}
+{{- if and $fb.outputs.openobserve.enabled (not .Values.logging.openobserve.enabled) -}}
+{{- fail "logging.fluentBit.outputs.openobserve.enabled requires logging.openobserve.enabled (or disable that output)." }}
+{{- end -}}
+{{- end -}}
+{{- if .Values.logging.openobserve.enabled -}}
+{{- $days := int .Values.logging.openobserve.retentionDays -}}
+{{- if and (gt $days 0) (lt $days 3) -}}
+{{- fail "logging.openobserve.retentionDays must be at least 3: OpenObserve does not start with 1 or 2." }}
+{{- end -}}
+{{- end -}}
+{{- end }}

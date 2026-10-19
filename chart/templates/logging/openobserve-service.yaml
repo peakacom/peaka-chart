@@ -1,0 +1,18 @@
+{{- if .Values.logging.openobserve.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "peaka.openobserve.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.openobserve.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5080
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: {{ include "peaka.openobserve.fullname" . }}
+    {{- include "peaka.selectorLabels" . | nindent 4 }}
+{{- end }}

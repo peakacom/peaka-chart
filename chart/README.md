@@ -164,6 +164,50 @@ traefik:
 For more information about Traefik's installation parameters, consult the 
 [Traefik Helm Chart](https://github.com/traefik/traefik-helm-chart).
 
+### Log Collection (optional)
+The chart can collect the logs of every container in the release namespace with
+[Fluent Bit](https://fluentbit.io) and store them in a bundled [OpenObserve](https://openobserve.ai)
+instance, so logs survive pod restarts and can be searched later. Both are off by default.
+
+```yaml
+logging:
+  fluentBit:
+    enabled: true        # DaemonSet, one pod per node
+  openobserve:
+    enabled: true        # StatefulSet with a 10Gi PVC
+    retentionDays: 7
+```
+
+Open the OpenObserve UI with (`<fullname>` is the release name if it contains `<name>`, otherwise
+`<release>-<name>`, where `<name>` is `nameOverride` or else `peaka`; `fullnameOverride` replaces it):
+```shell
+kubectl -n <namespace> port-forward svc/<fullname>-openobserve 5080:5080
+kubectl -n <namespace> get secret <fullname>-openobserve -o jsonpath='{.data.ZO_ROOT_USER_PASSWORD}' | base64 -d
+```
+Then browse `http://localhost:5080` and log in with `logging.openobserve.rootUserEmail` (its value at first
+install; later changes are ignored) and that password.
+Logs are in the `fluent_bit_kube` stream. To supply your own credentials, create a Secret with the keys
+`ZO_ROOT_USER_EMAIL`, `ZO_ROOT_USER_PASSWORD` and `ZO_ROOT_USER_TOKEN` and set
+`logging.openobserve.existingSecret`. Set it also when the chart is rendered without cluster access
+(Argo CD, `helm template`): the generated Secret keeps its values through `lookup`, so each such render
+creates new ones that OpenObserve's root user does not match. Fluent Bit only receives the email and the
+token, which OpenObserve accepts on ingestion endpoints only.
+
+Security notes:
+- Fluent Bit runs as root and mounts the node paths `/var/log/pods` and `/var/log/containers`
+  (read-only) plus `/var/lib/fluent-bit/<namespace>-<release>` (read offsets). Namespaces enforcing the
+  PodSecurity `baseline` or `restricted` level reject it; OpenShift needs a SCC allowing hostPath.
+- On Docker-runtime nodes (e.g. RKE1) the log files live under Docker's data dir: set
+  `logging.fluentBit.dockerContainersDir: /var/lib/docker/containers`. Fluent Bit can then also read every
+  container's config there, including its environment (secrets such as the OpenObserve root password).
+- On SELinux-enforcing nodes (e.g. OpenShift, RHEL) the default container type cannot read the log files or
+  write the offsets directory: set `logging.fluentBit.securityContext.seLinuxOptions.type: spc_t` (on
+  OpenShift the SCC must allow that type too).
+- It tails only the release namespace's log files, though it can read every pod's log files on its node,
+  and gets a namespaced Role (read pods), no cluster-wide access.
+- For air-gapped installs, mirror `cr.fluentbit.io/fluent/fluent-bit` and `o2cr.ai/openobserve/openobserve`
+  and set `logging.fluentBit.image` / `logging.openobserve.image` to the mirrored names.
+
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
 web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart
