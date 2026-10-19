@@ -547,8 +547,13 @@ pgcat:
       } ]
 
 # Default values for cp-kafka-connect.
+# Debezium (CDC) Connect: <release>-kafka-connect. Disabled; CDC is retired.
+# Not monitoringKafkaConnect (<release>-monitoring-kafka-connect, the MongoDB sinks for
+# query events and AI token usage), which stays: match names exactly, "kafka-connect"
+# is a substring of both.
+# KAFKA_CONNECT_ADDRESS in _helpers.tpl stays: be-data-cache does not boot without it.
 kafkaConnect:
-  enabled: true
+  enabled: false
 
   replicaCount: 1
 
