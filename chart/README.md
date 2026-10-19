@@ -65,6 +65,31 @@ This step is optional as the upgrade will use new CRDs.
 kubectl delete -k https://github.com/traefik/traefik-helm-chart/traefik/crds?ref=v20.8.0
 ```
 
+## Upgrading: Debezium Connect disabled
+
+Debezium Connect (`kafkaConnect`, the CDC cache engine) is now disabled by default.
+`monitoringKafkaConnect` is a different component and is not affected.
+
+### Before upgrading
+Run on Peaka's Postgres:
+```sql
+SELECT count(*) FROM studio.cdc_connection;
+SELECT count(*) FROM studio.cache_settings WHERE cachetype = 1;
+```
+If either count is above 0, contact Peaka before upgrading.
+
+### What the upgrade does
+- `helm upgrade` deletes the `<release>-kafka-connect` Deployment and Service. No volume or database is touched.
+- CDC caches stop refreshing.
+- Upgrade fe-studio-app together with the chart, to a tag that hides the CDC cache menu.
+- Leave the `kafka-connect-status`, `kafka-connect-offset` and `kafka-connect-config` topics in place. be-data-cache
+  recreates them at every start and logs three `TopicExistsException` lines; this is expected.
+
+### Keeping CDC
+```shell
+helm upgrade peaka peaka/peaka --set kafkaConnect.enabled=true
+```
+
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 
