@@ -305,9 +305,13 @@ PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespa
 
 MANAGEMENT_ENDPOINT_HEALTH_VALIDATE_GROUP_MEMBERSHIP: "false"
 
+{{- /* Java heap = 70% of each container's memory limit. Node heap is a fixed 768 MiB, so Node limits stay >= 1Gi. */}}
+NODE_OPTIONS: --max-old-space-size=768
 {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
+JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70.0 -Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit
 NODE_EXTRA_CA_CERTS: /custom-ca-bundle/ca-bundle.crt
+{{- else }}
+JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70.0
 {{- end }}
 {{- end -}}
 

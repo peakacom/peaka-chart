@@ -229,6 +229,12 @@ postgresql:
     database: peaka_db
   bigtable:
     database: peaka_bigtable
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 4Gi
 
 # @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
 # If internal postgresql is used, set externalPostgresql.enabled to false
@@ -253,7 +259,15 @@ hiveMetastore:
     name: hive-metastore
     tag: v1.0.5
     pullPolicy: IfNotPresent
-  hadoopHeapSize: 10240
+  # Heap in MB; change it together with resources.limits.memory (keep it <= 80% of the limit).
+  hadoopHeapSize: 1536
+  # Cloud dev's metastore holds ~1-1.4Gi (p50-p95).
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 3Gi
   servicePort: 9083
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
@@ -271,7 +285,6 @@ minio:
       cpu: 250m
       memory: 1Gi
     limits:
-      cpu: "1"
       memory: 4Gi
   users: []
   rootUser: peaka_minio
@@ -335,6 +348,13 @@ kafka:
     replicaCount: 1
     persistence:
       size: 4Gi
+    # heapOpts stays at the subchart's fixed -Xmx1024m; the limit leaves room for it.
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1280Mi
+      limits:
+        memory: 2Gi
   listeners:
     client:
       protocol: PLAINTEXT
@@ -360,6 +380,15 @@ mongodb:
     enabled: false
   persistence:
     size: 4Gi
+  # Pin the WiredTiger cache to what a 1Gi limit would give, so mongod never sizes it from node RAM.
+  extraFlags:
+    - --wiredTigerCacheSizeGB=0.25
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
 
 # If you would like to use your own MongoDB server, disable mongodb, enable this and fill in the connection
 # details below.
@@ -395,6 +424,12 @@ redis:
   master:
     persistence:
       size: 4Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 2Gi
   networkPolicy:
     enabled: false
 
@@ -403,6 +438,12 @@ permify:
   image:
     tag: "v1.7.1"
   replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 1Gi
   app:
     account_id: "recdK3q5xuwJdGjrh"
     server:
@@ -420,7 +461,7 @@ permify:
         concurrency_limit: 100
         cache:
           number_of_counters: 10000
-          max_cost: 2048MiB
+          max_cost: 256MiB
     database:
       engine: postgres
       uri_secret: peaka-permify-postgresql-uri-secret
@@ -451,8 +492,11 @@ pgcat:
     repository: ghcr.io/postgresml/pgcat
     tag: "v1.2.0"
   resources:
-    limits: {}
-    requests: {}
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
   configuration:
     general:
       ## @param configuration.general.host What IP to run on, 0.0.0.0 means accessible from everywhere.
@@ -584,20 +628,22 @@ kafkaConnect:
     "offset.storage.replication.factor": "1"
     "status.storage.replication.factor": "1"
 
-  ## Kafka Connect JVM Heap Option
-  heapOptions: "-Xms512M -Xmx512M"
+  ## Kafka Connect JVM heap, as a percentage of resources.limits.memory below
+  ## (same approach as monitoringKafkaConnect.heapOptions).
+  heapOptions: "-XX:MaxRAMPercentage=75.0"
 
   ## Additional env variables
   ## CUSTOM_SCRIPT_PATH is the path of the custom shell script to be ran mounted in a volume
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
-  # Sized to match the fixed 512M heap above (plus JVM overhead).
+  # Off-heap measures ~0.6Gi in cloud; 1536Mi keeps room for it beside the 75% heap.
   resources:
     requests:
+      cpu: 50m
       memory: "128Mi"
     limits:
-      memory: "512Mi"
+      memory: "1536Mi"
 
   ## Custom pod annotations
   podAnnotations: { }
@@ -704,11 +750,13 @@ monitoringKafkaConnect:
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
+  # Off-heap measures ~0.6-0.85Gi in cloud, so the limit keeps ~0.75Gi beside the 75% heap.
   resources:
     requests:
+      cpu: 50m
       memory: "1Gi"
     limits:
-      memory: "2Gi"
+      memory: "3Gi"
 
   ## Custom pod annotations
   podAnnotations: { }
@@ -855,17 +903,12 @@ temporal:
     podLabels: {}
     secretLabels: {}
     secretAnnotations: {}
-    resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    # requests:
-    #  cpu: 100m
-    #  memory: 128Mi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
     nodeSelector: {}
     tolerations: []
     affinity: {}
@@ -1027,7 +1070,14 @@ temporal:
         # timerType: histogram
       podAnnotations: {}
       podLabels: {}
-      resources: {}
+      # History serves all numHistoryShards and uses ~2.3-2.5Gi in Peaka's cloud dev and prod,
+      # so it gets its own limit instead of temporal.server.resources' 1Gi.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
       nodeSelector: {}
       tolerations: []
       affinity: {}
@@ -1305,12 +1355,16 @@ trino:
   coordinator:
     config:
       query:
-        maxMemoryPerNode: 9GB
+        # Empty = Trino's default, 30% of the heap.
+        maxMemoryPerNode: ""
         maxLength: "1000000000"     # a billion
       memory:
         heapHeadroomPerNode: ""
     jvm:
-      maxHeapSize: 25G
+      # Heap follows resources.limits.memory unless maxHeapSize (-Xmx) is set.
+      maxHeapSize: ""
+      maxRAMPercentage: 50
+      maxDirectMemorySize: 1G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1336,17 +1390,12 @@ trino:
       # storageClass of the trino coordinator persistent volume
       storageClass: ""
 
-    resources: {}
-      # We usually recommend not to specify default resources and to leave this as a conscious
-      # choice for the user. This also increases chances charts run on environments with little
-      # resources, such as Minikube. If you do want to specify resources, uncomment the following
-      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-      # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
-      # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        memory: 8Gi
     livenessProbe: {}
       # initialDelaySeconds: 20
       # periodSeconds: 10
@@ -1368,10 +1417,14 @@ trino:
       memory:
         heapHeadroomPerNode: ""
       query:
-        maxMemoryPerNode: 15GB
+        # Empty = Trino's default, 30% of the heap.
+        maxMemoryPerNode: ""
         maxLength: "1000000000"     # a billion
     jvm:
-      maxHeapSize: 50G
+      # Heap follows resources.limits.memory unless maxHeapSize (-Xmx) is set.
+      maxHeapSize: ""
+      maxRAMPercentage: 75
+      maxDirectMemorySize: 2G
       gcMethod:
         type: UseG1GC
         g1:
@@ -1385,7 +1438,12 @@ trino:
       - -javaagent:/usr/lib/trino/lib/trino-byte-manipulation.jar
     additionalConfigFiles: {}
     additionalExposedPorts: {}
-    resources: {}
+    resources:
+      requests:
+        cpu: 1
+        memory: 5Gi
+      limits:
+        memory: 24Gi
     livenessProbe: {}
       # initialDelaySeconds: 20
       # periodSeconds: 10
@@ -1400,7 +1458,16 @@ trino:
       # successThreshold: 1
     nodeSelector: {}
     tolerations: []
-    affinity: {}
+    # Spread workers over nodes; values-production.yaml makes this required.
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  component: worker
   server:
     exchangeManager:
       name: filesystem
@@ -1515,7 +1582,12 @@ authService:
     name: be-auth-service
     tag: v0.0.21
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Liveness hits the dependency-free availability probe so a dependency outage
@@ -1557,7 +1629,12 @@ cloudGateway:
     name: be-cloud-gateway
     tag: v1.0.21
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Actuator availability probes on the management port. Liveness is
@@ -1600,7 +1677,12 @@ collabSharedb:
     name: be-collab-sharedb
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Startup gate: give the app time to come up before liveness/readiness
@@ -1643,8 +1725,19 @@ dataCache:
     imageName: be-common-flow-utilities-service
     imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
-    resources: {}
-  resources: {}
+    # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        memory: 1536Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 3Gi
   nodeSelector: {}
   affinity: {}
   materializedViewQueryTimeout: 7200
@@ -1689,7 +1782,12 @@ dataRest:
     name: be-data-rest
     tag: v1.0.43
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      memory: 3Gi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness gates on Postgres + flag store.
@@ -1724,7 +1822,12 @@ dispatcher:
     name: be-dispatcher
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness reflects Kafka partition assignment.
@@ -1759,7 +1862,12 @@ dispatcherAssigner:
     name: be-dispatcher-assigner
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
@@ -1788,7 +1896,12 @@ dispatcherDlq:
     name: be-dispatcher-dlq
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while the
@@ -1817,7 +1930,12 @@ emailService:
     name: be-email-service
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Liveness is dependency-free; readiness is a static server-up check.
@@ -1852,7 +1970,12 @@ mcpServer:
     name: peaka-mcp-server
     tag: v0.13.2
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Stateless MCP server; /health is a static liveness check (no
@@ -1889,7 +2012,12 @@ metadataService:
       name: be-metadata-connector
       tag: v1.0.1
       imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 384Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -1939,7 +2067,12 @@ monitoringService:
     name: be-monitoring-service
     tag: v1.0.6
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 4Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -1983,7 +2116,12 @@ oauth2AuthorizationServer:
     name: be-oauth2-authorization-server
     tag: v1.0.4
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2025,7 +2163,12 @@ permissionService:
     name: be-permission-service
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors; a real dependency outage takes
@@ -2070,7 +2213,12 @@ runtimeApi:
     name: be-runtime-api
     tag: v0.0.20
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2114,7 +2262,12 @@ scheduledFlowRunner:
     name: be-scheduled-flow-runner
     tag: v0.0.11
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      memory: 1536Mi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2158,7 +2311,12 @@ searchService:
     name: be-search-service
     tag: v1.0.12
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   bullDashboardEnabled: false
@@ -2195,7 +2353,12 @@ secretStoreService:
     name: be-secret-store-service
     tag: v0.0.20
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2239,7 +2402,12 @@ studioApi:
     name: be-studio-api
     tag: v1.0.52
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 768Mi
+    limits:
+      memory: 3Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2283,7 +2451,12 @@ tokenService:
     name: be-token-service
     tag: v1.0.7
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 384Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2327,7 +2500,12 @@ webhookResolver:
     name: be-webhook-resolver
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Headless Vert.x Kafka worker: no traffic, so no readiness. Liveness is UP
@@ -2356,7 +2534,12 @@ workflowHistory:
     name: be-workflow-history
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 6Gi
   nodeSelector: {}
   affinity: {}
   # Readiness gates on these health contributors (see other services for notes).
@@ -2400,7 +2583,12 @@ workflowStarter:
     name: be-workflow-starter
     tag: v1.0.5
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Headless Kafka worker: no traffic, so no readiness. Liveness is UP while all
@@ -2433,9 +2621,21 @@ workflowWorkerExpress:
     imageName: be-common-flow-utilities-service
     imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
-    resources: {}
+    # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        memory: 1536Mi
     readinessProbe: {}
-  resources: {}
+  # Cloud measures up to ~1.7Gi off-heap here: 8Gi leaves room for it next to the 70% heap.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 8Gi
   nodeSelector: {}
   affinity: {}
   # Liveness hits the dependency-free availability probe so a dependency outage
@@ -2477,7 +2677,12 @@ sqlService:
     name: be-sql-service
     tag: v1.0.0
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   # Stateless transpile service: liveness and readiness both just report the
@@ -2513,7 +2718,12 @@ studioWeb:
     name: fe-studio-app
     tag: v1.2.20
     imagePullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      memory: 256Mi
   nodeSelector: {}
   affinity: {}
   readinessProbe: {}
@@ -2528,7 +2738,12 @@ releaseState:
     imagePullPolicy: IfNotPresent
   serviceAccount:
     create: true
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   nodeSelector: {}
   affinity: {}
   readinessProbe: {}
@@ -2577,6 +2792,12 @@ releaseState:
 #       nodePort: 30567
 traefik:
   enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
   logs:
     general:
       level: DEBUG
