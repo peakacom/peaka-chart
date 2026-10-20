@@ -260,13 +260,14 @@ hiveMetastore:
     tag: v1.0.5
     pullPolicy: IfNotPresent
   # Heap in MB; change it together with resources.limits.memory (keep it <= 80% of the limit).
-  hadoopHeapSize: 1024
+  hadoopHeapSize: 1536
+  # Cloud dev's metastore holds ~1-1.4Gi (p50-p95).
   resources:
     requests:
       cpu: 100m
       memory: 1Gi
     limits:
-      memory: 2Gi
+      memory: 3Gi
   servicePort: 9083
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
@@ -636,12 +637,13 @@ kafkaConnect:
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
+  # Off-heap measures ~0.6Gi in cloud; 1536Mi keeps room for it beside the 75% heap.
   resources:
     requests:
       cpu: 50m
       memory: "128Mi"
     limits:
-      memory: "512Mi"
+      memory: "1536Mi"
 
   ## Custom pod annotations
   podAnnotations: { }
@@ -748,12 +750,13 @@ monitoringKafkaConnect:
   customEnv: { }
   # CUSTOM_SCRIPT_PATH: /etc/scripts/create-connectors.sh
 
+  # Off-heap measures ~0.6-0.85Gi in cloud, so the limit keeps ~0.75Gi beside the 75% heap.
   resources:
     requests:
       cpu: 50m
       memory: "1Gi"
     limits:
-      memory: "2Gi"
+      memory: "3Gi"
 
   ## Custom pod annotations
   podAnnotations: { }
@@ -1722,12 +1725,13 @@ dataCache:
     imageName: be-common-flow-utilities-service
     imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
+    # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
       requests:
         cpu: 50m
         memory: 256Mi
       limits:
-        memory: 1Gi
+        memory: 1536Mi
   resources:
     requests:
       cpu: 100m
@@ -2617,19 +2621,21 @@ workflowWorkerExpress:
     imageName: be-common-flow-utilities-service
     imageTag: v0.0.21
     imagePullPolicy: IfNotPresent
+    # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
       requests:
         cpu: 50m
         memory: 256Mi
       limits:
-        memory: 1Gi
+        memory: 1536Mi
     readinessProbe: {}
+  # Cloud measures up to ~1.7Gi off-heap here: 8Gi leaves room for it next to the 70% heap.
   resources:
     requests:
       cpu: 250m
       memory: 512Mi
     limits:
-      memory: 6Gi
+      memory: 8Gi
   nodeSelector: {}
   affinity: {}
   # Liveness hits the dependency-free availability probe so a dependency outage
