@@ -204,8 +204,8 @@ helm upgrade -n peaka [RELEASE_NAME] ./<version>/peaka -f <version>/peaka/values
     or Trino refuses to start (`Invalid memory configuration`) and the pod crash-loops.
 - If the namespace has a ResourceQuota or LimitRange, check it against the new totals before upgrading:
   - quota ≥ the profile's requests and limits plus the rollout surge: about 35 Deployments restart at once,
-    each starting its new pod before it stops the old one. With the surge that is ≈ 36 GiB / 8.7 vCPU of
-    requests and ≈ 157 GiB of limits by default, ≈ 164 GiB / 10.7 vCPU and ≈ 245 GiB in production;
+    each starting its new pod before it stops the old one. With the surge that is ≈ 37 GiB / 8.7 vCPU of
+    requests and ≈ 163 GiB of limits by default, ≈ 168 GiB / 10.7 vCPU and ≈ 251 GiB in production;
   - LimitRange max ≥ the largest limit (24Gi, production 36Gi), min ≤ the smallest request (32Mi / 50m);
   - `maxLimitRequestRatio`: memory ≥ 16; CPU absent, or ≥ the default CPU limit / 50m;
   - a default CPU limit re-adds CPU limits: it must be ≥ 1 (Trino's CPU request), or the Trino pods are rejected
@@ -214,8 +214,8 @@ helm upgrade -n peaka [RELEASE_NAME] ./<version>/peaka -f <version>/peaka/values
     default during the rollout (production ≈ 84 ×);
   - init containers and the Temporal schema Jobs set no resources, so with a quota on requests or limits the
     LimitRange must give them defaults.
-- Production: you need ≥ 3 schedulable nodes, each with ≈ 44 GiB allocatable free for Peaka, and the node that
-  runs the Trino coordinator ≈ 56 GiB (`kubectl describe nodes`). Trino workers use `Recreate`, so all old
+- Production: you need ≥ 3 schedulable nodes, each with ≈ 45 GiB allocatable free for Peaka, and the node that
+  runs the Trino coordinator ≈ 57 GiB (`kubectl describe nodes`). Trino workers use `Recreate`, so all old
   workers stop first; if a new one stays `Pending`, run `helm rollback`.
 
 ### Tainted nodes

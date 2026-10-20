@@ -1067,7 +1067,14 @@ temporal:
         # timerType: histogram
       podAnnotations: {}
       podLabels: {}
-      resources: {}
+      # History serves all numHistoryShards and uses ~2.3-2.5Gi in Peaka's cloud dev and prod,
+      # so it gets its own limit instead of temporal.server.resources' 1Gi.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
       nodeSelector: {}
       tolerations: []
       affinity: {}

@@ -4,8 +4,8 @@
 #   helm upgrade --install peaka ./<version>/peaka -f <version>/peaka/values-production.yaml -f my-values.yaml
 # - One Trino worker per node (required anti-affinity), request = limit.
 #   Worker 36Gi: heap 80% (~28.8G) -> ~8.6 GB query memory per node.
-#   Coordinator 12Gi: heap 60%. The coordinator's node needs ~56 GiB allocatable.
-# - Every other memory request is 1.5x the default; limits are unchanged.
+#   Coordinator 12Gi: heap 60%. The coordinator's node needs ~57 GiB allocatable.
+# - Every other memory request is 1.5x the default (Temporal history: what cloud measures); limits are unchanged.
 # See "Sizing" in README.md before upgrading an existing install.
 postgresql:
   resources:
@@ -54,6 +54,10 @@ temporal:
     resources:
       requests:
         memory: 384Mi
+    history:
+      resources:
+        requests:
+          memory: 2560Mi  # what cloud measures (~2.3-2.5Gi), not 1.5x the default
 authService:
   resources:
     requests:
