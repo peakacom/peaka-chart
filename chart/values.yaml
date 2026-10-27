@@ -2511,7 +2511,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.2.22
+    tag: v1.2.23
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
