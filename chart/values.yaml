@@ -225,7 +225,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v1.0.10
+    tag: v1.0.11-onprem
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -1313,7 +1313,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.54
+    tag: v1.0.55-onprem
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1578,7 +1578,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.22
+    tag: v1.0.23-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1621,7 +1621,7 @@ collabSharedb:
   replicaCount: 1
   image:
     name: be-collab-sharedb
-    tag: v1.0.1
+    tag: v1.0.2-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1660,7 +1660,7 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.22
+    tag: v1.0.23-onprem
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
@@ -1710,7 +1710,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.44
+    tag: v1.0.45-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1873,7 +1873,7 @@ mcpServer:
   replicaCount: 1
   image:
     name: peaka-mcp-server
-    tag: v0.15.4
+    tag: v0.15.5-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -1905,7 +1905,7 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v1.0.1
+    tag: v1.0.2-onprem
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -2004,7 +2004,7 @@ oauth2AuthorizationServer:
   replicaCount: 1
   image:
     name: be-oauth2-authorization-server
-    tag: v1.0.4
+    tag: v1.0.5-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2046,7 +2046,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v1.0.0
+    tag: v1.0.1-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2179,7 +2179,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.14
+    tag: v1.0.15-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2260,7 +2260,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.62
+    tag: v1.0.63-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2304,7 +2304,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.7
+    tag: v1.0.8-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2498,7 +2498,7 @@ sqlService:
   replicaCount: 1
   image:
     name: be-sql-service
-    tag: v1.0.0
+    tag: v1.0.1-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
@@ -2534,7 +2534,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.2.23
+    tag: v1.2.25-onprem
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
