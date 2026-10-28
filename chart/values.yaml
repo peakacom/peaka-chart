@@ -2046,7 +2046,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v1.0.1-onprem
+    tag: v1.0.1-onprem.1
     imagePullPolicy: IfNotPresent
   resources: {}
   nodeSelector: {}
