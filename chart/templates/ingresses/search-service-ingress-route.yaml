@@ -16,9 +16,12 @@ spec:
     - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/search`)
       kind: Rule
       priority: 99
+      # The prefix is stripped before forwardAuth runs, so permission-service sees the path the service serves
+      # (/data-cache/..., /search/...), as on SaaS. Its handlers read the path from the first segment
+      # (DEV-4136) and refuse a prefixed one.
       middlewares:
-        - name: {{ include "peaka.fullname" . }}-be-search-service-auth-middleware
         - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-be-search-service-auth-middleware
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
@@ -31,9 +34,12 @@ spec:
     - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/metadata`)
       kind: Rule
       priority: 99
+      # The prefix is stripped before forwardAuth runs, so permission-service sees the path the service serves
+      # (/data-cache/..., /search/...), as on SaaS. Its handlers read the path from the first segment
+      # (DEV-4136) and refuse a prefixed one.
       middlewares:
-        - name: {{ include "peaka.fullname" . }}-be-search-metadata-service-auth-middleware
         - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-be-search-metadata-service-auth-middleware
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
@@ -46,9 +52,12 @@ spec:
     - match: PathPrefix(`/{{ include "peaka.routes.servicePath" . }}/studioapi/ai-agent`)
       kind: Rule
       priority: 99
+      # The prefix is stripped before forwardAuth runs, so permission-service sees the path the service serves
+      # (/data-cache/..., /search/...), as on SaaS. Its handlers read the path from the first segment
+      # (DEV-4136) and refuse a prefixed one.
       middlewares:
-        - name: {{ include "peaka.fullname" . }}-be-ai-agent-service-auth-middleware
         - name: {{ include "peaka.fullname" . }}-be-studio-api-replace-path-middleware
+        - name: {{ include "peaka.fullname" . }}-be-ai-agent-service-auth-middleware
       services:
         - name: {{ include "peaka.fullname" . }}-be-search-service
           port: http
