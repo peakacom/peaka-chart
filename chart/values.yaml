@@ -38,6 +38,29 @@ imageRegistry: ""
 
 partnerApiEnabled: false
 
+# Authorization enforcement inside the services (DEV-3781). enabled=false turns a check off, shadow=true logs the
+# would-be denials and allows. Service images older than the DEV-3781 release do not read these.
+accessControl:
+  # data-rest and data-cache: every project-scoped request must carry a principal allowed on that project.
+  projectAccessGate:
+    enabled: true
+    shadow: false
+  # data-rest: custom-role permissions (write_data, refresh_caches, ...) are enforced.
+  customRolesEnforcement:
+    enabled: true
+    shadow: false
+  # search: the same project check for search, metadata and AI routes. The code leaves it off unless set.
+  projectAccessGuard:
+    enabled: true
+    shadow: false
+
+# search: the scheduled sweep that refreshes every catalog's metadata. Off: refreshes run only when asked for.
+metadataRefreshCronEnabled: false
+# Semantic model screens, semantic discovery and the Dataplex export are not part of this release.
+semanticModelEnabled: false
+semanticDiscoveryEnabled: false
+dataplexEnabled: false
+
 # pull secret to fetch Peaka images
 # you will be given a secret json to authenticate to pull Peaka images from its private repository.
 # If you're going to use your own image registry, leave this empty.

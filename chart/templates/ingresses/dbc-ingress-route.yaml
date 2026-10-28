@@ -37,4 +37,9 @@ metadata:
 spec:
   forwardAuth:
     address: http://{{ include "peaka.fullname" . }}-be-permission-service.{{ .Release.Namespace }}.svc.cluster.local:80/auth/dbc-custom-header-handling
-    authResponseHeaders: ["X-Trino-Extra-Credential", "X-Peaka-User-Id", "X-Peaka-Api-Key"]
+    # Every header listed here is removed from the driver's request and set only from the auth answer. data-rest
+    # reads the project from X-Peaka-Project-Id before the key, treats a request with no user and no key as internal,
+    # and takes the Trino user from X-Internal-Authorization-Username: none of them may come from a driver (DEV-4136).
+    # The auth answer never sets the last two, so they are always dropped here.
+    authResponseHeadersRegex: ^X-Internal-Authorization-
+    authResponseHeaders: ["X-Trino-Extra-Credential", "X-Peaka-User-Id", "X-Peaka-Api-Key", "X-Peaka-Username", "X-Peaka-Project-Id"]

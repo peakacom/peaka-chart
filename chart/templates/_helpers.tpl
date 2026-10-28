@@ -300,6 +300,17 @@ CODE2_PREVIEWED_APPS_DOMAIN: {{  .Values.accessUrl.domain | quote }}
 
 GRPC_DNS_RESOLVER: native
 PARTNER_API_ENABLED: {{ .Values.partnerApiEnabled | default false | quote }}
+PROJECT_ACCESS_GATE_ENABLED: {{ .Values.accessControl.projectAccessGate.enabled | quote }}
+PROJECT_ACCESS_GATE_SHADOW: {{ .Values.accessControl.projectAccessGate.shadow | quote }}
+CUSTOM_ROLES_ENFORCEMENT_ENABLED: {{ .Values.accessControl.customRolesEnforcement.enabled | quote }}
+CUSTOM_ROLES_ENFORCEMENT_SHADOW: {{ .Values.accessControl.customRolesEnforcement.shadow | quote }}
+PROJECT_ACCESS_GUARD_ENABLED: {{ .Values.accessControl.projectAccessGuard.enabled | quote }}
+PROJECT_ACCESS_GUARD_SHADOW: {{ .Values.accessControl.projectAccessGuard.shadow | quote }}
+METADATA_REFRESH_CRON_ENABLED: {{ .Values.metadataRefreshCronEnabled | quote }}
+SEMANTIC_MODEL_ENABLED: {{ .Values.semanticModelEnabled | quote }}
+SEMANTIC_DISCOVERY_ENABLED: {{ .Values.semanticDiscoveryEnabled | quote }}
+DATAPLEX_ENABLED: {{ .Values.dataplexEnabled | quote }}
+PEAKA_PROBLEM_DEBUG: "false"
 
 PERMIFY_URL: http://{{ include "peaka.permify.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.permify.app.server.http.port }}
 
