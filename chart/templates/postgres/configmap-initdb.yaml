@@ -76,24 +76,6 @@ data:
 
     run_init {{ include "peaka.bigtable.database" . }}
 
-  06-abstract_schema_mapper.sh: |
-    #!/bin/bash
-    set -e
-
-    export POSTGRES_PASSWORD="{{ .Values.postgresql.auth.password }}"
-
-    run_init () {
-      DB=$1
-
-      echo "Running init script for abstract schema mapper schema in db $DB..."
-
-      psql -v ON_ERROR_STOP=1 --username {{ include "peaka.postgresql.user" . | quote }} --dbname "$DB" <<'EOSQL'
-      {{- include "peaka.postgresql.initASM" . | nindent 6 }}
-    EOSQL
-    }
-
-    run_init {{ include "peaka.postgresql.database" . }}
-
   07-studio.sh: |
     #!/bin/bash
     set -e
