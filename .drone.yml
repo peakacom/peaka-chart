@@ -1,12 +1,36 @@
 ---
 kind: pipeline
 type: kubernetes
+name: test
+
+trigger:
+  event:
+    - pull_request
+    - custom
+    - tag
+
+steps:
+  - name: helm-unittest
+    image: alpine/helm:3.16
+    commands:
+      - |
+        apk add --no-cache git curl
+        # v1.1.0+ needs Helm 3.18+ to load the plugin
+        helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.0.3
+        helm unittest chart
+
+---
+kind: pipeline
+type: kubernetes
 name: build
 
 trigger:
   event:
     - custom
     - tag
+
+depends_on:
+  - test
 
 steps:
   - name: version-check
@@ -113,6 +137,6 @@ volumes:
 
 ---
 kind: signature
-hmac: 5b3dc03426483420ec04af33f20ad33e198d38aee4e6acece05ce8749a76f819
+hmac: b4e8b9868caf83cc575cba2678762a9bc239b0ba7d4a2bb6c12197bbf46c809a
 
 ...

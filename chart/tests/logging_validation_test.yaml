@@ -1,0 +1,38 @@
+suite: logging validation
+templates:
+  - templates/validate.yaml
+set:
+  logging.fluentBit.enabled: true
+  logging.openobserve.enabled: true
+tests:
+  - it: accepts Fluent Bit with the bundled OpenObserve
+    asserts:
+      - notFailedTemplate: {}
+
+  - it: fails when the openobserve output is on but OpenObserve is not
+    set:
+      logging.openobserve.enabled: false
+    asserts:
+      - failedTemplate:
+          errorMessage: logging.fluentBit.outputs.openobserve.enabled requires logging.openobserve.enabled (or disable that output).
+
+  - it: fails when no output is enabled
+    set:
+      logging.fluentBit.outputs.openobserve.enabled: false
+    asserts:
+      - failedTemplate:
+          errorMessage: logging.fluentBit.enabled is true but no logging.fluentBit.outputs.* output is enabled.
+
+  - it: fails on an output the chart does not implement
+    set:
+      logging.fluentBit.outputs.openObserve.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: "logging.fluentBit.outputs.openObserve is not a supported output (supported: openobserve)."
+
+  - it: fails on a retention OpenObserve refuses to start with
+    set:
+      logging.openobserve.retentionDays: 2
+    asserts:
+      - failedTemplate:
+          errorMessage: "logging.openobserve.retentionDays must be at least 3: OpenObserve does not start with 1 or 2."
