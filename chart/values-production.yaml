@@ -1,0 +1,210 @@
+# Production profile: 3 nodes x 16 vCPU / 64 GiB (e.g. Fibabanka).
+# Use it with the chart it ships in, on top of the chart defaults and your own values:
+#   helm pull peaka/peaka --version <version> --untar --untardir <version>
+#   helm upgrade --install peaka ./<version>/peaka -f <version>/peaka/values-production.yaml -f my-values.yaml
+# - One Trino worker per node (required anti-affinity), request = limit.
+#   Worker 36Gi: heap 80% (~28.8G) -> ~8.6 GB query memory per node.
+#   Coordinator 12Gi: heap 60%. The coordinator's node needs ~57 GiB allocatable.
+# - Every other memory request is 1.5x the default (Temporal history: what cloud measures); limits are unchanged.
+# See "Sizing" in README.md before upgrading an existing install.
+postgresql:
+  resources:
+    requests:
+      memory: 768Mi
+hiveMetastore:
+  resources:
+    requests:
+      memory: 1536Mi
+minio:
+  resources:
+    requests:
+      memory: 1536Mi
+kafka:
+  controller:
+    resources:
+      requests:
+        memory: 1920Mi
+mongodb:
+  resources:
+    requests:
+      memory: 384Mi
+redis:
+  master:
+    resources:
+      requests:
+        memory: 192Mi
+permify:
+  resources:
+    requests:
+      memory: 192Mi
+pgcat:
+  resources:
+    requests:
+      memory: 96Mi
+kafkaConnect:
+  resources:
+    requests:
+      memory: 192Mi
+monitoringKafkaConnect:
+  resources:
+    requests:
+      memory: 1536Mi
+temporal:
+  server:
+    resources:
+      requests:
+        memory: 384Mi
+    history:
+      resources:
+        requests:
+          memory: 2560Mi  # what cloud measures (~2.3-2.5Gi), not 1.5x the default
+authService:
+  resources:
+    requests:
+      memory: 384Mi
+cloudGateway:
+  resources:
+    requests:
+      memory: 768Mi
+collabSharedb:
+  resources:
+    requests:
+      memory: 384Mi
+dataCache:
+  resources:
+    requests:
+      memory: 768Mi
+  sidecar:
+    resources:
+      requests:
+        memory: 384Mi
+dataRest:
+  resources:
+    requests:
+      memory: 1536Mi
+dispatcher:
+  resources:
+    requests:
+      memory: 768Mi
+dispatcherAssigner:
+  resources:
+    requests:
+      memory: 384Mi
+dispatcherDlq:
+  resources:
+    requests:
+      memory: 384Mi
+emailService:
+  resources:
+    requests:
+      memory: 384Mi
+mcpServer:
+  resources:
+    requests:
+      memory: 384Mi
+metadataService:
+  resources:
+    requests:
+      memory: 576Mi
+monitoringService:
+  resources:
+    requests:
+      memory: 768Mi
+oauth2AuthorizationServer:
+  resources:
+    requests:
+      memory: 384Mi
+permissionService:
+  resources:
+    requests:
+      memory: 384Mi
+runtimeApi:
+  resources:
+    requests:
+      memory: 384Mi
+scheduledFlowRunner:
+  resources:
+    requests:
+      memory: 576Mi
+searchService:
+  resources:
+    requests:
+      memory: 384Mi
+secretStoreService:
+  resources:
+    requests:
+      memory: 384Mi
+studioApi:
+  resources:
+    requests:
+      memory: 1152Mi
+tokenService:
+  resources:
+    requests:
+      memory: 576Mi
+webhookResolver:
+  resources:
+    requests:
+      memory: 384Mi
+workflowHistory:
+  resources:
+    requests:
+      memory: 768Mi
+workflowStarter:
+  resources:
+    requests:
+      memory: 384Mi
+workflowWorkerExpress:
+  resources:
+    requests:
+      memory: 768Mi
+  sidecar:
+    resources:
+      requests:
+        memory: 384Mi
+sqlService:
+  resources:
+    requests:
+      memory: 384Mi
+studioWeb:
+  resources:
+    requests:
+      memory: 48Mi
+releaseState:
+  resources:
+    requests:
+      memory: 384Mi
+traefik:
+  resources:
+    requests:
+      memory: 192Mi
+trino:
+  server:
+    workers: 3
+    config:
+      query:
+        maxMemory: 25.9GB
+  coordinator:
+    jvm:
+      maxRAMPercentage: 60
+    resources:
+      requests:
+        memory: 12Gi
+      limits:
+        memory: 12Gi
+  worker:
+    jvm:
+      maxRAMPercentage: 80
+    resources:
+      requests:
+        memory: 36Gi
+      limits:
+        memory: 36Gi
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution: null
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              component: worker
