@@ -20,6 +20,15 @@ data:
 
       location / {
         try_files $uri $uri/ /index.html;
+
+        # index.html (and every SPA route that falls back to it) must be revalidated on each load: it names the
+        # hashed bundle, and served without Cache-Control a browser kept the previous one by heuristic freshness,
+        # so an upgrade showed the old studio until a hard refresh. Same headers as be-iac's fe-studio-app.
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+        add_header Pragma "no-cache";
+        # A location with its own add_header no longer inherits the server's, so this one is repeated here.
+        add_header X-Frame-Options "DENY";
       }
     
       location ~* .js$ {

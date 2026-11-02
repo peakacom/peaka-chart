@@ -13,6 +13,20 @@ spec:
   entryPoints:
     - {{ include "peaka.ingress.entryPoint" . }}
   routes:
+    # Refuses /custom from outside. It is not an API but the gateway's own second hop: a published call arrives as
+    # /api/v1/**, ApiKeyFilter authenticates it and the gateway rewrites it to /custom/api/v1/** and sends it to
+    # itself. ApiKeyFilter runs only for exchanges the gateway routes, so a request sent straight to /custom/** is
+    # answered by the local controllers with no check at all. Higher priority than the catch-all below, which stays
+    # as it is: enumerating the published prefixes could drop one a real caller uses.
+    - match: PathPrefix(`/{{ include "peaka.routes.partnerPath" . }}/custom`)
+      kind: Rule
+      priority: 200
+      middlewares:
+        - name: {{ include "peaka.fullname" . }}-be-cloud-gateway-deny-internal-path
+      services:
+        - name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+          port: http
+          passHostHeader: true
     - match: PathPrefix(`/{{ include "peaka.routes.partnerPath" . }}`)
       kind: Rule
       priority: 10
@@ -39,3 +53,17 @@ spec:
   replacePathRegex:
     regex: "^/{{ include "peaka.routes.partnerPath" . }}/(.*)"
     replacement: "/${1}"
+---
+# ipAllowList with a documentation-only range (RFC 5737 TEST-NET-1) is how Traefik says "no one": the range matches
+# no real client, so every request to the route is refused with 403.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "peaka.fullname" . }}-be-cloud-gateway-deny-internal-path
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.fullname" . }}-be-cloud-gateway
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  ipAllowList:
+    sourceRange:
+      - 192.0.2.1/32

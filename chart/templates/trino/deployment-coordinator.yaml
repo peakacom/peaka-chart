@@ -193,10 +193,9 @@ spec:
           livenessProbe:
             exec:
               command:
-              - "sh"
-              - "-c"
-              - >
-                curl -s localhost:8080/v1/info | grep "\"starting\":false"
+              # The image's own check, bash builtins only. The old `curl | grep` fails on Trino 484 images (no grep in the base
+              # image) and the pod never becomes ready; the script exists in the 479 and UBI images too.
+              - /usr/lib/trino/bin/health-check
             initialDelaySeconds: {{ .Values.trino.coordinator.livenessProbe.initialDelaySeconds | default 60 }}
             periodSeconds: {{ .Values.trino.coordinator.livenessProbe.periodSeconds | default 20 }}
             timeoutSeconds: {{ .Values.trino.coordinator.livenessProbe.timeoutSeconds | default 20 }}
@@ -205,10 +204,9 @@ spec:
           readinessProbe:
             exec:
               command:
-              - "sh"
-              - "-c"
-              - >
-                curl -s localhost:8080/v1/info | grep "\"starting\":false"
+              # The image's own check, bash builtins only. The old `curl | grep` fails on Trino 484 images (no grep in the base
+              # image) and the pod never becomes ready; the script exists in the 479 and UBI images too.
+              - /usr/lib/trino/bin/health-check
             initialDelaySeconds: {{ .Values.trino.coordinator.readinessProbe.initialDelaySeconds | default 60 }}
             periodSeconds: {{ .Values.trino.coordinator.readinessProbe.periodSeconds | default 20 }}
             timeoutSeconds: {{ .Values.trino.coordinator.readinessProbe.timeoutSeconds | default 20 }}

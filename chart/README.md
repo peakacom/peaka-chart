@@ -65,6 +65,47 @@ This step is optional as the upgrade will use new CRDs.
 kubectl delete -k https://github.com/traefik/traefik-helm-chart/traefik/crds?ref=v20.8.0
 ```
 
+## Upgrading: Debezium Connect disabled
+
+Debezium Connect (`kafkaConnect`, the CDC cache engine) is now disabled by default.
+`monitoringKafkaConnect` is a different component and is not affected.
+
+### Before upgrading
+Run on Peaka's Postgres, in the database that holds the `studio` schema: `postgresql.primary.database` (default
+`peaka_db`), or `externalPostgresql.database` (default `code2db`) with an external Postgres. For the in-cluster
+Postgres with default values:
+```shell
+kubectl exec -n peaka <release>-postgres-0 -- psql -U peakadb -d peaka_db \
+  -c "SELECT count(*) FROM studio.cdc_connection;" \
+  -c "SELECT count(*) FROM studio.cache_settings WHERE cachetype = 1;"
+```
+A query error means the check has not run. If either count is above 0, contact Peaka before upgrading: each Postgres
+CDC connection keeps a Debezium replication slot on its source database. Once Debezium Connect is gone nothing reads
+that slot, and the source database keeps WAL for it without limit unless `max_slot_wal_keep_size` is set.
+
+### What the upgrade does
+- `helm upgrade` deletes the `<release>-kafka-connect` Deployment and Service. No Peaka volume or database is touched.
+- CDC caches stop refreshing.
+- Upgrade Studio (`studioWeb.image.tag`) together with the chart, to an image that hides the CDC cache menu. Images up
+  to `v1.2.20` still show it, and creating a CDC cache from it fails.
+- Leave the `<release>-kafka-connect-status`, `<release>-kafka-connect-offset` and `<release>-kafka-connect-config`
+  topics in place. be-data-cache recreates them at every start and logs three `TopicExistsException` lines; this is
+  expected. The `<release>-monitoring-kafka-connect-*` topics belong to `monitoringKafkaConnect`.
+
+### Keeping CDC
+Set this in your `values.yaml`:
+```yaml
+kafkaConnect:
+  enabled: true
+```
+Then upgrade with that file, pinned to the chart version you upgrade to:
+```shell
+helm upgrade -n peaka <release> peaka/peaka --version <CHART_VERSION> -f values.yaml
+```
+Without `--version`, Helm skips pre-releases such as `1.1.0-beta.31` and picks the latest stable chart. Do not run
+`helm upgrade` with only `--set kafkaConnect.enabled=true`: Helm then drops your previous values and uses the chart
+defaults for everything else.
+
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 
@@ -163,6 +204,50 @@ traefik:
 
 For more information about Traefik's installation parameters, consult the 
 [Traefik Helm Chart](https://github.com/traefik/traefik-helm-chart).
+
+### Log Collection (optional)
+The chart can collect the logs of every container in the release namespace with
+[Fluent Bit](https://fluentbit.io) and store them in a bundled [OpenObserve](https://openobserve.ai)
+instance, so logs survive pod restarts and can be searched later. Both are off by default.
+
+```yaml
+logging:
+  fluentBit:
+    enabled: true        # DaemonSet, one pod per node
+  openobserve:
+    enabled: true        # StatefulSet with a 10Gi PVC
+    retentionDays: 7
+```
+
+Open the OpenObserve UI with (`<fullname>` is the release name if it contains `<name>`, otherwise
+`<release>-<name>`, where `<name>` is `nameOverride` or else `peaka`; `fullnameOverride` replaces it):
+```shell
+kubectl -n <namespace> port-forward svc/<fullname>-openobserve 5080:5080
+kubectl -n <namespace> get secret <fullname>-openobserve -o jsonpath='{.data.ZO_ROOT_USER_PASSWORD}' | base64 -d
+```
+Then browse `http://localhost:5080` and log in with `logging.openobserve.rootUserEmail` (its value at first
+install; later changes are ignored) and that password.
+Logs are in the `fluent_bit_kube` stream. To supply your own credentials, create a Secret with the keys
+`ZO_ROOT_USER_EMAIL`, `ZO_ROOT_USER_PASSWORD` and `ZO_ROOT_USER_TOKEN` and set
+`logging.openobserve.existingSecret`. Set it also when the chart is rendered without cluster access
+(Argo CD, `helm template`): the generated Secret keeps its values through `lookup`, so each such render
+creates new ones that OpenObserve's root user does not match. Fluent Bit only receives the email and the
+token, which OpenObserve accepts on ingestion endpoints only.
+
+Security notes:
+- Fluent Bit runs as root and mounts the node paths `/var/log/pods` and `/var/log/containers`
+  (read-only) plus `/var/lib/fluent-bit/<namespace>-<release>` (read offsets). Namespaces enforcing the
+  PodSecurity `baseline` or `restricted` level reject it; OpenShift needs a SCC allowing hostPath.
+- On Docker-runtime nodes (e.g. RKE1) the log files live under Docker's data dir: set
+  `logging.fluentBit.dockerContainersDir: /var/lib/docker/containers`. Fluent Bit can then also read every
+  container's config there, including its environment (secrets such as the OpenObserve root password).
+- On SELinux-enforcing nodes (e.g. OpenShift, RHEL) the default container type cannot read the log files or
+  write the offsets directory: set `logging.fluentBit.securityContext.seLinuxOptions.type: spc_t` (on
+  OpenShift the SCC must allow that type too).
+- It tails only the release namespace's log files, though it can read every pod's log files on its node,
+  and gets a namespaced Role (read pods), no cluster-wide access.
+- For air-gapped installs, mirror `cr.fluentbit.io/fluent/fluent-bit` and `o2cr.ai/openobserve/openobserve`
+  and set `logging.fluentBit.image` / `logging.openobserve.image` to the mirrored names.
 
 ## Sizing
 

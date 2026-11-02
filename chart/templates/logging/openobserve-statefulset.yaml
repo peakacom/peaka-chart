@@ -1,0 +1,109 @@
+{{- if .Values.logging.openobserve.enabled -}}
+{{- $oo := .Values.logging.openobserve -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "peaka.openobserve.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "peaka.openobserve.fullname" . }}
+    {{- include "peaka.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "peaka.openobserve.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "peaka.openobserve.fullname" . }}
+      {{- include "peaka.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "peaka.openobserve.fullname" . }}
+        {{- include "peaka.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with $oo.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "peaka.common.nodeSelector" (dict "nodeSelector" $oo.nodeSelector "global" .Values.global) | nindent 6 }}
+      {{- include "peaka.common.tolerations" (dict "tolerations" $oo.tolerations "global" .Values.global) | nindent 6 }}
+      containers:
+        - name: openobserve
+          image: {{ include "peaka.image.resolve" (dict "root" . "image" $oo.image "registry" $oo.imageRegistry "tag" $oo.imageTag) }}
+          imagePullPolicy: {{ $oo.imagePullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 5080
+          env:
+            - name: ZO_LOCAL_MODE
+              value: "true"
+            - name: ZO_LOCAL_MODE_STORAGE
+              value: disk
+            - name: ZO_DATA_DIR
+              value: /data/
+            - name: ZO_COMPACT_DATA_RETENTION_DAYS
+              value: {{ $oo.retentionDays | quote }}
+            # Default "true" sends usage heartbeats to the vendor; on-prem
+            # installs often have no egress and must not call home.
+            - name: ZO_TELEMETRY
+              value: "false"
+            # MB. The default (0) is ~50% of system memory, not of the
+            # container limit; 512 matches the cloud install (2Gi limit).
+            - name: ZO_MEMORY_CACHE_MAX_SIZE
+              value: "512"
+            # Default false downloads GeoIP databases from the internet at start.
+            - name: ZO_MMDB_DISABLE_DOWNLOAD
+              value: "true"
+            - name: ZO_ROOT_USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_EMAIL
+            - name: ZO_ROOT_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_PASSWORD
+            - name: ZO_ROOT_USER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.openobserve.secretName" . }}
+                  key: ZO_ROOT_USER_TOKEN
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+          {{- with $oo.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        {{- with include "peaka.common.storage.class" (dict "persistence" $oo.persistence "global" .Values.global) }}
+        {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ $oo.persistence.size }}
+{{- end }}
