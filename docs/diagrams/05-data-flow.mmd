@@ -1,0 +1,82 @@
+flowchart LR
+    subgraph stores["Storage"]
+        pg["PostgreSQL primary<br/>(code2db, permify,<br/>peaka_temporal*, vectordb)"]
+        pgbig["PostgreSQL bigtable<br/>(high-write buffer)"]
+        mongo[("MongoDB<br/>sharedb")]
+        redis[("Redis<br/>cache")]
+        kafka["Kafka<br/>(20 partitions, 12h ret)"]
+        minio[("MinIO<br/>S3 / Iceberg files")]
+        mariadb[("MariaDB<br/>Hive metastore")]
+        pgvec[("pgvector<br/>vector embeddings")]
+    end
+
+    subgraph services["Services"]
+        studio[be-studio-api]
+        meta[be-metadata-service]
+        runtime[be-runtime-api]
+        cache[be-data-cache]
+        rest[be-data-rest]
+        auth[be-auth-service]
+        permsvc[be-permission-service]
+        permify[Permify]
+        sharedb[be-collab-sharedb]
+        searchsvc[be-search-service]
+        emailsvc[be-email-service]
+        tokensvc[be-token-service]
+        wf_starter[be-workflow-starter]
+        wf_express[be-workflow-worker-express]
+        wf_history[be-workflow-history]
+        temporal[Temporal server]
+        kc1["kafka-connect<br/>(CDC)"]
+        kc2["monitoring-kafka-connect<br/>(internal events)"]
+        trino[Trino]
+        hive[Hive metastore]
+    end
+
+    studio --> pg
+    studio --> redis
+    meta --> pg
+    runtime --> pg
+    cache --> pg
+    cache --> redis
+    rest --> trino
+    auth --> pg
+    tokensvc --> pg
+    permsvc --> permify
+    permify -->|via PgCat| pg
+    sharedb --> mongo
+    searchsvc --> redis
+    searchsvc --> kafka
+    emailsvc --> kafka
+
+    wf_starter --> temporal
+    wf_express --> temporal
+    wf_history --> temporal
+    temporal --> pg
+
+    studio --> kafka
+    studio --> wf_starter
+    studio --> minio
+    runtime --> minio
+    cache --> pgbig
+    runtime --> pgvec
+
+    kc1 --> kafka
+    kc1 -.connects to.-> external_dbs[("Customer source DBs:<br/>Postgres / MySQL / Mongo")]
+    kc2 --> kafka
+
+    trino --> hive
+    hive --> mariadb
+    trino --> minio
+    trino --> pg
+
+    subgraph Files["📂 Files to skim"]
+        F1[chart/values.yaml]
+        F2[chart/templates/trino/]
+        F3[chart/templates/hive-metastore/]
+        F4[chart/templates/kafka-connect/]
+        F5[chart/templates/pgcat/]
+        F6[chart/templates/pgvector/]
+    end
+    classDef files fill:#fff8c5,stroke:#9a8800,color:#222
+    class Files,F1,F2,F3,F4,F5,F6 files

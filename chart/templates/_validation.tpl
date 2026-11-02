@@ -1,3 +1,15 @@
+{{/*
+!!! GOTCHA — see docs/extras/gotchas_invariants.md (#1, #2)
+This file IS the in-cluster-vs-external XOR enforcement (postgres, minio,
+mongo) AND the hiveMetastore ↔ mariadb coupling check. Every `fail` clause
+below corresponds to a numbered invariant in the gotchas doc. When adding
+a new mutual-exclusion or cross-key rule:
+  1. Add the `fail` here so render fails fast,
+  2. Mirror it in docs/extras/gotchas_invariants.md with a new number,
+  3. Add a matching check_* function to scripts/validate.sh.
+The three surfaces must stay in sync — drift here is invisible until a
+customer install breaks.
+*/}}
 {{- define  "peaka.validate.postgresql" }}
 {{- if and (not .Values.postgresql.enabled) (not .Values.externalPostgresql.enabled) }}
 {{- fail "You must enable either postgresql.enabled or externalPostgresql.enabled." }}
