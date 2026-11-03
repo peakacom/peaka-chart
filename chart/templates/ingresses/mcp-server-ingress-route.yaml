@@ -29,8 +29,11 @@ spec:
           port: http
           passHostHeader: true
 
-    # MCP server handles the MCP endpoint itself.
-    - match: PathPrefix(`/mcp`)
+    # MCP server handles the MCP endpoint itself. A project-preselected connection
+    # URL carries the project in the path (/p/{projectId}/mcp, DEV-4244); Traefik v2
+    # has no path regex, and the studio router claims no /p/ route, so the whole /p/
+    # prefix is the MCP server's.
+    - match: PathPrefix(`/mcp`) || PathPrefix(`/p/`)
       kind: Rule
       priority: 10
       services:
