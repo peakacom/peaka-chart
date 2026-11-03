@@ -20,7 +20,14 @@ data:
 
   jvm.config: |
     -server
+  {{- if .Values.trino.worker.jvm.maxHeapSize }}
     -Xmx{{ .Values.trino.worker.jvm.maxHeapSize }}
+  {{- else }}
+    -XX:MaxRAMPercentage={{ .Values.trino.worker.jvm.maxRAMPercentage }}
+  {{- end }}
+  {{- with .Values.trino.worker.jvm.maxDirectMemorySize }}
+    -XX:MaxDirectMemorySize={{ . }}
+  {{- end }}
     -XX:+{{ .Values.trino.worker.jvm.gcMethod.type }}
     -XX:G1HeapRegionSize={{ .Values.trino.worker.jvm.gcMethod.g1.heapRegionSize }}
     -XX:+UseGCOverheadLimit
@@ -50,7 +57,9 @@ data:
     http-server.http.port={{ .Values.trino.service.port }}
     http-server.process-forwarded=true
     query.max-memory={{ .Values.trino.server.config.query.maxMemory }}
-    query.max-memory-per-node={{ .Values.trino.worker.config.query.maxMemoryPerNode }}
+{{- with .Values.trino.worker.config.query.maxMemoryPerNode }}
+    query.max-memory-per-node={{ . }}
+{{- end }}
     query.max-length={{ .Values.trino.worker.config.query.maxLength }}
     catalog.management=DYNAMIC
   {{- if .Values.trino.worker.config.memory.heapHeadroomPerNode }}
