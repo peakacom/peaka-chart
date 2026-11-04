@@ -225,7 +225,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v1.0.11-onprem.1
+    tag: furkan_legacy-api-key-organization
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
