@@ -225,7 +225,7 @@ tls:
 dataMigrator:
   image:
     name: be-data-migrator
-    tag: v1.0.11-onprem
+    tag: v1.0.11-onprem.1
     imagePullPolicy: IfNotPresent
 
 # peaka uses postgresql to persist some internal data.
@@ -1655,7 +1655,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.23-onprem
+    tag: v1.0.23-onprem.1
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2189,7 +2189,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v1.0.1-onprem.1
+    tag: v1.0.1-onprem.2
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2428,7 +2428,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.63-onprem
+    tag: v1.0.63-onprem.1
     imagePullPolicy: IfNotPresent
   resources:
     requests:
