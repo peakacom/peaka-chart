@@ -19,25 +19,8 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
     spec:
-      initContainers:
-        {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
-        {{- include "peaka.customCA.initContainer.java" (dict "image" (printf "%s/%s:%s" (default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry) .Values.dataMigrator.image.name .Values.dataMigrator.image.tag)) | nindent 8 }}
-        {{- end }}
-        - name: data-migrator
-          image: {{ default (include "peaka.image.registry" .) .Values.dataMigrator.image.registry }}/{{ .Values.dataMigrator.image.name }}:{{ .Values.dataMigrator.image.tag }}
-          imagePullPolicy: {{ default "IfNotPresent" .Values.dataMigrator.image.imagePullPolicy }}
-          env:
-            - name: SERVICE_NAME
-              value: be-ai-rest
-          envFrom:
-            - configMapRef:
-                name: {{ include "peaka.fullname" . }}-env-config
-          volumeMounts:
-          {{- if eq (include "peaka.customCA.javaEnabled" .) "true" }}
-            - name: custom-ca-truststore
-              mountPath: /truststore
-              readOnly: true
-          {{- end }}
+      {{- /* No migrator here: the search tables in code2db are created by studio-api's changelog (code2:248 on),
+           so studio-api must roll out first; the be-ai-rest changelog this init container ran is unrelated to search. */}}
       imagePullSecrets:
         {{- if .Values.peakaContainerRegistryAccessSecret }}
         - name: {{ .Values.peakaContainerRegistryAccessSecret.name }}
@@ -84,19 +67,6 @@ spec:
         - name: custom-ca-bundle
           configMap:
             name: {{ include "peaka.fullname" . }}-custom-ca-certs
-      {{- end }}
-      {{- if eq (include "peaka.customCA.importEnabled" .) "true" }}
-        - name: custom-ca-certs
-          configMap:
-            name: {{ include "peaka.fullname" . }}-custom-ca-certs
-        - name: custom-ca-truststore
-          emptyDir: {}
-      {{- else if eq (include "peaka.customCA.javaTruststoreProvided" .) "true" }}
-        # Pre-built truststore from values (hardened clusters block the
-        # keytool import's emptyDir); mounted read-only.
-        - name: custom-ca-truststore
-          secret:
-            secretName: {{ include "peaka.fullname" . }}-custom-ca-java-truststore
       {{- end }}
       {{- if .Values.searchService.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.searchService.terminationGracePeriodSeconds }}

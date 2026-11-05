@@ -41,6 +41,16 @@ data:
           rule: "PathPrefix(`/{{ include "peaka.routes.apiPath" . }}`)"
           priority: 10
           service: be-dispatcher
+        # Refuses /custom from outside. It is not an API but the gateway's own second hop: a published call arrives as
+        # /api/v1/**, ApiKeyFilter authenticates it and the gateway rewrites it to /custom/api/v1/** and sends it to
+        # itself. ApiKeyFilter runs only for exchanges the gateway routes, so a request sent straight to /custom/** is
+        # answered by the local controllers with no check at all. Mirrors ingresses/cloud-gateway-ingress-route.yaml.
+        cloud-gateway-deny-internal-path:
+          entryPoints: ["{{ $ep }}"]
+          rule: "PathPrefix(`/{{ include "peaka.routes.partnerPath" . }}/custom`)"
+          priority: 200
+          middlewares: ["deny-internal-path"]
+          service: be-cloud-gateway
         cloud-gateway:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ include "peaka.routes.partnerPath" . }}`)"
@@ -53,17 +63,20 @@ data:
           priority: 10
           middlewares: ["forwarded-proto", "strip-sharedb"]
           service: be-collab-sharedb-websocket
+        # On the forwardAuth routes below the prefix is stripped first, so permission-service sees the path the
+        # service serves (/data-cache/..., /search/...), as on SaaS. Its handlers read the path from the first
+        # segment (DEV-4136) and refuse a prefixed one. Mirrors ingresses/*-ingress-route.yaml.
         data-cache:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/data-cache`)"
           priority: 11
-          middlewares: ["auth-data-cache", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-data-cache"]
           service: be-data-cache
         data-rest:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/data`)"
           priority: 10
-          middlewares: ["auth-data-rest", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-data-rest"]
           service: be-data-rest
         dispatcher:
           entryPoints: ["{{ $ep }}"]
@@ -87,19 +100,19 @@ data:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/search`)"
           priority: 99
-          middlewares: ["auth-search", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-search"]
           service: be-search-service
         search-metadata:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/metadata`)"
           priority: 99
-          middlewares: ["auth-search-metadata", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-search-metadata"]
           service: be-search-service
         ai-agent:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/ai-agent`)"
           priority: 99
-          middlewares: ["auth-ai-agent", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-ai-agent"]
           service: be-search-service
         {{- if .Values.searchService.bullDashboardEnabled }}
         bull-dashboard:
@@ -128,17 +141,19 @@ data:
           rule: "PathPrefix(`/.well-known/oauth-protected-resource`) || PathPrefix(`/.well-known/oauth-authorization-server`) || PathPrefix(`/.well-known/openai-apps-challenge`) || PathPrefix(`/.well-known/openid-configuration`) || PathPrefix(`/connect/register`) || Path(`/register`) || PathPrefix(`/oauth2/`)"
           priority: 100
           service: be-oauth2-authorization-server
-        # MCP server handles the MCP endpoint itself.
+        # MCP server handles the MCP endpoint itself. A project-preselected connection URL carries the project in
+        # the path (/p/{projectId}/mcp, DEV-4244); the studio router claims no /p/ route, so the whole /p/ prefix is
+        # the MCP server's.
         mcp-server:
           entryPoints: ["{{ $ep }}"]
-          rule: "PathPrefix(`/mcp`)"
+          rule: "PathPrefix(`/mcp`) || PathPrefix(`/p/`)"
           priority: 10
           service: peaka-mcp-server
         workflow-history:
           entryPoints: ["{{ $ep }}"]
           rule: "PathPrefix(`/{{ $svcPath }}/studioapi/history`)"
           priority: 10
-          middlewares: ["auth-workflow-history", "strip-studioapi"]
+          middlewares: ["strip-studioapi", "auth-workflow-history"]
           service: be-workflow-history
         fe-studio-app:
           entryPoints: ["{{ $ep }}"]
@@ -192,6 +207,12 @@ data:
             regex: "^{{ include "peaka.routes.exportPublicPath" . }}/(.*)"
             replacement: "/${1}"
         {{- end }}
+        # ipAllowList with a documentation-only range (RFC 5737 TEST-NET-1) is how Traefik says "no one": the range
+        # matches no real client, so every request to the route is refused with 403.
+        deny-internal-path:
+          ipAllowList:
+            sourceRange:
+              - 192.0.2.1/32
         oauth-replace-path:
           replacePath:
             path: /api/connections/oauth2/callback
@@ -248,10 +269,17 @@ data:
         trino-extra-credential:
           forwardAuth:
             address: http://{{ $fullname }}-be-permission-service.{{ $ns }}.svc.cluster.local:80/auth/dbc-custom-header-handling
+            # Every header listed here is removed from the driver's request and set only from the auth answer. data-rest
+            # reads the project from X-Peaka-Project-Id before the key, treats a request with no user and no key as
+            # internal, and takes the Trino user from X-Internal-Authorization-Username: none of them may come from a
+            # driver (DEV-4136). The auth answer never sets the last two, so they are always dropped here.
+            authResponseHeadersRegex: ^X-Internal-Authorization-
             authResponseHeaders:
               - "X-Trino-Extra-Credential"
               - "X-Peaka-User-Id"
               - "X-Peaka-Api-Key"
+              - "X-Peaka-Username"
+              - "X-Peaka-Project-Id"
 
       services:
         be-oauth2-authorization-server:
