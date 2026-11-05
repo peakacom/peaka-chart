@@ -2428,7 +2428,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.63-onprem.2
+    tag: v1.0.63-onprem.3
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2477,7 +2477,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.8-onprem
+    tag: v1.0.8-onprem.1
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2744,7 +2744,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.2.25-onprem.1
+    tag: v1.2.25-onprem.2
     imagePullPolicy: IfNotPresent
   resources:
     requests:
