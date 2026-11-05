@@ -310,6 +310,20 @@ helm upgrade -n peaka [RELEASE_NAME] ./<version>/peaka -f <version>/peaka/values
 `permify.tolerations`. The in-chart Postgres has no tolerations setting: on tainted-only nodes use
 `externalPostgresql`.
 
+### Query admission control (optional)
+`trino.resourceGroups.enabled: true` caps how many Trino queries run at once (Trino resource groups); queries over
+a cap wait in a queue. Without it, a burst of queries can fill the coordinator and nothing finishes until it drains.
+- Groups: `health` (the healthcheck), `system` (Peaka's own maintenance users `trino` and `code2db`), `tenants`
+  (project users, with a cap per project) and `other` (any other user, e.g. a person connecting directly).
+- Size `trino.resourceGroups.limits` per install: `running` is the cap, `queued` how many may wait; a query that
+  arrives when its group's queue is full fails with `QUERY_QUEUE_FULL`. Start from the defaults, then look at
+  `system.runtime.queries` (columns `state`, `resource_group_id`) on a busy day: raise a cap whose group queues
+  often while the cluster has CPU and memory free; lower `global` if the coordinator still stalls.
+- Turning it on or changing a number restarts the Trino coordinator, which fails the queries running at that
+  moment: do it in a quiet hour.
+- Do not also put `resource-groups.properties` or `resource-groups.json` in `trino.coordinator.additionalConfigFiles`;
+  the chart refuses to render if you do.
+
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
 web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart

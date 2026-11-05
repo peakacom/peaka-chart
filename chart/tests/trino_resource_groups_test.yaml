@@ -1,0 +1,45 @@
+# Run from the repo root: helm unittest chart
+suite: trino resource groups
+# The coordinator Deployment's mounts are not tested here: its checksum annotations pull in env-configmap.yaml,
+# which helm-unittest rejects (MONITORING_SERVICE_INTERNAL_URL is defined twice in _helpers.tpl).
+templates:
+  - templates/trino/configmap-coordinator.yaml
+release:
+  name: peaka
+  namespace: peaka
+tests:
+  - it: writes no resource-group files by default
+    template: templates/trino/configmap-coordinator.yaml
+    asserts:
+      - notExists:
+          path: data["resource-groups.json"]
+      - notExists:
+          path: data["resource-groups.properties"]
+
+  - it: writes the file configuration manager and the limits from values
+    template: templates/trino/configmap-coordinator.yaml
+    set:
+      trino.resourceGroups.enabled: true
+      trino.resourceGroups.limits.project.running: 35
+    asserts:
+      - matchRegex:
+          path: data["resource-groups.properties"]
+          pattern: resource-groups.config-file=/etc/trino/resource-groups.json
+      - matchRegex:
+          path: data["resource-groups.json"]
+          pattern: '"name": "global",\s+"softMemoryLimit": "100%",\s+"hardConcurrencyLimit": 40,'
+      - matchRegex:
+          path: data["resource-groups.json"]
+          pattern: '"name": "\$\{project\}", "softMemoryLimit": "100%", "hardConcurrencyLimit": 35,'
+      # A query that matches no selector fails, so the last selector must be a bare catch-all.
+      - matchRegex:
+          path: data["resource-groups.json"]
+          pattern: '\{ "group": "global.other" \}\s+\]\s+\}\s*$'
+
+  - it: refuses the same files in additionalConfigFiles
+    template: templates/trino/configmap-coordinator.yaml
+    values:
+      - ./values/trino-resource-groups-duplicate.yaml
+    asserts:
+      - failedTemplate:
+          errorPattern: remove them from trino.coordinator.additionalConfigFiles
