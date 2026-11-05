@@ -113,6 +113,10 @@ Some configurations must be set for Peaka to run as expected.
   to Peaka's container image registry. You need to set `.Values.imagePullSecret.gcpRegistryAuth.password` 
   to the content of the `json` file. This will create a Kubernetes Secret of type `docker-registry`, which Peaka 
   services will use as imagePullSecret.
+  The bundled MinIO also pulls from Peaka's registry. Its subchart cannot read that setting, so `minio.imagePullSecrets`
+  names the secret on its own (default `peaka-docker-registry`). It must match
+  `peakaContainerRegistryAccessSecret.name`. If you mirror images to your own registry, also set
+  `minio.image.repository` and `minio.mcImage.repository`.
 
 
 - Peaka services need to know the URL and port through which the services will be accessed beforehand. For that, you

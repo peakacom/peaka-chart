@@ -309,6 +309,20 @@ minio:
       memory: 1Gi
     limits:
       memory: 4Gi
+  # The subchart's quay.io/minio defaults no longer pull (401), so MinIO and the
+  # mc bucket/user jobs use Peaka's registry copy; the one image ships both
+  # /usr/bin/minio and /usr/bin/mc. Subchart values cannot reference
+  # imageRegistry, so a mirror must override these repositories itself.
+  image:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
+    tag: RELEASE.2024-12-18T13-15-44Z
+  mcImage:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
+    tag: RELEASE.2024-12-18T13-15-44Z
+  # Must name the same secret as peakaContainerRegistryAccessSecret.name (or one
+  # of imagePullSecrets when you use your own registry).
+  imagePullSecrets:
+    - name: peaka-docker-registry
   users: []
   rootUser: peaka_minio
   rootPassword: peaka_minio123
