@@ -1,0 +1,6 @@
+trino:
+  resourceGroups:
+    enabled: true
+  coordinator:
+    additionalConfigFiles:
+      resource-groups.json: "{}"

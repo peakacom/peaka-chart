@@ -1,0 +1,140 @@
+# Run from the repo root: helm unittest chart
+suite: trino resource groups
+templates:
+  - templates/trino/configmap-coordinator.yaml
+release:
+  name: peaka
+  namespace: peaka
+tests:
+  - it: writes no resource-group files by default
+    template: templates/trino/configmap-coordinator.yaml
+    asserts:
+      - notExists:
+          path: data["resource-groups.json"]
+      - notExists:
+          path: data["resource-groups.properties"]
+
+  - it: writes the file configuration manager and every limit from values
+    template: templates/trino/configmap-coordinator.yaml
+    set:
+      trino.resourceGroups.enabled: true
+      trino.resourceGroups.limits:
+        global: { running: 90, queued: 900 }
+        health: { running: 4, queued: 40 }
+        system: { running: 30, queued: 300 }
+        tenants: { running: 60, queued: 600 }
+        project: { running: 25, queued: 250 }
+        other: { running: 7, queued: 70 }
+    asserts:
+      - equal:
+          path: data["resource-groups.properties"]
+          value: |
+            resource-groups.configuration-manager=file
+            resource-groups.config-file=/etc/trino/resource-groups.json
+      # Selectors match the WHOLE user string; a query that matches no selector fails, so the last one is a catch-all.
+      - equal:
+          path: data["resource-groups.json"]
+          value: |
+            {
+              "rootGroups": [
+                {
+                  "name": "global",
+                  "softMemoryLimit": "100%",
+                  "hardConcurrencyLimit": 90,
+                  "maxQueued": 900,
+                  "schedulingPolicy": "weighted_fair",
+                  "jmxExport": true,
+                  "subGroups": [
+                    { "name": "health", "softMemoryLimit": "5%", "hardConcurrencyLimit": 4, "maxQueued": 40, "schedulingWeight": 10 },
+                    { "name": "system", "softMemoryLimit": "100%", "hardConcurrencyLimit": 30, "maxQueued": 300, "schedulingWeight": 3 },
+                    {
+                      "name": "tenants",
+                      "softMemoryLimit": "100%",
+                      "hardConcurrencyLimit": 60,
+                      "maxQueued": 600,
+                      "schedulingWeight": 5,
+                      "schedulingPolicy": "fair",
+                      "subGroups": [
+                        { "name": "${project}", "softMemoryLimit": "100%", "hardConcurrencyLimit": 25, "maxQueued": 250 }
+                      ]
+                    },
+                    { "name": "other", "softMemoryLimit": "20%", "hardConcurrencyLimit": 7, "maxQueued": 70, "schedulingWeight": 1 }
+                  ]
+                }
+              ],
+              "selectors": [
+                { "user": "trino", "source": "^$", "group": "global.health" },
+                { "user": "trino|code2db", "group": "global.system" },
+                { "user": "project:(?<project>[A-Za-z0-9_-]+)(,.*)?", "group": "global.tenants.${project}" },
+                { "group": "global.other" }
+              ]
+            }
+
+  - it: refuses the same files in additionalConfigFiles
+    template: templates/trino/configmap-coordinator.yaml
+    values:
+      - ./values/trino-resource-groups-duplicate.yaml
+    asserts:
+      - failedTemplate:
+          errorPattern: remove them from trino.coordinator.additionalConfigFiles
+
+  - it: renders with an empty additionalConfigFiles
+    template: templates/trino/configmap-coordinator.yaml
+    set:
+      trino.resourceGroups.enabled: true
+      trino.coordinator.additionalConfigFiles: null
+    asserts:
+      - exists:
+          path: data["resource-groups.json"]
+
+---
+suite: trino resource groups coordinator mounts
+# The coordinator Deployment's checksum annotations include the other three templates, so they are loaded too.
+# env-configmap.yaml defines MONITORING_SERVICE_INTERNAL_URL twice (_helpers.tpl), which helm-unittest's YAML parser
+# rejects; the post-renderer drops the second (quoted) copy for these tests only.
+templates:
+  - templates/trino/deployment-coordinator.yaml
+  - templates/env-configmap.yaml
+  - templates/trino/configmap-coordinator.yaml
+  - templates/trino/configmap-catalog.yaml
+postRenderer:
+  cmd: sed
+  args:
+    - '/^  MONITORING_SERVICE_INTERNAL_URL: "/d'
+release:
+  name: peaka
+  namespace: peaka
+tests:
+  - it: mounts both files into the coordinator when enabled
+    template: templates/trino/deployment-coordinator.yaml
+    set:
+      trino.resourceGroups.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/trino/resource-groups.properties
+            name: config-volume
+            subPath: resource-groups.properties
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/trino/resource-groups.json
+            name: config-volume
+            subPath: resource-groups.json
+
+  - it: mounts neither file by default
+    template: templates/trino/deployment-coordinator.yaml
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/trino/resource-groups.properties
+            name: config-volume
+            subPath: resource-groups.properties
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/trino/resource-groups.json
+            name: config-volume
+            subPath: resource-groups.json
