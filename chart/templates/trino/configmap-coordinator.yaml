@@ -129,7 +129,8 @@ data:
 {{- end }}
 
 {{- if .Values.trino.resourceGroups.enabled }}
-{{- if or (hasKey .Values.trino.coordinator.additionalConfigFiles "resource-groups.properties") (hasKey .Values.trino.coordinator.additionalConfigFiles "resource-groups.json") }}
+{{- $extra := .Values.trino.coordinator.additionalConfigFiles | default dict }}
+{{- if or (hasKey $extra "resource-groups.properties") (hasKey $extra "resource-groups.json") }}
 {{- fail "trino.resourceGroups.enabled writes resource-groups.properties and resource-groups.json: remove them from trino.coordinator.additionalConfigFiles." }}
 {{- end }}
 {{- $l := .Values.trino.resourceGroups.limits }}
