@@ -456,9 +456,23 @@ empty path and ImplementationSpecific pathType; otherwise a normal "/" Prefix.
 {{- end }}
 
 
+{{/* The scheme's default port must stay out of these URLs: OAUTH2_ISSUER_URL is
+built from baseUrl, and RFC 8414 clients derive the metadata URL from the issuer
+identifier WITHOUT the default port, then require the metadata's issuer to match
+it byte for byte — an explicit :443 breaks every MCP/OAuth client. */}}
+{{- define "peaka.routes.effectivePort" -}}
+{{- $scheme := include "peaka.httpScheme" . -}}
+{{- $port := .Values.accessUrl.port | toString -}}
+{{- if or (not .Values.accessUrl.port) (and (eq $scheme "https") (eq $port "443")) (and (eq $scheme "http") (eq $port "80")) -}}
+{{- else -}}
+{{ $port }}
+{{- end -}}
+{{- end -}}
+
 {{- define "peaka.routes.baseUrl" -}}
-{{- if .Values.accessUrl.port -}}
-{{ include "peaka.httpScheme" . }}://{{ .Values.accessUrl.domain }}:{{ .Values.accessUrl.port }}
+{{- $port := include "peaka.routes.effectivePort" . -}}
+{{- if $port -}}
+{{ include "peaka.httpScheme" . }}://{{ .Values.accessUrl.domain }}:{{ $port }}
 {{- else -}}
 {{ include "peaka.httpScheme" . }}://{{ .Values.accessUrl.domain }}
 {{- end -}}
@@ -466,8 +480,9 @@ empty path and ImplementationSpecific pathType; otherwise a normal "/" Prefix.
 
 
 {{- define "peaka.routes.baseUrlNoScheme" -}}
-{{- if .Values.accessUrl.port -}}
-{{ .Values.accessUrl.domain }}:{{ .Values.accessUrl.port }}
+{{- $port := include "peaka.routes.effectivePort" . -}}
+{{- if $port -}}
+{{ .Values.accessUrl.domain }}:{{ $port }}
 {{- else -}}
 {{ .Values.accessUrl.domain }}
 {{- end -}}
