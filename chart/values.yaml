@@ -2189,7 +2189,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v1.0.1-onprem.2
+    tag: v1.0.1-onprem.3
     imagePullPolicy: IfNotPresent
   resources:
     requests:
