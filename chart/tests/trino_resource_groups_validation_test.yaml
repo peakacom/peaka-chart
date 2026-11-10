@@ -1,0 +1,65 @@
+suite: trino resource groups validation
+templates:
+  - templates/validate.yaml
+set:
+  trino.resourceGroups.enabled: true
+tests:
+  - it: accepts the default limits
+    asserts:
+      - notFailedTemplate: {}
+
+  - it: does not check the limits when the feature is off
+    set:
+      trino.resourceGroups.enabled: false
+      trino.resourceGroups.limits.global.running: -1
+    asserts:
+      - notFailedTemplate: {}
+
+  - it: fails on a negative limit
+    set:
+      trino.resourceGroups.limits.global.running: -1
+    asserts:
+      - failedTemplate:
+          errorMessage: trino.resourceGroups.limits.global.running must be a whole number (0 or more), got -1.
+
+  - it: fails on a limit that is not a number
+    set:
+      trino.resourceGroups.limits.system.queued: 4O
+    asserts:
+      - failedTemplate:
+          errorMessage: trino.resourceGroups.limits.system.queued must be a whole number (0 or more), got 4O.
+
+  - it: fails on a fractional limit
+    set:
+      trino.resourceGroups.limits.other.queued: 4.5
+    asserts:
+      - failedTemplate:
+          errorMessage: trino.resourceGroups.limits.other.queued must be a whole number (0 or more), got 4.5.
+
+  - it: fails on a missing limit
+    set:
+      trino.resourceGroups.limits.health.queued: null
+    asserts:
+      - failedTemplate:
+          errorMessage: trino.resourceGroups.limits.health.queued must be a whole number (0 or more), got <nil>.
+
+  - it: fails when global.running is 0
+    set:
+      trino.resourceGroups.limits.global.running: 0
+    asserts:
+      - failedTemplate:
+          errorMessage: "trino.resourceGroups.limits.global.running must be at least 1: with 0 no query ever starts."
+
+  - it: fails when a project may run more than all tenants together
+    set:
+      trino.resourceGroups.limits.project.running: 500
+    asserts:
+      - failedTemplate:
+          errorMessage: "trino.resourceGroups.limits.project.running (500) must not exceed trino.resourceGroups.limits.tenants.running (35): the parent's cap always binds."
+
+  - it: fails when a group may run more than the whole cluster
+    set:
+      trino.resourceGroups.limits.system.running: 41
+    asserts:
+      - failedTemplate:
+          errorMessage: "trino.resourceGroups.limits.system.running (41) must not exceed trino.resourceGroups.limits.global.running (40): the parent's cap always binds."

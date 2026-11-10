@@ -166,6 +166,13 @@ spec:
             - mountPath: {{ .Values.trino.server.config.path }}/auth/password
               name: file-password-authentication-volume
             {{- end }}
+            {{- if .Values.trino.resourceGroups.enabled }}
+            {{- range list "resource-groups.properties" "resource-groups.json" }}
+            - mountPath: {{ $.Values.trino.server.config.path }}/{{ . }}
+              name: config-volume
+              subPath: {{ . }}
+            {{- end }}
+            {{- end }}
             {{- range $fileName, $fileContent := .Values.trino.coordinator.additionalConfigFiles }}
             - mountPath: {{ $.Values.trino.server.config.path }}/{{ $fileName }}
               name: config-volume
