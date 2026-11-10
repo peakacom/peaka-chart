@@ -104,6 +104,14 @@ postRenderer:
 release:
   name: peaka
   namespace: peaka
+# CI runs `helm unittest` without the gitignored subchart archives (chart/charts), so the subchart defaults the
+# env-configmap checksum reads are absent there; set them here (values = the subcharts' own defaults).
+set:
+  minio.service.port: 9000
+  kafka.service.ports.client: 9092
+  mongodb.service.ports.mongodb: 27017
+  mongodb.tls.enabled: false
+  permify.app.server.http.port: 3476
 tests:
   - it: mounts both files into the coordinator when enabled
     template: templates/trino/deployment-coordinator.yaml
