@@ -107,6 +107,16 @@ rootUser:
   email: root@onpremise.com
   password: s3cr3t
 
+# RSA key pair (PEM text) that studio-api, permission-service, collab-sharedb and the OAuth2 server use to
+# sign and verify JWTs. Set both for every installation, e.g. from
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private.pem
+#   openssl pkey -in private.pem -pubout -out public.pem
+# When they are empty the chart falls back to a built-in key that is public in this repository, so anyone
+# could sign a token for any user. After changing the key, restart those four services; existing sessions end.
+jwt:
+  privateKey: ""
+  publicKey: ""
+
 # additional predefined users to sign in to Peaka studio.
 # every entry is added to the root user's default organization with the given role.
 # supported roles: owner, admin, member, guest (defaults to member when omitted).
