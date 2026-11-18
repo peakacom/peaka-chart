@@ -258,6 +258,27 @@ postgresql:
       memory: 512Mi
     limits:
       memory: 4Gi
+  # pg_isready over TCP: the image's first-boot initdb server listens only on the
+  # Unix socket, so the pod turns Ready only once the real server is up. The
+  # startup budget (10 min) covers initdb and crash recovery.
+  startupProbe:
+    exec:
+      command: ["pg_isready", "-h", "127.0.0.1", "-p", "5432", "-U", "postgres"]
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 60
+  livenessProbe:
+    exec:
+      command: ["pg_isready", "-h", "127.0.0.1", "-p", "5432", "-U", "postgres"]
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 6
+  readinessProbe:
+    exec:
+      command: ["pg_isready", "-h", "127.0.0.1", "-p", "5432", "-U", "postgres"]
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
 # @param externalPostgresql Set the configuration below if you want to use some existing postgresql server
 # If internal postgresql is used, set externalPostgresql.enabled to false
@@ -292,6 +313,27 @@ hiveMetastore:
     limits:
       memory: 3Gi
   servicePort: 9083
+  # The image has no health endpoint, so the probes check the Thrift port. Every
+  # start runs schematool -initOrUpgradeSchema before the port opens; the startup
+  # budget (10 min) covers a schema upgrade.
+  startupProbe:
+    tcpSocket:
+      port: 9083
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 60
+  livenessProbe:
+    tcpSocket:
+      port: 9083
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    tcpSocket:
+      port: 9083
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
 # s3 compatible object storage configuration. By default, Peaka uses MinIO.
 # for the full list of values, see https://github.com/minio/minio/tree/master/helm/minio
@@ -309,6 +351,20 @@ minio:
       memory: 1Gi
     limits:
       memory: 4Gi
+  # The subchart's quay.io/minio defaults no longer pull (401), so MinIO and the
+  # mc bucket/user jobs use Peaka's registry copy; the one image ships both
+  # /usr/bin/minio and /usr/bin/mc. Subchart values cannot reference
+  # imageRegistry, so a mirror must override these repositories itself.
+  image:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
+    tag: RELEASE.2024-12-18T13-15-44Z
+  mcImage:
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
+    tag: RELEASE.2024-12-18T13-15-44Z
+  # Must name the same secret as peakaContainerRegistryAccessSecret.name (or one
+  # of imagePullSecrets when you use your own registry).
+  imagePullSecrets:
+    - name: peaka-docker-registry
   users: []
   rootUser: peaka_minio
   rootPassword: peaka_minio123
@@ -1237,6 +1293,28 @@ temporal:
     containerSecurityContext: {}
 
     securityContext: {}
+
+    startupProbe:
+      httpGet:
+        path: /
+        port: http
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 24
+    livenessProbe:
+      httpGet:
+        path: /
+        port: http
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /
+        port: http
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
 
   schema:
     setup:

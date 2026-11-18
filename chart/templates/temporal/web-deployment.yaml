@@ -59,6 +59,18 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          {{- with .Values.temporal.web.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.temporal.web.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.temporal.web.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.temporal.web.resources | nindent 12 }}
           {{- with .Values.temporal.web.containerSecurityContext }}
