@@ -1,0 +1,26 @@
+# Run from the repo root: helm unittest chart
+suite: jwt key pair
+templates:
+  - templates/jwt-rsa-secret.yaml
+release:
+  name: peaka
+  namespace: peaka
+tests:
+  - it: signs with the configured key pair when both are set
+    set:
+      jwt.privateKey: "-----BEGIN PRIVATE KEY-----\ntest-private\n-----END PRIVATE KEY-----\n"
+      jwt.publicKey: "-----BEGIN PUBLIC KEY-----\ntest-public\n-----END PUBLIC KEY-----\n"
+    asserts:
+      - equal:
+          path: data["privatekey.pem"]
+          value: "-----BEGIN PRIVATE KEY-----\ntest-private\n-----END PRIVATE KEY-----\n"
+          decodeBase64: true
+      - equal:
+          path: data["publickey.pem"]
+          value: "-----BEGIN PUBLIC KEY-----\ntest-public\n-----END PUBLIC KEY-----\n"
+          decodeBase64: true
+  - it: keeps the built-in key when nothing is set
+    asserts:
+      - matchRegex:
+          path: data["privatekey.pem"]
+          pattern: ^LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0t

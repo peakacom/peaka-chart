@@ -1,1 +1,7 @@
 {{ include "peaka.chart" . }} deployed!
+{{- if not (and .Values.jwt.privateKey .Values.jwt.publicKey) }}
+
+WARNING: jwt.privateKey and jwt.publicKey are not set, so tokens are signed with the chart's built-in key,
+which is public. Set your own key pair (see values.yaml) and restart studio-api, permission-service,
+collab-sharedb and the OAuth2 server.
+{{- end }}

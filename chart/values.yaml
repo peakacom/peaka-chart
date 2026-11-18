@@ -107,6 +107,16 @@ rootUser:
   email: root@onpremise.com
   password: s3cr3t
 
+# RSA key pair (PEM text) that studio-api, permission-service, collab-sharedb and the OAuth2 server use to
+# sign and verify JWTs. Set both for every installation, e.g. from
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private.pem
+#   openssl pkey -in private.pem -pubout -out public.pem
+# When they are empty the chart falls back to a built-in key that is public in this repository, so anyone
+# could sign a token for any user. After changing the key, restart those four services; existing sessions end.
+jwt:
+  privateKey: ""
+  publicKey: ""
+
 # additional predefined users to sign in to Peaka studio.
 # every entry is added to the root user's default organization with the given role.
 # supported roles: owner, admin, member, guest (defaults to member when omitted).
@@ -1443,6 +1453,25 @@ trino:
     type: properties
     properties: |
       access-control.name=peaka-access-control
+  # Admission control (Trino resource groups): caps how many queries run at once, so one project or a
+  # burst cannot stall the coordinator; queries over a cap wait in a queue instead of failing. Off by default.
+  # Same groups as Peaka cloud: health (healthcheck: user trino, no source), system (users trino and code2db:
+  # app maintenance), tenants (users "project:<id>,...", one subgroup per project), other (everyone else).
+  # A query that cannot start fails with QUERY_QUEUE_FULL when its group or a parent group (tenants, global)
+  # already has `queued` queries waiting: global.queued caps all groups together.
+  # Enabling it or changing a number restarts the coordinator (config checksum): running queries fail.
+  # Turning it off again needs the empty resource-groups.* files deleted from the coordinator PVC (see README.md).
+  # The numbers are starting points (about half of Peaka cloud's, which has more tenants and a 43G coordinator):
+  # size them per install from the coordinator's running-query count. See "Query admission control" in README.md.
+  resourceGroups:
+    enabled: false
+    limits:
+      global: { running: 40, queued: 1000 }   # whole cluster
+      health: { running: 5, queued: 50 }
+      system: { running: 15, queued: 500 }
+      tenants: { running: 35, queued: 750 }   # all projects together
+      project: { running: 20, queued: 100 }   # each project
+      other: { running: 5, queued: 100 }
   image:
     name: trino
     pullPolicy: IfNotPresent
