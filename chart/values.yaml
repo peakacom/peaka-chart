@@ -1637,7 +1637,7 @@ authService:
   replicaCount: 1
   image:
     name: be-auth-service
-    tag: v0.0.21
+    tag: v0.0.22
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1780,7 +1780,7 @@ dataCache:
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v0.0.23
     imagePullPolicy: IfNotPresent
     # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
@@ -2408,7 +2408,7 @@ secretStoreService:
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
     name: be-secret-store-service
-    tag: v0.0.20
+    tag: v0.0.23
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2676,7 +2676,7 @@ workflowWorkerExpress:
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v0.0.23
     imagePullPolicy: IfNotPresent
     # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
@@ -2773,7 +2773,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.2.23
+    tag: v1.2.27
     imagePullPolicy: IfNotPresent
   resources:
     requests:
