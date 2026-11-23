@@ -58,17 +58,10 @@ spec:
           {{- end }}
           image: "{{ .Values.pgcat.image.repository }}:{{ .Values.pgcat.image.tag }}"
           imagePullPolicy: {{ .Values.pgcat.image.pullPolicy | default "IfNotPresent" }}
-          env:
-          {{- if eq (include "peaka.customCA.enabled" .) "true" }}
-            - name: SSL_CERT_FILE
-              value: "/custom-ca-bundle/ca-certificates.crt"
-          {{- end }}
+          args: ["/etc/pgbouncer/pgbouncer.ini"]
           ports:
             - name: pgcat
               containerPort: {{ .Values.pgcat.configuration.general.port }}
-              protocol: TCP
-            - name: prometheus
-              containerPort: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
               protocol: TCP
           livenessProbe:
             tcpSocket:
@@ -79,7 +72,7 @@ spec:
           resources:
             {{- toYaml .Values.pgcat.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /etc/pgcat
+          - mountPath: /etc/pgbouncer
             name: config
           {{- if eq (include "peaka.customCA.enabled" .) "true" }}
           - name: custom-ca-bundle

@@ -11,9 +11,5 @@ spec:
       targetPort: pgcat
       protocol: TCP
       name: pgcat
-    - port: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
-      targetPort: {{ .Values.pgcat.configuration.general.prometheus_exporter_port }}
-      protocol: TCP
-      name: prometheus
   selector:
     app.kubernetes.io/name: {{ include "peaka.pgcat.fullname" . }}
