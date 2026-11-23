@@ -1,0 +1,63 @@
+# Run from the repo root: helm unittest chart
+suite: pgcat key runs PgBouncer
+templates:
+  - templates/pgcat/deployment.yaml
+  - templates/pgcat/secret.yaml
+  - templates/pgcat/service.yaml
+release:
+  name: peaka
+  namespace: peaka
+tests:
+  - it: runs the PgBouncer image with the mounted ini, as uid 998
+    template: templates/pgcat/deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^ghcr\.io/cloudnative-pg/pgbouncer:1\.26\.1-
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value: ["/etc/pgbouncer/pgbouncer.ini"]
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/pgbouncer
+            name: config
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 998
+  - it: keeps the Service on 6432 so Permify's URI does not change
+    template: templates/pgcat/service.yaml
+    asserts:
+      - equal:
+          path: spec.ports
+          value:
+            - port: 6432
+              targetPort: pgcat
+              protocol: TCP
+              name: pgcat
+  - it: configures session pooling for Permify with scram auth
+    template: templates/pgcat/secret.yaml
+    asserts:
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^pool_mode = session$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^auth_type = scram-sha-256$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^listen_port = 6432$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^ignore_startup_parameters = plan_cache_mode,extra_float_digits$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_tls_sslmode = disable$
+  - it: verifies the server certificate when server TLS is on
+    template: templates/pgcat/secret.yaml
+    set:
+      pgcat.configuration.general.server_tls: true
+    asserts:
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_tls_sslmode = verify-full$
