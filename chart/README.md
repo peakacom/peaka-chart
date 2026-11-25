@@ -266,7 +266,10 @@ Never change the key of an install that already stores data: every stored value 
 A fresh install that sets `secretStoreService.secretEncryptionKey` to the former public default is refused.
 
 `lookup` returns nothing when the chart is rendered without cluster access (`helm template`, `helm upgrade
---dry-run`, Argo CD). Set `secretStoreService.existingSecret` there, or each render would generate a new key.
+--dry-run`, Argo CD, Flux with `helm template`), so every render would generate a new key. The chart therefore
+refuses to render there unless `secretStoreService.existingSecret` (or `secretStoreService.secretEncryptionKey`)
+is set; with `existingSecret` it renders and creates no Secret. Cluster access is detected by reading the
+namespace's `default` ServiceAccount.
 A Secret kept from an earlier install under another release name must be passed in the same way (Helm refuses to
 adopt it).
 

@@ -2412,7 +2412,8 @@ secretStoreService:
   secretEncryptionKey: ""
   # Name of an existing Secret with the key under SECRET_STORE_SECRET_KEY; takes precedence over everything else.
   # Required when the chart is rendered without cluster access (helm template, helm upgrade --dry-run, Argo CD):
-  # the generated key is found again through lookup, so without cluster access every render would make a new one.
+  # the generated key is found again through lookup, so there every render would make a new one and the render
+  # fails unless this or secretEncryptionKey is set.
   existingSecret: ""
   image:
     name: be-secret-store-service

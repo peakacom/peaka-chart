@@ -495,9 +495,13 @@ Where the key comes from, in this order (the first that applies):
   secret          the Secret this chart created earlier (lookup)
   configMap       an install from before the key moved: the value the running pods got from the env ConfigMap (lookup)
   values          secretStoreService.secretEncryptionKey
-  generated       fresh install: random
-  legacyDefault   upgrade without the above (no cluster access): the value earlier chart versions defaulted to
-Whatever an earlier install used is carried over unchanged: a new key makes every stored row unreadable.
+  noCluster       none of the above and no cluster access (helm template, --dry-run, Argo CD): the render fails,
+                  because every render would make a new key and a new key makes every stored row unreadable
+  generated       fresh install on a real cluster: random
+  legacyDefault   upgrade on a real cluster, nothing else known: the value earlier chart versions defaulted to
+Whatever an earlier install used is carried over unchanged.
+Cluster access is detected with the namespace's "default" ServiceAccount, which exists in every namespace and, unlike
+a Namespace object, can be read with namespace-scoped RBAC. lookup returns an empty result when there is no cluster.
 */}}
 {{- define "peaka.secretStore.keySource" -}}
 {{- $fullname := include "peaka.fullname" . -}}
@@ -511,6 +515,8 @@ secret
 configMap
 {{- else if .Values.secretStoreService.secretEncryptionKey -}}
 values
+{{- else if not (lookup "v1" "ServiceAccount" .Release.Namespace "default") -}}
+noCluster
 {{- else if .Release.IsInstall -}}
 generated
 {{- else -}}
@@ -530,6 +536,8 @@ The key as text, for the Secret the chart creates (not used with existingSecret)
 {{- dig "data" "SECRET_STORE_SECRET_KEY" "" (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-env-config" $fullname)) -}}
 {{- else if eq $source "values" -}}
 {{- .Values.secretStoreService.secretEncryptionKey -}}
+{{- else if eq $source "noCluster" -}}
+{{- fail "The secret-store encryption key cannot be generated: this render has no cluster access (helm template, helm upgrade --dry-run, Argo CD), so lookup finds nothing and every render would make a new key, which makes every stored value unreadable. Set secretStoreService.existingSecret to a Secret that has the key SECRET_STORE_SECRET_KEY, or set secretStoreService.secretEncryptionKey." -}}
 {{- else if eq $source "generated" -}}
 {{- randAlphaNum 32 -}}
 {{- else -}}
