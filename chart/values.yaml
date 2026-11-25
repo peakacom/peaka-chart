@@ -1368,7 +1368,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: v1.0.55-onprem.1
+    tag: latest@sha256:7b2e199f6f038385a3bb9b059fe92ad83ea27f9e993debe9b04fc75542e327dc
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1808,7 +1808,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: v1.0.45-onprem.2
+    tag: feature_spark-connector
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2428,7 +2428,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: v1.0.63-onprem.4
+    tag: feature_spark-connector
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2477,7 +2477,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: v1.0.8-onprem.1
+    tag: feature_spark-connector
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2744,7 +2744,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: v1.2.25-onprem.3
+    tag: feature_spark-connector@sha256:bb4a266d7e8dee6874719df1acf75601526401a0f5645eccdf15b4d475b864c6
     imagePullPolicy: IfNotPresent
   resources:
     requests:
