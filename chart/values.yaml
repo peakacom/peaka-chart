@@ -556,8 +556,14 @@ pgcat:
       # Max connection lifetime before it's closed, even if actively used.
       server_lifetime: 86400000  # 24 hours
 
-      # Whether to use TLS for server connections or not.
+      # Whether to use TLS for server connections or not (encrypts, does not verify the certificate).
       server_tls: false
+
+      # Only with server_tls: true. false = sslmode require: the connection is encrypted but the server is NOT
+      # authenticated (no certificate or host name check), as pgcat did. true = verify-full: the certificate must
+      # chain to the system CA bundle or a customCA certificate and match the Postgres host name. Set it to true
+      # whenever the server's CA is available.
+      verify_server_certificate: false
 
       # How long a client is allowed to be idle while in a transaction (ms).
       idle_client_in_transaction_timeout: 0  # milliseconds

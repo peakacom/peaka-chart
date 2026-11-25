@@ -43,7 +43,10 @@ tests:
           pattern: (?m)^pool_mode = session$
       - matchRegex:
           path: stringData["pgbouncer.ini"]
-          pattern: (?m)^auth_type = scram-sha-256$
+          pattern: (?m)^auth_type = hba$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^auth_hba_file = /etc/pgbouncer/hba\.conf$
       - matchRegex:
           path: stringData["pgbouncer.ini"]
           pattern: (?m)^listen_port = 6432$
@@ -53,11 +56,102 @@ tests:
       - matchRegex:
           path: stringData["pgbouncer.ini"]
           pattern: (?m)^server_tls_sslmode = disable$
-  - it: verifies the server certificate when server TLS is on
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^peaka_permify = host=peaka-postgres\.peaka\.svc\.cluster\.local port=5432 dbname=peaka_permify pool_size=40 min_pool_size=3$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_connect_timeout = 5$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_idle_timeout = 65$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_lifetime = 86400$
+  - it: keeps sub-second timeouts instead of truncating them to 0
+    template: templates/pgcat/secret.yaml
+    set:
+      pgcat.configuration.general.connect_timeout: 500
+    asserts:
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_connect_timeout = 0\.5$
+  - it: lists the pool user and the admin user in userlist.txt
+    template: templates/pgcat/secret.yaml
+    asserts:
+      - equal:
+          path: stringData["userlist.txt"]
+          value: |
+            "peakadb" "peakadb"
+            "postgres" "postgres"
+  - it: doubles double quotes in userlist.txt passwords
+    template: templates/pgcat/secret.yaml
+    set:
+      postgresql.auth.password: pa"ss
+    asserts:
+      - matchRegex:
+          path: stringData["userlist.txt"]
+          pattern: (?m)^"peakadb" "pa""ss"$
+  - it: writes one userlist line when the admin user is the pool user
+    template: templates/pgcat/secret.yaml
+    set:
+      pgcat.configuration.general.admin_username: peakadb
+    asserts:
+      - equal:
+          path: stringData["userlist.txt"]
+          value: |
+            "peakadb" "peakadb"
+  - it: lets the admin user reach only the admin console and the pool user only Permify's database
+    template: templates/pgcat/secret.yaml
+    asserts:
+      - equal:
+          path: stringData["hba.conf"]
+          value: |
+            host "peaka_permify" "peakadb" all scram-sha-256
+            host pgbouncer "postgres" all scram-sha-256
+  - it: mounts only the PgBouncer keys of the Secret, not a stale pgcat.toml
+    template: templates/pgcat/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].secret.items
+          value:
+            - key: pgbouncer.ini
+              path: pgbouncer.ini
+            - key: userlist.txt
+              path: userlist.txt
+            - key: hba.conf
+              path: hba.conf
+  - it: encrypts without verifying the server certificate when only server TLS is on (pgcat parity)
     template: templates/pgcat/secret.yaml
     set:
       pgcat.configuration.general.server_tls: true
     asserts:
       - matchRegex:
           path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_tls_sslmode = require$
+  - it: verifies the server certificate when verify_server_certificate is on
+    template: templates/pgcat/secret.yaml
+    set:
+      pgcat.configuration.general.server_tls: true
+      pgcat.configuration.general.verify_server_certificate: true
+    asserts:
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
           pattern: (?m)^server_tls_sslmode = verify-full$
+      - matchRegex:
+          path: stringData["pgbouncer.ini"]
+          pattern: (?m)^server_tls_ca_file = /etc/ssl/certs/ca-certificates\.crt$
+  - it: refuses a pgcat image tag left over in values
+    template: templates/pgcat/deployment.yaml
+    set:
+      pgcat.image.tag: v1.2.0
+    asserts:
+      - failedTemplate:
+          errorPattern: pgcat\.image points to pgcat
+  - it: refuses the pgcat image repository left over in values
+    template: templates/pgcat/deployment.yaml
+    set:
+      pgcat.image.repository: ghcr.io/postgresml/pgcat
+    asserts:
+      - failedTemplate:
+          errorPattern: pgcat\.image points to pgcat

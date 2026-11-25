@@ -106,6 +106,30 @@ Without `--version`, Helm skips pre-releases such as `1.1.0-beta.31` and picks t
 `helm upgrade` with only `--set kafkaConnect.enabled=true`: Helm then drops your previous values and uses the chart
 defaults for everything else.
 
+## Upgrading: pgcat replaced by PgBouncer
+
+The `pgcat` key now runs PgBouncer (`ghcr.io/cloudnative-pg/pgbouncer`). The Deployment, Service, Secret and port 6432
+keep their names, so Permify's database URI does not change.
+
+### Before upgrading
+- Remove `pgcat.image.repository` and `pgcat.image.tag` from your values if they point to pgcat
+  (`ghcr.io/postgresml/pgcat`, `v1.x` tags). The chart refuses to render with them.
+- `pgcat.configuration.general.server_tls: true` encrypts the connection to Postgres without verifying the server
+  certificate (`sslmode=require`), as pgcat did. Set `verify_server_certificate: true` when the server's CA is in the
+  image or in `customCA`: PgBouncer then checks the certificate and the host name (`verify-full`).
+
+### What the upgrade does
+- The pooler pod is replaced. The old pod waits for Permify's open connections until the 30 s termination grace period
+  ends and is then killed; a Permify request running at that moment can fail once. This happens on every pooler
+  restart, because session pooling ties each Permify connection to one pooler pod.
+- `pgcat.configuration.general.admin_username` can only open the admin console (`psql -p 6432 -U <admin> pgbouncer`);
+  only the Permify database user can reach Permify's database.
+- The Secret keeps the old `pgcat.toml` key, a plain-text copy of the passwords that the chart no longer writes or
+  mounts. Remove it once after the upgrade:
+```shell
+kubectl patch secret -n peaka <release>-pgcat --type=json -p '[{"op":"remove","path":"/data/pgcat.toml"}]'
+```
+
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 

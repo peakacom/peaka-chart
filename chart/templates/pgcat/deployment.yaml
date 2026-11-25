@@ -1,3 +1,6 @@
+{{- if or (hasSuffix "pgcat" .Values.pgcat.image.repository) (hasPrefix "v1." (toString .Values.pgcat.image.tag)) }}
+{{- fail "pgcat.image points to pgcat, but the pgcat key now runs PgBouncer: remove pgcat.image.repository and pgcat.image.tag from your values" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -95,6 +98,13 @@ spec:
       - secret:
           defaultMode: 420
           secretName: {{ include "peaka.pgcat.fullname" . }}
+          items:
+            - key: pgbouncer.ini
+              path: pgbouncer.ini
+            - key: userlist.txt
+              path: userlist.txt
+            - key: hba.conf
+              path: hba.conf
         name: config
       {{- if eq (include "peaka.customCA.enabled" .) "true" }}
       - name: custom-ca-certs
