@@ -3,3 +3,4 @@
 {{- include "peaka.validate.mongodb" . }}
 {{- include "peaka.validate.logging" . }}
 {{- include "peaka.validate.trinoResourceGroups" . }}
+{{- include "peaka.validate.secretStore" . }}

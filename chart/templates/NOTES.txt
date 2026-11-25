@@ -5,3 +5,19 @@ WARNING: jwt.privateKey and jwt.publicKey are not set, so tokens are signed with
 which is public. Set your own key pair (see values.yaml) and restart studio-api, permission-service,
 collab-sharedb and the OAuth2 server.
 {{- end }}
+{{- $keySource := include "peaka.secretStore.keySource" . }}
+{{- if eq $keySource "generated" }}
+
+The secret-store encryption key was generated and stored in Secret {{ include "peaka.secretStore.keySecretName" . }}, which
+helm uninstall keeps. Back it up: without it the values secret-store has stored cannot be read.
+{{- else if or (eq $keySource "configMap") (eq $keySource "values") (eq $keySource "legacyDefault") }}
+{{- if or (eq $keySource "configMap") (eq $keySource "legacyDefault") (.Release.IsUpgrade) }}
+
+The secret-store encryption key moved from the env ConfigMap to Secret {{ include "peaka.secretStore.keySecretName" . }} with its
+value unchanged, because a different key would make every stored value unreadable.
+{{- if eq (include "peaka.secretStore.key" .) (include "peaka.secretStore.legacyDefault" .) }}
+WARNING: that value is the chart's former default, which is public. Anyone holding a copy of the database can decrypt
+the stored values. Re-encrypting the stored values under a new key has to happen before the Secret is changed.
+{{- end }}
+{{- end }}
+{{- end }}

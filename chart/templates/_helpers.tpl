@@ -249,7 +249,6 @@ DEFAULT_SMTP_SERVER_USERNAME: {{ default "default" .Values.smtpServerUsername }}
 DEFAULT_SMTP_SERVER_PASSWORD: {{ default "default" .Values.smtpServerPassword }}
 DEFAULT_SMTP_TLS_ENABLED: {{ default false .Values.smtpTlsEnabled | quote }}
 
-SECRET_STORE_SECRET_KEY: {{ .Values.secretStoreService.secretEncryptionKey }}
 JWT_RSA_PRIVATE_KEY_PATH: /secrets/jwt/rsa/privatekey.pem
 JWT_RSA_PUBLIC_KEY_PATH: /secrets/jwt/rsa/publickey.pem
 PUBLIC_CERT: /secrets/jwt/rsa/publickey.pem
@@ -471,6 +470,70 @@ LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFN
 {{ .Values.jwt.privateKey | b64enc }}
 {{- else -}}
 LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRFhHY0FEcGtQU0U1VnoKWUxSeCtzSlh2czVZeHUyTGNORzZ1VGh3eHdkb1V0K2N1RXhKVXNidENETVNNMnRJZWdNY2x4Y0Y2WEhuUGVIZgpkaVdObEd0Vk9yZ0JRemIrdTRTVjYrQmEwbDVxTGE2Z0t1SXVsZkxUR0toc01WUmNlLy9ITG14NkpxL2lJS0hFCmdBa0MzYUNROW96WFJINmFIenphRjZyNFF3QTJEc1RRN25jcmhoQ2l4UThjNlIvdHVxZlNacnNEZjRSYjJTbzUKN0tqQ0NUaTNEbmNaZ2ExdDFSZ0xocFNjdyszcjd0ejFLRmgxTWZSMUJoeG5ZNzVuNkE3VTBmY1hhYlF2cWptNAowN3hpK2ZRZUdYKzIyeG5rVE9BaXA1cERlTjFqOUw2RDNoTkYwelJFaFhpOUpTcDhBS090dXNGbzN2ajlqMHBtCnZmYnA3WFJ0QWdNQkFBRUNnZ0VBSkxpaWFXMFZ5SFFyOEMvSzltZHBES3BJRjJ0VWk5alZrVE5FTWFxa3R0aHAKRU52OHVBclA1NURlQ1NZcWswdXpJc3NmZE5TcTY1K0tvMGZMOXV6bTJ2ekVnNENxVDVnTE5UMzR4Z0NDZWsxMApzYWJJaU12MEVibzBySTNLV1dTWTRMUHA5SHVNek1XbDRFSThaNWNXN1pDTnNFVmkrS1JMRXU5MThsNmIxMTVqCmJzRnRXRGRWRXp2SWVGbW56Y0ZiS2F3eG1iWnlpWWpGWDkrVitDUFRkY2h5ejkwMzFIdEpCeklBWUZmUm1jTHQKNmpQR1F3SkRBNXo2TklZWnh0dVJSRVExeGljNXRod0UrbURvaCtBVkx4TGpNVjQ5dlJST3ZRZ3d3WTk1TFRKawpTb2Vqb29icndhVGVtMkkyN1RtUk8rdm1US0ZhUndSaU4yWmdOL3Q4Z1FLQmdRRHhuSXIwdC9jNVgwNU5sYWw0CldKV2VKanhvSnNwbTlmcU1EUTFvWUh1SDJYWDJJQ3JFMzFxcXRzeUVJWVJmOTV4UVo0cHNaWVNBNDBwSkJEaHkKa2NFZmUvTEpZNXhzRzVHcnJqTjJQZ0RoZTl1LzF0SEpkdWFzNTExdXJLUUZzR1NTSEliMzVUWkIwbzZEbW9Mdgo1NG9EQXFKY3hqYktpUUl5T0l3U3JJbnM3UUtCZ1FEajZRbmdTS0QvQWE4UDB4WFk1TDBpNk9haEdFemlyM0ZPCkpxQmR3dEg0dm9aMFFhQkZ1dEJEOWxqZEZwVjY4RFY1ZVJnSXJkZks0QW4xSXhWZWhScmJTTUNuZGplZjhpVjkKL0t2UjBsWEh0aW5RWGRtUitYaUlOMEl3aVliSXFpUHEwLzQwUmlUZktwUU54RXNJZWpJckRFMkRLZk1nQTdoMApZUmVHSitBMWdRS0JnSEtqekdzQlB4VEIyKzJFTGIwa2l4bFhHeUp3QldtRkhUU0duTzRCbVp1RDJ5ekZab1d6ClZObmJrbjYvU0lnZ2ZOTEp6aXhRbnVabzhqNWkra1dpVXZnVlg4V2V0Z0cxc3hDNnYwQkRlemVDQldxcEN6R0UKY1Q5cEtEUHpSb0JNaWV1cURZQmlDYlNCcTQxV0t2cVo2aW96ZmNaM1psZ0RXajlxQlV4M0FacWhBb0dBQkh4dgp6MVJlcHVaWGxjNG4zZThTc2Y4M212QXBnMFRFekM4Q2RSWUNvQXpRQkxYTis5RmpqQkxyU043SzduS1ArdVloClRQcHZCdlZGL09kRjRtaG9VT3lycmlBcmxDQm1FSWJLc3dTYTM2VjhTVGV2c3FuZ2IzMzI5WkdmYjQrNXlVT0cKKzJ4dUNWNkRMNG92bCtrZjE2MFVVWUtmNEg5eVFBZ3hPRmpNbHdFQ2dZRUFrdk1ueFNoZ0U4dnp3Z1laZ3BvYgpIakhnTjA0ai9CNXpQZ0djdGNFYzlKR21xYlBidG9Cb1hsVFdHTURPOTlMenVnZHdIUGd6MXlkL0UvejJPamc3CnZHNTJDd1BnYUx4WWZzUzlKdFMva2FuNDVaSzNocFRoTTdYK1Rjc0ZkUzMxTVNlZFVvRnN6cjNwUVNMMVVmRVgKMEFnZjNLT3hPQ1BOSitjeEVTcXNZYTQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+{{- end -}}
+{{- end -}}
+
+{{/*
+Secret-store encryption key.
+The key lives in a Secret, not in the shared env ConfigMap: only secret-store reads it, through a secretKeyRef.
+Secret holding SECRET_STORE_SECRET_KEY: secretStoreService.existingSecret, else the one the chart creates.
+*/}}
+{{- define "peaka.secretStore.keySecretName" -}}
+{{- default (printf "%s-secret-store-key" (include "peaka.fullname" .)) .Values.secretStoreService.existingSecret -}}
+{{- end -}}
+
+{{/*
+The key the chart used to ship as the default value. It is public, so it must not protect new installs.
+*/}}
+{{- define "peaka.secretStore.legacyDefault" -}}
+XXjAe6xLfVWTG5Rf
+{{- end -}}
+
+{{/*
+Where the key comes from, in this order (the first that applies):
+  existingSecret  secretStoreService.existingSecret is set (the chart creates no Secret)
+  secret          the Secret this chart created earlier (lookup)
+  configMap       an install from before the key moved: the value the running pods got from the env ConfigMap (lookup)
+  values          secretStoreService.secretEncryptionKey
+  generated       fresh install: random
+  legacyDefault   upgrade without the above (no cluster access): the value earlier chart versions defaulted to
+Whatever an earlier install used is carried over unchanged: a new key makes every stored row unreadable.
+*/}}
+{{- define "peaka.secretStore.keySource" -}}
+{{- $fullname := include "peaka.fullname" . -}}
+{{- $own := lookup "v1" "Secret" .Release.Namespace (printf "%s-secret-store-key" $fullname) -}}
+{{- $cm := lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-env-config" $fullname) -}}
+{{- if .Values.secretStoreService.existingSecret -}}
+existingSecret
+{{- else if dig "data" "SECRET_STORE_SECRET_KEY" "" $own -}}
+secret
+{{- else if dig "data" "SECRET_STORE_SECRET_KEY" "" $cm -}}
+configMap
+{{- else if .Values.secretStoreService.secretEncryptionKey -}}
+values
+{{- else if .Release.IsInstall -}}
+generated
+{{- else -}}
+legacyDefault
+{{- end -}}
+{{- end -}}
+
+{{/*
+The key as text, for the Secret the chart creates (not used with existingSecret).
+*/}}
+{{- define "peaka.secretStore.key" -}}
+{{- $fullname := include "peaka.fullname" . -}}
+{{- $source := include "peaka.secretStore.keySource" . -}}
+{{- if eq $source "secret" -}}
+{{- dig "data" "SECRET_STORE_SECRET_KEY" "" (lookup "v1" "Secret" .Release.Namespace (printf "%s-secret-store-key" $fullname)) | b64dec -}}
+{{- else if eq $source "configMap" -}}
+{{- dig "data" "SECRET_STORE_SECRET_KEY" "" (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-env-config" $fullname)) -}}
+{{- else if eq $source "values" -}}
+{{- .Values.secretStoreService.secretEncryptionKey -}}
+{{- else if eq $source "generated" -}}
+{{- randAlphaNum 32 -}}
+{{- else -}}
+{{- include "peaka.secretStore.legacyDefault" . -}}
 {{- end -}}
 {{- end -}}
 

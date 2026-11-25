@@ -249,6 +249,27 @@ Security notes:
 - For air-gapped installs, mirror `cr.fluentbit.io/fluent/fluent-bit` and `o2cr.ai/openobserve/openobserve`
   and set `logging.fluentBit.image` / `logging.openobserve.image` to the mirrored names.
 
+### Secret-store encryption key
+secret-store encrypts the credentials of your data sources with an AES key before it writes them to the database.
+The chart keeps that key in the Secret `<fullname>-secret-store-key` (key `SECRET_STORE_SECRET_KEY`), which only the
+secret-store pod reads. The Secret is kept by `helm uninstall`; back it up, because without it the stored values
+cannot be read. The key comes from the first of these that applies:
+1. `secretStoreService.existingSecret`: a Secret you manage (key `SECRET_STORE_SECRET_KEY`, 16, 24 or 32 characters).
+2. The Secret the chart created earlier (found with `lookup`).
+3. An install from before this change: the key its pods got from the env ConfigMap. It is carried over unchanged
+   (earlier chart versions defaulted to a key that is public in this repository), and the install notes warn
+   if that is the public one.
+4. `secretStoreService.secretEncryptionKey`, if you set it.
+5. A random 32-character key, on a fresh install.
+
+Never change the key of an install that already stores data: every stored value would become unreadable.
+A fresh install that sets `secretStoreService.secretEncryptionKey` to the former public default is refused.
+
+`lookup` returns nothing when the chart is rendered without cluster access (`helm template`, `helm upgrade
+--dry-run`, Argo CD). Set `secretStoreService.existingSecret` there, or each render would generate a new key.
+A Secret kept from an earlier install under another release name must be passed in the same way (Helm refuses to
+adopt it).
+
 ## Sizing
 
 Every main container sets a memory request, a memory limit and a CPU request (no CPU limits); init containers

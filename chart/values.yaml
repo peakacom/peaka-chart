@@ -2405,7 +2405,15 @@ searchService:
 
 secretStoreService:
   replicaCount: 1
-  secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
+  # Key (16, 24 or 32 characters) that encrypts the values secret-store keeps in its database. Leave empty: the
+  # chart generates a random one at first install and keeps it in the Secret <fullname>-secret-store-key
+  # (kept on helm uninstall). An install that already has a key keeps it unchanged. Changing the key of an
+  # install that stores data makes those values unreadable: they must be re-encrypted first.
+  secretEncryptionKey: ""
+  # Name of an existing Secret with the key under SECRET_STORE_SECRET_KEY; takes precedence over everything else.
+  # Required when the chart is rendered without cluster access (helm template, helm upgrade --dry-run, Argo CD):
+  # the generated key is found again through lookup, so without cluster access every render would make a new one.
+  existingSecret: ""
   image:
     name: be-secret-store-service
     tag: v0.0.20

@@ -89,3 +89,9 @@ stay deployed (e.g. migration staging buckets still living there).
 {{- end -}}
 {{- end -}}
 {{- end }}
+
+{{- define "peaka.validate.secretStore" }}
+{{- if and .Release.IsInstall (not .Values.secretStoreService.existingSecret) (eq (toString .Values.secretStoreService.secretEncryptionKey) (include "peaka.secretStore.legacyDefault" .)) -}}
+{{- fail "secretStoreService.secretEncryptionKey is the chart's former default, which is public. Leave it empty to have a random key generated, set your own, or set secretStoreService.existingSecret." }}
+{{- end -}}
+{{- end }}
