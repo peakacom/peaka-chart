@@ -2460,6 +2460,14 @@ secretStoreService:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+  # Only the services that call secret-store (auth, email, search, token, studio-api) may reach it.
+  # The cluster's CNI must enforce NetworkPolicy (e.g. Calico, Cilium, GKE Dataplane V2, EKS with network policy
+  # enabled); on a CNI that does not (e.g. plain flannel) this object is stored and has no effect.
+  networkPolicy:
+    enabled: true
+    # Namespace whose pods may scrape the metrics port (9090), matched on the label kubernetes.io/metadata.name
+    # that Kubernetes sets on every namespace. Set it to the namespace your monitoring runs in, or "" to allow nobody.
+    metricsNamespace: monitoring
 
 studioApi:
   replicaCount: 1

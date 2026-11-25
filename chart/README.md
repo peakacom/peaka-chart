@@ -270,6 +270,15 @@ A fresh install that sets `secretStoreService.secretEncryptionKey` to the former
 A Secret kept from an earlier install under another release name must be passed in the same way (Helm refuses to
 adopt it).
 
+### Network policy
+`secretStoreService.networkPolicy.enabled` (default `true`) creates a NetworkPolicy that lets only the services
+that call secret-store (auth, email, search, token and studio-api of this release, in the same namespace) reach
+its port 8080. The metrics port 9090 is open to pods of the namespace named in
+`secretStoreService.networkPolicy.metricsNamespace` (default `monitoring`, `""` for none); kubelet probes are not
+affected. The policy only takes effect when the cluster's CNI enforces NetworkPolicy (for example Calico, Cilium,
+GKE Dataplane V2, EKS with network policy enabled). On a CNI that does not, such as plain flannel, the object is
+stored and has no effect. If a service of yours must reach secret-store, set `enabled: false`.
+
 ## Sizing
 
 Every main container sets a memory request, a memory limit and a CPU request (no CPU limits); init containers
