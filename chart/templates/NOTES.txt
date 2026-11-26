@@ -21,3 +21,14 @@ the stored values. Re-encrypting the stored values under a new key has to happen
 {{- end }}
 {{- end }}
 {{- end }}
+{{- if include "peaka.secretStore.networkPolicy.enabled" . }}
+
+NetworkPolicy {{ include "peaka.fullname" . }}-be-secret-store-service lets only auth, email, search, token and studio-api of
+this release reach secret-store (on a CNI that enforces NetworkPolicy). If a service of yours must reach it, set
+secretStoreService.networkPolicy.enabled=false.
+{{- else if and .Release.IsUpgrade (not (kindIs "bool" .Values.secretStoreService.networkPolicy.enabled)) }}
+
+The secret-store NetworkPolicy is off because this install did not have it before. Set
+secretStoreService.networkPolicy.enabled=true to turn it on (only auth, email, search, token and studio-api of this
+release may then reach secret-store).
+{{- end }}

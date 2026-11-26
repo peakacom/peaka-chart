@@ -1,4 +1,4 @@
-{{- if .Values.secretStoreService.networkPolicy.enabled }}
+{{- if include "peaka.secretStore.networkPolicy.enabled" . }}
 {{- $fullname := include "peaka.fullname" . }}
 # Only the services that call secret-store reach it. Ingress only: egress is not restricted.
 # Needs a CNI that enforces NetworkPolicy; otherwise this object has no effect.

@@ -296,13 +296,21 @@ install already on this chart version, the key is in Secret `<fullname>-secret-s
 | base64 -d`.
 
 ### Network policy
-`secretStoreService.networkPolicy.enabled` (default `true`) creates a NetworkPolicy that lets only the services
+`secretStoreService.networkPolicy.enabled` creates a NetworkPolicy that lets only the services
 that call secret-store (auth, email, search, token and studio-api of this release, in the same namespace) reach
 its port 8080. The metrics port 9090 is open to pods of the namespace named in
 `secretStoreService.networkPolicy.metricsNamespace` (default `monitoring`, `""` for none); kubelet probes are not
 affected. The policy only takes effect when the cluster's CNI enforces NetworkPolicy (for example Calico, Cilium,
 GKE Dataplane V2, EKS with network policy enabled). On a CNI that does not, such as plain flannel, the object is
 stored and has no effect. If a service of yours must reach secret-store, set `enabled: false`.
+
+`true` or `false` always wins. Left unset (the default), the policy is:
+- on for a fresh install, and stays on for an install that already has it (found with `lookup`);
+- off on an upgrade of an install from before this chart version, so services of yours that call secret-store keep
+  working; set `enabled: true` to opt in;
+- on when the chart is rendered without cluster access (`helm template`, `helm upgrade --dry-run`, Argo CD), because
+  every such render counts as a fresh install. An existing install that moves to this chart version that way gets
+  the policy: set `enabled: false` first if a service of yours must reach secret-store.
 
 ## Sizing
 

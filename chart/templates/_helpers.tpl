@@ -507,6 +507,32 @@ a Namespace object, can be read with namespace-scoped RBAC. Only when it is not 
 --create-namespace creates after the render, or one whose ServiceAccount is not created yet) is the kube-system
 Namespace read. lookup returns an empty result when there is no cluster.
 */}}
+{{/*
+"true" when the render can read the cluster (see the probe described above), empty otherwise.
+*/}}
+{{- define "peaka.clusterAccess" -}}
+{{- if or (lookup "v1" "ServiceAccount" .Release.Namespace "default") (lookup "v1" "Namespace" "" "kube-system") -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+"true" when the secret-store NetworkPolicy is rendered. An explicit secretStoreService.networkPolicy.enabled
+(true or false) wins. Unset (null), it is on for a fresh install, on for an upgrade whose earlier revision had the
+policy (lookup), and off for an upgrade of an install that never had it, so existing callers keep working. Without
+cluster access (helm template, --dry-run, Argo CD) every render looks like a fresh install, so it is on.
+*/}}
+{{- define "peaka.secretStore.networkPolicy.enabled" -}}
+{{- $enabled := .Values.secretStoreService.networkPolicy.enabled -}}
+{{- if kindIs "bool" $enabled -}}
+{{- if $enabled -}}
+true
+{{- end -}}
+{{- else if or .Release.IsInstall (not (include "peaka.clusterAccess" .)) (lookup "networking.k8s.io/v1" "NetworkPolicy" .Release.Namespace (printf "%s-be-secret-store-service" (include "peaka.fullname" .))) -}}
+true
+{{- end -}}
+{{- end -}}
+
 {{- define "peaka.secretStore.keySource" -}}
 {{- $fullname := include "peaka.fullname" . -}}
 {{- $own := lookup "v1" "Secret" .Release.Namespace (printf "%s-secret-store-key" $fullname) -}}
@@ -519,7 +545,7 @@ secret
 configMap
 {{- else if .Values.secretStoreService.secretEncryptionKey -}}
 values
-{{- else if not (or (lookup "v1" "ServiceAccount" .Release.Namespace "default") (lookup "v1" "Namespace" "" "kube-system")) -}}
+{{- else if not (include "peaka.clusterAccess" .) -}}
 noCluster
 {{- else if and .Release.IsInstall (not (lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "data-%s-postgres-0" .Release.Name))) -}}
 generated

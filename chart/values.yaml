@@ -2465,7 +2465,11 @@ secretStoreService:
   # The cluster's CNI must enforce NetworkPolicy (e.g. Calico, Cilium, GKE Dataplane V2, EKS with network policy
   # enabled); on a CNI that does not (e.g. plain flannel) this object is stored and has no effect.
   networkPolicy:
-    enabled: true
+    # true or false always wins. Left empty (null), the policy is on for a fresh install and stays on for an install
+    # that already has it; an upgrade of an install from before this chart version does not get it (set true to
+    # opt in). Rendered without cluster access (helm template, helm upgrade --dry-run, Argo CD), every render
+    # counts as a fresh install, so it is on: set false if a service of yours must reach secret-store.
+    enabled: null
     # Namespace whose pods may scrape the metrics port (9090), matched on the label kubernetes.io/metadata.name
     # that Kubernetes sets on every namespace. Set it to the namespace your monitoring runs in, or "" to allow nobody.
     metricsNamespace: monitoring
