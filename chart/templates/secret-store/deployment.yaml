@@ -44,8 +44,13 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.secretStoreService.readinessHealthGroup }}
           env:
+            - name: SECRET_STORE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "peaka.secretStore.keySecretName" . }}
+                  key: SECRET_STORE_SECRET_KEY
+          {{- with .Values.secretStoreService.readinessHealthGroup }}
             - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
               value: {{ . | quote }}
           {{- end }}

@@ -249,6 +249,69 @@ Security notes:
 - For air-gapped installs, mirror `cr.fluentbit.io/fluent/fluent-bit` and `o2cr.ai/openobserve/openobserve`
   and set `logging.fluentBit.image` / `logging.openobserve.image` to the mirrored names.
 
+### Secret-store encryption key
+secret-store encrypts the credentials of your data sources with an AES key before it writes them to the database.
+The chart keeps that key in the Secret `<fullname>-secret-store-key` (key `SECRET_STORE_SECRET_KEY`), which only the
+secret-store pod reads. The Secret is kept by `helm uninstall`; back it up, because without it the stored values
+cannot be read. The key comes from the first of these that applies:
+1. `secretStoreService.existingSecret`: a Secret you manage (key `SECRET_STORE_SECRET_KEY`, 16, 24 or 32 characters).
+2. The Secret the chart created earlier (found with `lookup`).
+3. An install from before this change: the key its pods got from the env ConfigMap. It is carried over unchanged
+   (earlier chart versions defaulted to a key that is public in this repository), and the install notes warn
+   if that is the public one.
+4. `secretStoreService.secretEncryptionKey`, if you set it.
+5. A random 32-character key, on a fresh install that finds no database volume of an earlier install.
+6. Otherwise the render fails: on an upgrade, or on a fresh install that finds the chart's Postgres volume
+   `data-<release>-postgres-0` of an earlier install (`helm uninstall` keeps it), the stored data has a key the
+   chart cannot know, so you must pass it through `secretStoreService.existingSecret`.
+
+Never change the key of an install that already stores data: every stored value would become unreadable.
+A fresh install that sets `secretStoreService.secretEncryptionKey` to the former public default is refused.
+
+`lookup` returns nothing when the chart is rendered without cluster access (`helm template`, `helm upgrade
+--dry-run`, Argo CD, Flux with `helm template`), so every render would generate a new key. The chart therefore
+refuses to render there unless `secretStoreService.existingSecret` (or `secretStoreService.secretEncryptionKey`)
+is set; with `existingSecret` it renders and creates no Secret. Cluster access is detected by reading the
+namespace's `default` ServiceAccount, or, when that is not found (a namespace that `--create-namespace` creates),
+the `kube-system` Namespace.
+A Secret kept from an earlier install under another release name must be passed in the same way (Helm refuses to
+adopt it).
+
+Upgrade an existing install in place with `helm upgrade`. Its key must be carried over by hand when:
+- the chart is rendered without cluster access (`helm template`, Argo CD, Flux with `helm template`), or
+- you reinstall (`helm uninstall`, then `helm install`) over a database that already has data, or
+- the database is external (`externalPostgresql`): the chart cannot see that it already has data, so a fresh
+  install over it generates a new key unless you pass the old one.
+
+An install from a chart version before this change keeps its key in the env ConfigMap, which `helm uninstall`
+deletes, so copy it before uninstalling or switching to a render without cluster access. This copies it into
+a Secret without printing it:
+```shell
+kubectl -n <namespace> get configmap <fullname>-env-config -o jsonpath='{.data.SECRET_STORE_SECRET_KEY}' \
+  | kubectl -n <namespace> create secret generic <secret-name> --from-file=SECRET_STORE_SECRET_KEY=/dev/stdin
+```
+Then set `secretStoreService.existingSecret: <secret-name>` before the next install, upgrade or sync. For an
+install already on this chart version, the key is in Secret `<fullname>-secret-store-key` (or the Secret
+`existingSecret` names); copy it the same way, from `get secret ... -o jsonpath='{.data.SECRET_STORE_SECRET_KEY}'
+| base64 -d`.
+
+### Network policy
+`secretStoreService.networkPolicy.enabled` creates a NetworkPolicy that lets only the services
+that call secret-store (auth, email, search, token and studio-api of this release, in the same namespace) reach
+its port 8080. The metrics port 9090 is open to pods of the namespace named in
+`secretStoreService.networkPolicy.metricsNamespace` (default `monitoring`, `""` for none); kubelet probes are not
+affected. The policy only takes effect when the cluster's CNI enforces NetworkPolicy (for example Calico, Cilium,
+GKE Dataplane V2, EKS with network policy enabled). On a CNI that does not, such as plain flannel, the object is
+stored and has no effect. If a service of yours must reach secret-store, set `enabled: false`.
+
+`true` or `false` always wins. Left unset (the default), the policy is:
+- on for a fresh install, and stays on for an install that already has it (found with `lookup`);
+- off on an upgrade of an install from before this chart version, so services of yours that call secret-store keep
+  working; set `enabled: true` to opt in;
+- on when the chart is rendered without cluster access (`helm template`, `helm upgrade --dry-run`, Argo CD), because
+  every such render counts as a fresh install. An existing install that moves to this chart version that way gets
+  the policy: set `enabled: false` first if a service of yours must reach secret-store.
+
 ## Sizing
 
 Every main container sets a memory request, a memory limit and a CPU request (no CPU limits); init containers

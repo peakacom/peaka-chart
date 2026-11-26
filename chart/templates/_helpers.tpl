@@ -249,7 +249,6 @@ DEFAULT_SMTP_SERVER_USERNAME: {{ default "default" .Values.smtpServerUsername }}
 DEFAULT_SMTP_SERVER_PASSWORD: {{ default "default" .Values.smtpServerPassword }}
 DEFAULT_SMTP_TLS_ENABLED: {{ default false .Values.smtpTlsEnabled | quote }}
 
-SECRET_STORE_SECRET_KEY: {{ .Values.secretStoreService.secretEncryptionKey }}
 JWT_RSA_PRIVATE_KEY_PATH: /secrets/jwt/rsa/privatekey.pem
 JWT_RSA_PUBLIC_KEY_PATH: /secrets/jwt/rsa/publickey.pem
 PUBLIC_CERT: /secrets/jwt/rsa/publickey.pem
@@ -471,6 +470,108 @@ LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFN
 {{ .Values.jwt.privateKey | b64enc }}
 {{- else -}}
 LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRFhHY0FEcGtQU0U1VnoKWUxSeCtzSlh2czVZeHUyTGNORzZ1VGh3eHdkb1V0K2N1RXhKVXNidENETVNNMnRJZWdNY2x4Y0Y2WEhuUGVIZgpkaVdObEd0Vk9yZ0JRemIrdTRTVjYrQmEwbDVxTGE2Z0t1SXVsZkxUR0toc01WUmNlLy9ITG14NkpxL2lJS0hFCmdBa0MzYUNROW96WFJINmFIenphRjZyNFF3QTJEc1RRN25jcmhoQ2l4UThjNlIvdHVxZlNacnNEZjRSYjJTbzUKN0tqQ0NUaTNEbmNaZ2ExdDFSZ0xocFNjdyszcjd0ejFLRmgxTWZSMUJoeG5ZNzVuNkE3VTBmY1hhYlF2cWptNAowN3hpK2ZRZUdYKzIyeG5rVE9BaXA1cERlTjFqOUw2RDNoTkYwelJFaFhpOUpTcDhBS090dXNGbzN2ajlqMHBtCnZmYnA3WFJ0QWdNQkFBRUNnZ0VBSkxpaWFXMFZ5SFFyOEMvSzltZHBES3BJRjJ0VWk5alZrVE5FTWFxa3R0aHAKRU52OHVBclA1NURlQ1NZcWswdXpJc3NmZE5TcTY1K0tvMGZMOXV6bTJ2ekVnNENxVDVnTE5UMzR4Z0NDZWsxMApzYWJJaU12MEVibzBySTNLV1dTWTRMUHA5SHVNek1XbDRFSThaNWNXN1pDTnNFVmkrS1JMRXU5MThsNmIxMTVqCmJzRnRXRGRWRXp2SWVGbW56Y0ZiS2F3eG1iWnlpWWpGWDkrVitDUFRkY2h5ejkwMzFIdEpCeklBWUZmUm1jTHQKNmpQR1F3SkRBNXo2TklZWnh0dVJSRVExeGljNXRod0UrbURvaCtBVkx4TGpNVjQ5dlJST3ZRZ3d3WTk1TFRKawpTb2Vqb29icndhVGVtMkkyN1RtUk8rdm1US0ZhUndSaU4yWmdOL3Q4Z1FLQmdRRHhuSXIwdC9jNVgwNU5sYWw0CldKV2VKanhvSnNwbTlmcU1EUTFvWUh1SDJYWDJJQ3JFMzFxcXRzeUVJWVJmOTV4UVo0cHNaWVNBNDBwSkJEaHkKa2NFZmUvTEpZNXhzRzVHcnJqTjJQZ0RoZTl1LzF0SEpkdWFzNTExdXJLUUZzR1NTSEliMzVUWkIwbzZEbW9Mdgo1NG9EQXFKY3hqYktpUUl5T0l3U3JJbnM3UUtCZ1FEajZRbmdTS0QvQWE4UDB4WFk1TDBpNk9haEdFemlyM0ZPCkpxQmR3dEg0dm9aMFFhQkZ1dEJEOWxqZEZwVjY4RFY1ZVJnSXJkZks0QW4xSXhWZWhScmJTTUNuZGplZjhpVjkKL0t2UjBsWEh0aW5RWGRtUitYaUlOMEl3aVliSXFpUHEwLzQwUmlUZktwUU54RXNJZWpJckRFMkRLZk1nQTdoMApZUmVHSitBMWdRS0JnSEtqekdzQlB4VEIyKzJFTGIwa2l4bFhHeUp3QldtRkhUU0duTzRCbVp1RDJ5ekZab1d6ClZObmJrbjYvU0lnZ2ZOTEp6aXhRbnVabzhqNWkra1dpVXZnVlg4V2V0Z0cxc3hDNnYwQkRlemVDQldxcEN6R0UKY1Q5cEtEUHpSb0JNaWV1cURZQmlDYlNCcTQxV0t2cVo2aW96ZmNaM1psZ0RXajlxQlV4M0FacWhBb0dBQkh4dgp6MVJlcHVaWGxjNG4zZThTc2Y4M212QXBnMFRFekM4Q2RSWUNvQXpRQkxYTis5RmpqQkxyU043SzduS1ArdVloClRQcHZCdlZGL09kRjRtaG9VT3lycmlBcmxDQm1FSWJLc3dTYTM2VjhTVGV2c3FuZ2IzMzI5WkdmYjQrNXlVT0cKKzJ4dUNWNkRMNG92bCtrZjE2MFVVWUtmNEg5eVFBZ3hPRmpNbHdFQ2dZRUFrdk1ueFNoZ0U4dnp3Z1laZ3BvYgpIakhnTjA0ai9CNXpQZ0djdGNFYzlKR21xYlBidG9Cb1hsVFdHTURPOTlMenVnZHdIUGd6MXlkL0UvejJPamc3CnZHNTJDd1BnYUx4WWZzUzlKdFMva2FuNDVaSzNocFRoTTdYK1Rjc0ZkUzMxTVNlZFVvRnN6cjNwUVNMMVVmRVgKMEFnZjNLT3hPQ1BOSitjeEVTcXNZYTQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+{{- end -}}
+{{- end -}}
+
+{{/*
+Secret-store encryption key.
+The key lives in a Secret, not in the shared env ConfigMap: only secret-store reads it, through a secretKeyRef.
+Secret holding SECRET_STORE_SECRET_KEY: secretStoreService.existingSecret, else the one the chart creates.
+*/}}
+{{- define "peaka.secretStore.keySecretName" -}}
+{{- default (printf "%s-secret-store-key" (include "peaka.fullname" .)) .Values.secretStoreService.existingSecret -}}
+{{- end -}}
+
+{{/*
+The key the chart used to ship as the default value. It is public, so it must not protect new installs.
+*/}}
+{{- define "peaka.secretStore.legacyDefault" -}}
+XXjAe6xLfVWTG5Rf
+{{- end -}}
+
+{{/*
+Where the key comes from, in this order (the first that applies):
+  existingSecret  secretStoreService.existingSecret is set (the chart creates no Secret)
+  secret          the Secret this chart created earlier (lookup)
+  configMap       an install from before the key moved: the value the running pods got from the env ConfigMap (lookup)
+  values          secretStoreService.secretEncryptionKey
+  noCluster       none of the above and no cluster access (helm template, --dry-run, Argo CD): the render fails,
+                  because every render would make a new key and a new key makes every stored row unreadable
+  generated       fresh install on a real cluster that finds no database volume of an earlier install: random
+  unknown         an upgrade, or a fresh install over the database volume of an earlier install (the chart's
+                  Postgres PVC is kept by helm uninstall), with no key found: the render fails, because the
+                  data is stored under a key the chart cannot know
+Whatever an earlier install used is carried over unchanged.
+Cluster access is detected with the namespace's "default" ServiceAccount, which exists in every namespace and, unlike
+a Namespace object, can be read with namespace-scoped RBAC. Only when it is not found (a namespace that
+--create-namespace creates after the render, or one whose ServiceAccount is not created yet) is the kube-system
+Namespace read. lookup returns an empty result when there is no cluster.
+*/}}
+{{/*
+"true" when the render can read the cluster (see the probe described above), empty otherwise.
+*/}}
+{{- define "peaka.clusterAccess" -}}
+{{- if or (lookup "v1" "ServiceAccount" .Release.Namespace "default") (lookup "v1" "Namespace" "" "kube-system") -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+"true" when the secret-store NetworkPolicy is rendered. An explicit secretStoreService.networkPolicy.enabled
+(true or false) wins. Unset (null), it is on for a fresh install, on for an upgrade whose earlier revision had the
+policy (lookup), and off for an upgrade of an install that never had it, so existing callers keep working. Without
+cluster access (helm template, --dry-run, Argo CD) every render looks like a fresh install, so it is on.
+*/}}
+{{- define "peaka.secretStore.networkPolicy.enabled" -}}
+{{- $enabled := .Values.secretStoreService.networkPolicy.enabled -}}
+{{- if kindIs "bool" $enabled -}}
+{{- if $enabled -}}
+true
+{{- end -}}
+{{- else if or .Release.IsInstall (not (include "peaka.clusterAccess" .)) (lookup "networking.k8s.io/v1" "NetworkPolicy" .Release.Namespace (printf "%s-be-secret-store-service" (include "peaka.fullname" .))) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{- define "peaka.secretStore.keySource" -}}
+{{- $fullname := include "peaka.fullname" . -}}
+{{- $own := lookup "v1" "Secret" .Release.Namespace (printf "%s-secret-store-key" $fullname) -}}
+{{- $cm := lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-env-config" $fullname) -}}
+{{- if .Values.secretStoreService.existingSecret -}}
+existingSecret
+{{- else if dig "data" "SECRET_STORE_SECRET_KEY" "" $own -}}
+secret
+{{- else if dig "data" "SECRET_STORE_SECRET_KEY" "" $cm -}}
+configMap
+{{- else if .Values.secretStoreService.secretEncryptionKey -}}
+values
+{{- else if not (include "peaka.clusterAccess" .) -}}
+noCluster
+{{- else if and .Release.IsInstall (not (lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "data-%s-postgres-0" .Release.Name))) -}}
+generated
+{{- else -}}
+unknown
+{{- end -}}
+{{- end -}}
+
+{{/*
+The key as text, for the Secret the chart creates (not used with existingSecret).
+*/}}
+{{- define "peaka.secretStore.key" -}}
+{{- $fullname := include "peaka.fullname" . -}}
+{{- $source := include "peaka.secretStore.keySource" . -}}
+{{- if eq $source "secret" -}}
+{{- dig "data" "SECRET_STORE_SECRET_KEY" "" (lookup "v1" "Secret" .Release.Namespace (printf "%s-secret-store-key" $fullname)) | b64dec -}}
+{{- else if eq $source "configMap" -}}
+{{- dig "data" "SECRET_STORE_SECRET_KEY" "" (lookup "v1" "ConfigMap" .Release.Namespace (printf "%s-env-config" $fullname)) -}}
+{{- else if eq $source "values" -}}
+{{- .Values.secretStoreService.secretEncryptionKey -}}
+{{- else if eq $source "noCluster" -}}
+{{- fail (printf "The secret-store encryption key cannot be generated: this render has no cluster access (helm template, helm upgrade --dry-run, Argo CD), so lookup finds nothing and every render would make a new key, which makes every stored value unreadable. Set secretStoreService.existingSecret to a Secret that has the key SECRET_STORE_SECRET_KEY (for a new install, secretStoreService.secretEncryptionKey also works). An install that already stores data must keep its current key in that Secret; for an install from an earlier chart version that is the SECRET_STORE_SECRET_KEY value in ConfigMap %s-env-config (see 'Secret-store encryption key' in the chart README)." $fullname) -}}
+{{- else if eq $source "generated" -}}
+{{- randAlphaNum 32 -}}
+{{- else -}}
+{{- fail (printf "The secret-store encryption key of this install was not found: there is no Secret %s-secret-store-key, no SECRET_STORE_SECRET_KEY in ConfigMap %s-env-config and no secretStoreService.secretEncryptionKey, yet this is an upgrade or the database volume data-%s-postgres-0 of an earlier install exists. A different key would make every value secret-store has stored unreadable, so the chart does not make one. Put the key the data was stored with (the Secret existingSecret named before, a backup of Secret %s-secret-store-key, or for an install from an earlier chart version its SECRET_STORE_SECRET_KEY value in ConfigMap %s-env-config, the chart's former default unless it set its own) in a Secret under SECRET_STORE_SECRET_KEY and set secretStoreService.existingSecret to it (see 'Secret-store encryption key' in the chart README)." $fullname $fullname .Release.Name $fullname $fullname) -}}
 {{- end -}}
 {{- end -}}
 

@@ -2405,7 +2405,16 @@ searchService:
 
 secretStoreService:
   replicaCount: 1
-  secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
+  # Key (16, 24 or 32 characters) that encrypts the values secret-store keeps in its database. Leave empty: the
+  # chart generates a random one at first install and keeps it in the Secret <fullname>-secret-store-key
+  # (kept on helm uninstall). An install that already has a key keeps it unchanged. Changing the key of an
+  # install that stores data makes those values unreadable: they must be re-encrypted first.
+  secretEncryptionKey: ""
+  # Name of an existing Secret with the key under SECRET_STORE_SECRET_KEY; takes precedence over everything else.
+  # Required when the chart is rendered without cluster access (helm template, helm upgrade --dry-run, Argo CD):
+  # the generated key is found again through lookup, so there every render would make a new one and the render
+  # fails unless this or secretEncryptionKey is set.
+  existingSecret: ""
   image:
     name: be-secret-store-service
     tag: v0.0.20
@@ -2452,6 +2461,18 @@ secretStoreService:
     periodSeconds: 5
     successThreshold: 1
     timeoutSeconds: 5
+  # Only the services that call secret-store (auth, email, search, token, studio-api) may reach it.
+  # The cluster's CNI must enforce NetworkPolicy (e.g. Calico, Cilium, GKE Dataplane V2, EKS with network policy
+  # enabled); on a CNI that does not (e.g. plain flannel) this object is stored and has no effect.
+  networkPolicy:
+    # true or false always wins. Left empty (null), the policy is on for a fresh install and stays on for an install
+    # that already has it; an upgrade of an install from before this chart version does not get it (set true to
+    # opt in). Rendered without cluster access (helm template, helm upgrade --dry-run, Argo CD), every render
+    # counts as a fresh install, so it is on: set false if a service of yours must reach secret-store.
+    enabled: null
+    # Namespace whose pods may scrape the metrics port (9090), matched on the label kubernetes.io/metadata.name
+    # that Kubernetes sets on every namespace. Set it to the namespace your monitoring runs in, or "" to allow nobody.
+    metricsNamespace: monitoring
 
 studioApi:
   replicaCount: 1
