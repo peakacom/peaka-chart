@@ -92,6 +92,6 @@ stay deployed (e.g. migration staging buckets still living there).
 
 {{- define "peaka.validate.secretStore" }}
 {{- if and .Release.IsInstall (not .Values.secretStoreService.existingSecret) (eq (toString .Values.secretStoreService.secretEncryptionKey) (include "peaka.secretStore.legacyDefault" .)) -}}
-{{- fail "secretStoreService.secretEncryptionKey is the chart's former default, which is public. Leave it empty to have a random key generated, set your own, or set secretStoreService.existingSecret." }}
+{{- fail "secretStoreService.secretEncryptionKey is the chart's former default, which is public. For a new install, leave it empty to have a random key generated, or set your own. An install that already stores data under it (a reinstall over its database, or a render without cluster access such as helm template or Argo CD) must keep it: put it in a Secret under SECRET_STORE_SECRET_KEY and set secretStoreService.existingSecret (see 'Secret-store encryption key' in the chart README)." }}
 {{- end -}}
 {{- end }}

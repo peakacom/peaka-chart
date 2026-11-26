@@ -10,8 +10,8 @@ collab-sharedb and the OAuth2 server.
 
 The secret-store encryption key was generated and stored in Secret {{ include "peaka.secretStore.keySecretName" . }}, which
 helm uninstall keeps. Back it up: without it the values secret-store has stored cannot be read.
-{{- else if or (eq $keySource "configMap") (eq $keySource "values") (eq $keySource "legacyDefault") }}
-{{- if or (eq $keySource "configMap") (eq $keySource "legacyDefault") (.Release.IsUpgrade) }}
+{{- else if or (eq $keySource "configMap") (eq $keySource "values") }}
+{{- if or (eq $keySource "configMap") (.Release.IsUpgrade) }}
 
 The secret-store encryption key moved from the env ConfigMap to Secret {{ include "peaka.secretStore.keySecretName" . }} with its
 value unchanged, because a different key would make every stored value unreadable.

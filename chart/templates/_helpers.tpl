@@ -497,11 +497,15 @@ Where the key comes from, in this order (the first that applies):
   values          secretStoreService.secretEncryptionKey
   noCluster       none of the above and no cluster access (helm template, --dry-run, Argo CD): the render fails,
                   because every render would make a new key and a new key makes every stored row unreadable
-  generated       fresh install on a real cluster: random
-  legacyDefault   upgrade on a real cluster, nothing else known: the value earlier chart versions defaulted to
+  generated       fresh install on a real cluster that finds no database volume of an earlier install: random
+  unknown         an upgrade, or a fresh install over the database volume of an earlier install (the chart's
+                  Postgres PVC is kept by helm uninstall), with no key found: the render fails, because the
+                  data is stored under a key the chart cannot know
 Whatever an earlier install used is carried over unchanged.
 Cluster access is detected with the namespace's "default" ServiceAccount, which exists in every namespace and, unlike
-a Namespace object, can be read with namespace-scoped RBAC. lookup returns an empty result when there is no cluster.
+a Namespace object, can be read with namespace-scoped RBAC. Only when it is not found (a namespace that
+--create-namespace creates after the render, or one whose ServiceAccount is not created yet) is the kube-system
+Namespace read. lookup returns an empty result when there is no cluster.
 */}}
 {{- define "peaka.secretStore.keySource" -}}
 {{- $fullname := include "peaka.fullname" . -}}
@@ -515,12 +519,12 @@ secret
 configMap
 {{- else if .Values.secretStoreService.secretEncryptionKey -}}
 values
-{{- else if not (lookup "v1" "ServiceAccount" .Release.Namespace "default") -}}
+{{- else if not (or (lookup "v1" "ServiceAccount" .Release.Namespace "default") (lookup "v1" "Namespace" "" "kube-system")) -}}
 noCluster
-{{- else if .Release.IsInstall -}}
+{{- else if and .Release.IsInstall (not (lookup "v1" "PersistentVolumeClaim" .Release.Namespace (printf "data-%s-postgres-0" .Release.Name))) -}}
 generated
 {{- else -}}
-legacyDefault
+unknown
 {{- end -}}
 {{- end -}}
 
@@ -537,11 +541,11 @@ The key as text, for the Secret the chart creates (not used with existingSecret)
 {{- else if eq $source "values" -}}
 {{- .Values.secretStoreService.secretEncryptionKey -}}
 {{- else if eq $source "noCluster" -}}
-{{- fail "The secret-store encryption key cannot be generated: this render has no cluster access (helm template, helm upgrade --dry-run, Argo CD), so lookup finds nothing and every render would make a new key, which makes every stored value unreadable. Set secretStoreService.existingSecret to a Secret that has the key SECRET_STORE_SECRET_KEY, or set secretStoreService.secretEncryptionKey." -}}
+{{- fail (printf "The secret-store encryption key cannot be generated: this render has no cluster access (helm template, helm upgrade --dry-run, Argo CD), so lookup finds nothing and every render would make a new key, which makes every stored value unreadable. Set secretStoreService.existingSecret to a Secret that has the key SECRET_STORE_SECRET_KEY (for a new install, secretStoreService.secretEncryptionKey also works). An install that already stores data must keep its current key in that Secret; for an install from an earlier chart version that is the SECRET_STORE_SECRET_KEY value in ConfigMap %s-env-config (see 'Secret-store encryption key' in the chart README)." $fullname) -}}
 {{- else if eq $source "generated" -}}
 {{- randAlphaNum 32 -}}
 {{- else -}}
-{{- include "peaka.secretStore.legacyDefault" . -}}
+{{- fail (printf "The secret-store encryption key of this install was not found: there is no Secret %s-secret-store-key, no SECRET_STORE_SECRET_KEY in ConfigMap %s-env-config and no secretStoreService.secretEncryptionKey, yet this is an upgrade or the database volume data-%s-postgres-0 of an earlier install exists. A different key would make every value secret-store has stored unreadable, so the chart does not make one. Put the key the data was stored with (the Secret existingSecret named before, a backup of Secret %s-secret-store-key, or for an install from an earlier chart version its SECRET_STORE_SECRET_KEY value in ConfigMap %s-env-config, the chart's former default unless it set its own) in a Secret under SECRET_STORE_SECRET_KEY and set secretStoreService.existingSecret to it (see 'Secret-store encryption key' in the chart README)." $fullname $fullname .Release.Name $fullname $fullname) -}}
 {{- end -}}
 {{- end -}}
 
