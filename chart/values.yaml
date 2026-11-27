@@ -1397,7 +1397,7 @@ trino:
   image:
     name: trino
     pullPolicy: IfNotPresent
-    tag: latest@sha256:7b2e199f6f038385a3bb9b059fe92ad83ea27f9e993debe9b04fc75542e327dc
+    tag: v1.0.59
   initContainers: {}
   auth: {}
     # Set username and password
@@ -1637,7 +1637,7 @@ authService:
   replicaCount: 1
   image:
     name: be-auth-service
-    tag: v0.0.21
+    tag: v0.0.23
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1684,7 +1684,7 @@ cloudGateway:
   replicaCount: 1
   image:
     name: be-cloud-gateway
-    tag: v1.0.23-onprem.1
+    tag: v1.0.25
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1732,7 +1732,7 @@ collabSharedb:
   replicaCount: 1
   image:
     name: be-collab-sharedb
-    tag: v1.0.2-onprem
+    tag: v1.0.4
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1776,11 +1776,11 @@ dataCache:
   replicaCount: 1
   image:
     name: be-data-cache
-    tag: v1.0.23-onprem.1
+    tag: v1.0.25
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v0.0.23
     imagePullPolicy: IfNotPresent
     # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
@@ -1837,7 +1837,7 @@ dataRest:
   replicaCount: 1
   image:
     name: be-data-rest
-    tag: feature_spark-connector
+    tag: v1.0.55
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -1877,7 +1877,7 @@ dispatcher:
   replicaCount: 1
   image:
     name: be-dispatcher
-    tag: v1.0.1
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2025,7 +2025,7 @@ mcpServer:
   replicaCount: 1
   image:
     name: peaka-mcp-server
-    tag: v0.15.5-onprem.1
+    tag: v0.15.5
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2062,7 +2062,7 @@ metadataService:
   replicaCount: 1
   image:
     name: be-metadata-service
-    tag: v1.0.2-onprem
+    tag: v1.0.3
     imagePullPolicy: IfNotPresent
   initContainer:
     image:
@@ -2122,7 +2122,7 @@ monitoringService:
   replicaCount: 1
   image:
     name: be-monitoring-service
-    tag: v1.0.6
+    tag: v1.0.8
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2171,7 +2171,7 @@ oauth2AuthorizationServer:
   replicaCount: 1
   image:
     name: be-oauth2-authorization-server
-    tag: v1.0.5-onprem.1
+    tag: v1.0.10
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2218,7 +2218,7 @@ permissionService:
   replicaCount: 1
   image:
     name: be-permission-service
-    tag: v1.0.1-onprem.3
+    tag: v1.0.3
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2366,7 +2366,7 @@ searchService:
   replicaCount: 1
   image:
     name: be-search-service
-    tag: v1.0.15-onprem.2
+    tag: v1.0.18
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2408,7 +2408,7 @@ secretStoreService:
   secretEncryptionKey: "XXjAe6xLfVWTG5Rf"
   image:
     name: be-secret-store-service
-    tag: v0.0.20
+    tag: v0.0.23
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2457,7 +2457,7 @@ studioApi:
   replicaCount: 1
   image:
     name: be-studio-api
-    tag: feature_spark-connector
+    tag: v1.0.70
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2506,7 +2506,7 @@ tokenService:
   replicaCount: 1
   image:
     name: be-token-service
-    tag: feature_spark-connector
+    tag: v1.0.12
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2589,7 +2589,7 @@ workflowHistory:
   replicaCount: 1
   image:
     name: be-workflow-history
-    tag: v1.0.0
+    tag: v1.0.1
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2638,7 +2638,7 @@ workflowStarter:
   replicaCount: 1
   image:
     name: be-workflow-starter
-    tag: v1.0.7
+    tag: v1.0.8
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2672,11 +2672,11 @@ workflowWorkerExpress:
   replicaCount: 1
   image:
     name: be-workflow-worker-express
-    tag: v1.0.7
+    tag: v1.0.8
     imagePullPolicy: IfNotPresent
   sidecar:
     imageName: be-common-flow-utilities-service
-    imageTag: v0.0.21
+    imageTag: v0.0.23
     imagePullPolicy: IfNotPresent
     # Node holds ~0.25Gi beyond its 768 MiB heap; cloud peaks at ~1Gi.
     resources:
@@ -2732,7 +2732,7 @@ sqlService:
   replicaCount: 1
   image:
     name: be-sql-service
-    tag: v1.0.1-onprem
+    tag: v1.0.2
     imagePullPolicy: IfNotPresent
   resources:
     requests:
@@ -2773,7 +2773,7 @@ studioWeb:
   replicaCount: 1
   image:
     name: fe-studio-app
-    tag: feature_spark-connector@sha256:bb4a266d7e8dee6874719df1acf75601526401a0f5645eccdf15b4d475b864c6
+    tag: v1.2.31
     imagePullPolicy: IfNotPresent
   resources:
     requests:
