@@ -17,6 +17,10 @@ steps:
         apk add --no-cache git curl
         # v1.1.0+ needs Helm 3.18+ to load the plugin
         helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.0.3
+        # chart/tests/minio_image_test.yaml renders the minio subchart's templates
+        helm repo add minio https://charts.min.io/
+        mkdir -p chart/charts
+        helm pull minio/minio --version '~5.1.0' -d chart/charts
         helm unittest chart
 
 ---

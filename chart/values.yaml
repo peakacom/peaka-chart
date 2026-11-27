@@ -361,16 +361,23 @@ minio:
       memory: 1Gi
     limits:
       memory: 4Gi
-  # The subchart's quay.io/minio defaults no longer pull (401), so MinIO and the
-  # mc bucket/user jobs use Peaka's registry copy; the one image ships both
-  # /usr/bin/minio and /usr/bin/mc. Subchart values cannot reference
-  # imageRegistry, so a mirror must override these repositories itself.
+  # The subchart's quay.io/minio defaults no longer pull (401), and upstream
+  # MinIO is archived. The server and the mc bucket/user jobs therefore run
+  # Silo (https://github.com/pgsty/silo), the community-maintained continuation
+  # of MinIO (AGPLv3, like MinIO), copied to Peaka's registry. The chart's
+  # `minio server ...` command still works: the image entrypoint maps `minio`
+  # to `silo`. The on-disk format is the one MinIO uses, so an existing volume
+  # is read as it is, but the move is forward-only: a MinIO server cannot read
+  # a volume again once Silo has written to it (see "Upgrading: MinIO to Silo"
+  # in the README). The one image ships both /usr/bin/silo and /usr/bin/mc.
+  # Subchart values cannot reference imageRegistry, so a mirror must override
+  # these repositories itself.
   image:
-    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
-    tag: RELEASE.2024-12-18T13-15-44Z
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/silo
+    tag: RELEASE.2026-11-12T00-00-00Z
   mcImage:
-    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/minio
-    tag: RELEASE.2024-12-18T13-15-44Z
+    repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/silo
+    tag: RELEASE.2026-11-12T00-00-00Z
   # Must name the same secret as peakaContainerRegistryAccessSecret.name (or one
   # of imagePullSecrets when you use your own registry).
   imagePullSecrets:

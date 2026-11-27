@@ -1,0 +1,58 @@
+# Run from the repo root: helm unittest chart
+# Needs the minio subchart in chart/charts (CI downloads it before running).
+suite: minio image
+templates:
+  - charts/minio/templates/deployment.yaml
+  - charts/minio/templates/post-job.yaml
+  # the Deployment hashes these two for its checksum annotations
+  - charts/minio/templates/secrets.yaml
+  - charts/minio/templates/configmap.yaml
+release:
+  name: peaka
+  namespace: peaka
+set:
+  minio:
+    buckets:
+      - name: data
+        policy: none
+    users:
+      - accessKey: reader
+        secretKey: reader-secret-1
+        policy: readonly
+    policies:
+      - name: custom
+        statements:
+          - resources: ["arn:aws:s3:::data/*"]
+            actions: ["s3:GetObject"]
+tests:
+  - it: runs the MinIO server from the Silo image in Peaka's registry
+    template: charts/minio/templates/deployment.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: '^europe-west3-docker\.pkg\.dev/code2-324814/peaka-service-container-images/silo:RELEASE\.[0-9T-]+Z$'
+      # Silo's entrypoint maps the `minio` argument to `silo`; the subchart command must keep passing it.
+      - matchRegex:
+          path: spec.template.spec.containers[0].command[2]
+          pattern: '^/usr/bin/docker-entrypoint\.sh minio server /export '
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: peaka-docker-registry
+
+  - it: runs the bucket, user and policy jobs from the same Silo image with the pull secret
+    template: charts/minio/templates/post-job.yaml
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].image
+          pattern: '^europe-west3-docker\.pkg\.dev/code2-324814/peaka-service-container-images/silo:RELEASE\.[0-9T-]+Z$'
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: '^europe-west3-docker\.pkg\.dev/code2-324814/peaka-service-container-images/silo:RELEASE\.[0-9T-]+Z$'
+      - matchRegex:
+          path: spec.template.spec.containers[1].image
+          pattern: '^europe-west3-docker\.pkg\.dev/code2-324814/peaka-service-container-images/silo:RELEASE\.[0-9T-]+Z$'
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: peaka-docker-registry
