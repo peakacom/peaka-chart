@@ -106,6 +106,59 @@ Without `--version`, Helm skips pre-releases such as `1.1.0-beta.31` and picks t
 `helm upgrade` with only `--set kafkaConnect.enabled=true`: Helm then drops your previous values and uses the chart
 defaults for everything else.
 
+## Upgrading: MinIO to Silo
+
+The bundled object store now runs [Silo](https://github.com/pgsty/silo) instead of MinIO. Upstream MinIO is archived and
+its images are no longer published; Silo is the community-maintained continuation (AGPLv3, like MinIO). It reads the
+same on-disk format, so `helm upgrade` keeps your buckets, objects, policies and users on the existing volume. The
+chart's `minio server ...` command, the `MINIO_*` settings and the S3 and Console ports are unchanged (the image
+entrypoint maps `minio` to `silo`). The images come from Peaka's registry; if you mirror images to your own registry,
+copy the `silo` image by digest and set `minio.image.repository`, `minio.mcImage.repository` and the tags.
+
+**The move is forward-only.** Once Silo has written to the volume (any object, bucket setting, policy or user change),
+a MinIO server can no longer read all of it again. The way back is a snapshot taken before the upgrade.
+
+### Before upgrading
+1. Check the volume layout. It must say `"format":"xl-single"` (the chart runs a single drive):
+   ```shell
+   kubectl exec -n peaka deploy/<release>-minio -- cat /export/.minio.sys/format.json
+   ```
+2. Snapshot the volume `<release>-minio` (or take any backup your storage offers) and wait until it is ready:
+   ```shell
+   kubectl apply -n peaka -f - <<EOF
+   apiVersion: snapshot.storage.k8s.io/v1
+   kind: VolumeSnapshot
+   metadata:
+     name: <release>-minio-before-silo
+   spec:
+     volumeSnapshotClassName: <your VolumeSnapshotClass>
+     source:
+       persistentVolumeClaimName: <release>-minio
+   EOF
+   kubectl get volumesnapshot -n peaka <release>-minio-before-silo -w   # READYTOUSE true
+   ```
+3. The chart now sets `minio.deploymentUpdate.type: Recreate`, so the old server stops before the new one starts. The
+   subchart's own default (`RollingUpdate`) would start the Silo pod while the MinIO pod still has the volume open: on
+   one node both run on it for a few seconds, on another node the rollout stalls. Do not override it back.
+4. Policies set on buckets or users by your own automation must be valid JSON for Silo: it answers 400 to misspelled
+   keys, trailing JSON and an empty `Principal`. The chart itself sets no bucket policies.
+
+### What the upgrade does
+- `helm upgrade` replaces the `<release>-minio` pod (a short S3 outage while it restarts). The volume is reused.
+- The post-upgrade job that creates buckets, users and policies runs again with the Silo image; it is idempotent.
+- Root user, password and any users you created keep working. The Console on port 9001 is served by Silo.
+- The server pod and the setup job pull the `silo` image with the `minio.imagePullSecrets` secret (default
+  `peaka-docker-registry`).
+
+### Rolling back
+1. Scale the server down: `kubectl scale -n peaka deploy/<release>-minio --replicas=0`.
+2. Delete the claim `<release>-minio` and create it again under the same name from the snapshot (`spec.dataSource` of
+   kind `VolumeSnapshot`, same size and storage class). Helm never deletes this claim (`resource-policy: keep`), so
+   check the snapshot is ready first: with most storage classes deleting the claim deletes the data.
+3. Run the image you used before: set `minio.image` and `minio.mcImage` back to it, `helm upgrade -n peaka <release> peaka/peaka --version <CHART_VERSION> -f values.yaml`, then
+   `kubectl scale -n peaka deploy/<release>-minio --replicas=1`.
+Objects written after the snapshot are lost with it.
+
 ## Configuration
 Some configurations must be set for Peaka to run as expected. 
 
@@ -113,6 +166,10 @@ Some configurations must be set for Peaka to run as expected.
   to Peaka's container image registry. You need to set `.Values.imagePullSecret.gcpRegistryAuth.password` 
   to the content of the `json` file. This will create a Kubernetes Secret of type `docker-registry`, which Peaka 
   services will use as imagePullSecret.
+  The bundled MinIO also pulls from Peaka's registry. Its subchart cannot read that setting, so `minio.imagePullSecrets`
+  names the secret on its own (default `peaka-docker-registry`). It must match
+  `peakaContainerRegistryAccessSecret.name`. If you mirror images to your own registry, also set
+  `minio.image.repository` and `minio.mcImage.repository`.
 
 
 - Peaka services need to know the URL and port through which the services will be accessed beforehand. For that, you
