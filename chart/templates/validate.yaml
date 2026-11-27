@@ -2,3 +2,4 @@
 {{- include "peaka.validate.objectStore" . }}
 {{- include "peaka.validate.mongodb" . }}
 {{- include "peaka.validate.logging" . }}
+{{- include "peaka.validate.trinoResourceGroups" . }}

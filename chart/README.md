@@ -310,6 +310,27 @@ helm upgrade -n peaka [RELEASE_NAME] ./<version>/peaka -f <version>/peaka/values
 `permify.tolerations`. The in-chart Postgres has no tolerations setting: on tainted-only nodes use
 `externalPostgresql`.
 
+### Query admission control (optional)
+`trino.resourceGroups.enabled: true` caps how many Trino queries run at once (Trino resource groups); queries over
+a cap wait in a queue. Without it, a burst of queries can fill the coordinator and nothing finishes until it drains.
+- Groups: `health` (the healthcheck), `system` (Peaka's own maintenance users `trino` and `code2db`), `tenants`
+  (project users, with a cap per project) and `other` (any other user, e.g. a person connecting directly).
+- Size `trino.resourceGroups.limits` per install: `running` is the cap, `queued` how many may wait; a query that
+  cannot start fails with `QUERY_QUEUE_FULL` when its group or a parent group (`tenants`, `global`) already has
+  `queued` queries waiting, so `global.queued` caps all groups together. Start from the defaults, then look at
+  `system.runtime.queries` (columns `state`, `resource_group_id`) on a busy day: raise a cap whose group queues
+  often while the cluster has CPU and memory free; lower `global` if the coordinator still stalls.
+- Turning it on or changing a number restarts the Trino coordinator, which fails the queries running at that
+  moment: do it in a quiet hour.
+- Turning it off again needs a manual step. The coordinator's PVC is mounted at `/etc/trino`, so the first start
+  with the feature on leaves empty `resource-groups.properties` and `resource-groups.json` files on that PVC, and
+  Trino does not start with an empty `resource-groups.properties`. To loosen the caps without that step, keep
+  `enabled: true` and raise every limit. To turn it off, set `enabled: false` (or `helm rollback` to a revision
+  without it), then delete both files from the coordinator PVC (`<release>-trino-coordinator`) from a temporary
+  pod that mounts it on the coordinator's node (the PVC is ReadWriteOnce), then delete the coordinator pod.
+- Do not also put `resource-groups.properties` or `resource-groups.json` in `trino.coordinator.additionalConfigFiles`;
+  the chart refuses to render if you do.
+
 ## Known Limitations
 - If you are accessing Peaka from a hostname which is not localhost, then you need to enable TLS to access Peaka studio 
 web application. If TLS is terminated before the traffic reaches Peaka app, then TLS of this chart

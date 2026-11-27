@@ -63,3 +63,29 @@ stay deployed (e.g. migration staging buckets still living there).
 {{- end -}}
 {{- end -}}
 {{- end }}
+
+{{- define "peaka.validate.trinoResourceGroups" }}
+{{- if .Values.trino.resourceGroups.enabled -}}
+{{- $l := .Values.trino.resourceGroups.limits -}}
+{{- range $g := list "global" "health" "system" "tenants" "project" "other" -}}
+{{- range $k := list "running" "queued" -}}
+{{- $v := index ((index $l $g) | default dict) $k -}}
+{{- $s := toString $v -}}
+{{- if and (kindIs "float64" $v) (eq $v (float64 (int64 $v))) -}}{{- $s = toString (int64 $v) -}}{{- end -}}
+{{- if not (regexMatch "^[0-9]+$" $s) -}}
+{{- fail (printf "trino.resourceGroups.limits.%s.%s must be a whole number (0 or more), got %v." $g $k $v) }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- if eq (int64 $l.global.running) 0 -}}
+{{- fail "trino.resourceGroups.limits.global.running must be at least 1: with 0 no query ever starts." }}
+{{- end -}}
+{{- range $pair := list (list "project" "tenants") (list "tenants" "global") (list "system" "global") (list "health" "global") (list "other" "global") -}}
+{{- $child := int64 (index $l (index $pair 0)).running -}}
+{{- $parent := int64 (index $l (index $pair 1)).running -}}
+{{- if gt $child $parent -}}
+{{- fail (printf "trino.resourceGroups.limits.%s.running (%d) must not exceed trino.resourceGroups.limits.%s.running (%d): the parent's cap always binds." (index $pair 0) $child (index $pair 1) $parent) }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
