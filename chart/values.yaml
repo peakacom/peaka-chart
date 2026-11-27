@@ -2171,7 +2171,7 @@ oauth2AuthorizationServer:
   replicaCount: 1
   image:
     name: be-oauth2-authorization-server
-    tag: v1.0.10
+    tag: v1.0.11
     imagePullPolicy: IfNotPresent
   resources:
     requests:
