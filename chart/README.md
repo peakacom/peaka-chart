@@ -137,14 +137,9 @@ a MinIO server can no longer read all of it again. The way back is a snapshot ta
    EOF
    kubectl get volumesnapshot -n peaka <release>-minio-before-silo -w   # READYTOUSE true
    ```
-3. Stop the old server before the new one starts. The Deployment default (`RollingUpdate`) starts the Silo pod while the
-   MinIO pod still has the volume open: on one node both can run on it for a few seconds, on another node the new pod
-   waits for the volume and the rollout stalls. Set this in your `values.yaml` for the upgrade:
-   ```yaml
-   minio:
-     deploymentUpdate:
-       type: Recreate
-   ```
+3. The chart now sets `minio.deploymentUpdate.type: Recreate`, so the old server stops before the new one starts. The
+   subchart's own default (`RollingUpdate`) would start the Silo pod while the MinIO pod still has the volume open: on
+   one node both run on it for a few seconds, on another node the rollout stalls. Do not override it back.
 4. Policies set on buckets or users by your own automation must be valid JSON for Silo: it answers 400 to misspelled
    keys, trailing JSON and an empty `Principal`. The chart itself sets no bucket policies.
 
@@ -160,8 +155,7 @@ a MinIO server can no longer read all of it again. The way back is a snapshot ta
 2. Delete the claim `<release>-minio` and create it again under the same name from the snapshot (`spec.dataSource` of
    kind `VolumeSnapshot`, same size and storage class). Helm never deletes this claim (`resource-policy: keep`), so
    check the snapshot is ready first: with most storage classes deleting the claim deletes the data.
-3. Run the image you used before: set `minio.image` and `minio.mcImage` back to it (and `deploymentUpdate.type` if you
-   changed it), `helm upgrade -n peaka <release> peaka/peaka --version <CHART_VERSION> -f values.yaml`, then
+3. Run the image you used before: set `minio.image` and `minio.mcImage` back to it, `helm upgrade -n peaka <release> peaka/peaka --version <CHART_VERSION> -f values.yaml`, then
    `kubectl scale -n peaka deploy/<release>-minio --replicas=1`.
 Objects written after the snapshot are lost with it.
 

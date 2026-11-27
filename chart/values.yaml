@@ -372,6 +372,11 @@ minio:
   # in the README). The one image ships both /usr/bin/silo and /usr/bin/mc.
   # Subchart values cannot reference imageRegistry, so a mirror must override
   # these repositories itself.
+  # One server on one ReadWriteOnce volume: stop the old pod before the new one
+  # starts. The subchart default (RollingUpdate, maxUnavailable 0) runs two
+  # servers on the same drive on one node, and stalls on another node.
+  deploymentUpdate:
+    type: Recreate
   image:
     repository: europe-west3-docker.pkg.dev/code2-324814/peaka-service-container-images/silo
     tag: RELEASE.2026-11-12T00-00-00Z

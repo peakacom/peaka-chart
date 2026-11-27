@@ -39,6 +39,11 @@ tests:
           path: spec.template.spec.imagePullSecrets
           value:
             - name: peaka-docker-registry
+      # One server per ReadWriteOnce volume: the old pod stops before the new one starts.
+      - equal:
+          path: spec.strategy
+          value:
+            type: Recreate
 
   - it: runs the bucket, user and policy jobs from the same Silo image with the pull secret
     template: charts/minio/templates/post-job.yaml
